@@ -54,6 +54,221 @@ const { once } = require('events');
 const { fileURLToPath } = require('url');
 const { analyzePodcastDjStream, analyzePodcastDjIntro } = require('./dj-analyzer');
 
+// ========== 多平台音源解锁 (@unblockneteasemusic) ==========
+let matchUnblock = null;
+try { matchUnblock = require('@unblockneteasemusic/server').default || require('@unblockneteasemusic/server'); } catch (e) { console.warn('[Unblock] @unblockneteasemusic not available:', e.message); }
+
+// 所有可用音源平台
+const ALL_UNBLOCK_PLATFORMS = ['migu', 'kugou', 'kuwo', 'pyncmd'];
+
+// 音乐URL缓存 (id -> { url, br, size, platform, expireAt })
+const MUSIC_URL_CACHE = new Map();
+const MUSIC_URL_CACHE_TTL = 30 * 60 * 1000; // 30分钟
+
+// 失败缓存 (key -> timestamp)
+const FAILED_CACHE = new Map();
+const FAILED_CACHE_TTL = 60 * 1000; // 1分钟
+
+// 用户启用的音源配置 (从 localStorage 读取，默认全部启用)
+const MUSIC_SOURCE_CONFIG_KEY = 'mineradio_music_sources';
+function getMusicSourceConfig() {
+  try {
+    const raw = fs.readFileSync(path.join(app.getPath ? app.getPath('userData') : __dirname, MUSIC_SOURCE_CONFIG_KEY), 'utf8');
+    const cfg = JSON.parse(raw);
+    return Array.isArray(cfg) && cfg.length > 0 ? cfg : [...ALL_UNBLOCK_PLATFORMS];
+  } catch (e) {
+    return [...ALL_UNBLOCK_PLATFORMS];
+  }
+}
+function saveMusicSourceConfig(sources) {
+  try {
+    const dir = app.getPath ? app.getPath('userData') : __dirname;
+    fs.writeFileSync(path.join(dir, MUSIC_SOURCE_CONFIG_KEY), JSON.stringify(sources, null, 2));
+  } catch (e) { /* ignore */ }
+}
+
+/**
+ * 检查是否在失败缓存期内
+ */
+function isInFailedCache(key) {
+  const cachedTime = FAILED_CACHE.get(key);
+  if (cachedTime && Date.now() - cachedTime < FAILED_CACHE_TTL) return true;
+  if (cachedTime) FAILED_CACHE.delete(key);
+  return false;
+}
+
+/**
+ * 添加失败缓存
+ */
+function addFailedCache(key) {
+  FAILED_CACHE.set(key, Date.now());
+}
+
+/**
+ * 获取缓存的音乐URL
+ */
+function getCachedMusicUrl(id) {
+  try {
+    const cached = MUSIC_URL_CACHE.get(String(id));
+    if (cached && cached.expireAt > Date.now()) return cached;
+    if (cached) MUSIC_URL_CACHE.delete(String(id));
+  } catch (e) {}
+  return null;
+}
+
+/**
+ * 缓存音乐URL
+ */
+function setCachedMusicUrl(id, result) {
+  try {
+    MUSIC_URL_CACHE.set(String(id), { ...result, expireAt: Date.now() + MUSIC_URL_CACHE_TTL });
+  } catch (e) {}
+}
+
+/**
+ * 统一歌曲数据格式 (网易云 -> unblock)
+ */
+function normalizeSongForUnblock(songData) {
+  if (!songData) return { name: '', artists: [], album: { name: '' } };
+  const name = songData.name || '';
+  const artists = (songData.artists || songData.ar || [])
+    .filter(a => a)
+    .map(a => ({ name: (a.name || '').toString() }));
+  const album = (songData.album || songData.al || {}) || { name: '' };
+  if (album.name === undefined) album.name = '';
+  return { name, artists, album };
+}
+
+/**
+ * 通过 @unblockneteasemusic 解析歌曲URL
+ * 依次尝试所有 enabled platforms
+ */
+async function resolveUnblockMusic(id, songData, enabledPlatforms) {
+  if (!matchUnblock) return null;
+  
+  const key = `${id}_${enabledPlatforms.join(',')}`;
+  if (isInFailedCache(key)) return null;
+
+  const filteredPlatforms = (enabledPlatforms || ALL_UNBLOCK_PLATFORMS)
+    .filter(p => ALL_UNBLOCK_PLATFORMS.includes(p));
+  
+  if (!filteredPlatforms.length) return null;
+
+  const processedSong = normalizeSongForUnblock(songData);
+  const startTime = Date.now();
+  const TIMEOUT = 15000; // 15秒总超时
+
+  for (const platform of filteredPlatforms) {
+    if (Date.now() - startTime > TIMEOUT) break;
+    
+    try {
+      const result = await matchUnblock(
+        parseInt(String(id), 10),
+        [platform],
+        processedSong
+      );
+      
+      if (result && result.url) {
+        console.log(`[Unblock] ✅ ${platform} resolved id=${id} url=${result.url.substring(0, 60)}... (${Date.now() - startTime}ms)`);
+        setCachedMusicUrl(id, { url: result.url, br: result.br || 320000, size: result.size || 0, platform });
+        return {
+          url: result.url,
+          trial: false,
+          playable: true,
+          level: 'higher',
+          quality: platform,
+          br: result.br || 320000,
+          platform,
+        };
+      }
+    } catch (err) {
+      console.log(`[Unblock] ${platform} failed for id=${id}:`, err.message);
+    }
+  }
+
+  console.log(`[Unblock] ❌ All platforms failed for id=${id} (${Date.now() - startTime}ms)`);
+  addFailedCache(key);
+  return null;
+}
+
+/**
+ * GD Music 外部API解析 (Joox/Tidal)
+ */
+async function resolveGDMusic(id, songData) {
+  const key = `gd_${id}`;
+  if (isInFailedCache(key)) return null;
+
+  if (!songData || !songData.name) return null;
+
+  const songName = songData.name;
+  let artistList = [];
+  if (songData.artists && Array.isArray(songData.artists)) {
+    artistList = songData.artists.map(a => a?.name).filter(Boolean);
+  } else if (songData.ar && Array.isArray(songData.ar)) {
+    artistList = songData.ar.map(a => a?.name).filter(Boolean);
+  }
+  const artistNames = artistList.join(' ');
+  const searchQuery = `${songName} ${artistNames}`.trim();
+
+  if (!searchQuery || searchQuery.length < 2) return null;
+
+  const sources = ['joox', 'tidal'];
+  const baseUrl = 'https://music-api.gdstudio.xyz/api.php';
+
+  for (const source of sources) {
+    try {
+      // Step 1: Search
+      const searchUrl = `${baseUrl}?types=search&source=${source}&name=${encodeURIComponent(searchQuery)}&count=5&pages=1`;
+      const searchResp = await fetch(searchUrl, { signal: AbortSignal.timeout(5000) });
+      if (!searchResp.ok) continue;
+      const searchResults = await searchResp.json();
+
+      if (!Array.isArray(searchResults) || !searchResults.length) continue;
+
+      // Pick best candidate by name matching
+      let bestItem = null;
+      for (const item of searchResults) {
+        if (!item || !item.id) continue;
+        const itemName = (item.name || '').toLowerCase().replace(/[（(【[].*?[)）】\]]/g, '').trim();
+        const expectedName = songName.toLowerCase().replace(/[（(【[].*?[)）】\]]/g, '').trim();
+        if (itemName === expectedName || itemName.includes(expectedName) || expectedName.includes(itemName)) {
+          bestItem = item;
+          break;
+        }
+      }
+      if (!bestItem) continue;
+
+      // Step 2: Get URL
+      const trackId = bestItem.id;
+      const trackSource = bestItem.source || source;
+      const songUrl = `${baseUrl}?types=url&source=${trackSource}&id=${trackId}&br=999`;
+      const songResp = await fetch(songUrl, { signal: AbortSignal.timeout(5000) });
+      if (!songResp.ok) continue;
+      const songDataResult = await songResp.json();
+
+      if (songDataResult && songDataResult.url) {
+        console.log(`[GD Music] ✅ ${trackSource} resolved id=${id}`);
+        return {
+          url: songDataResult.url.replace(/\\/g, ''),
+          trial: false,
+          playable: true,
+          level: 'exhigh',
+          quality: 'gdmusic',
+          br: parseInt(songDataResult.br, 10) * 1000 || 320000,
+          platform: 'gdmusic',
+        };
+      }
+    } catch (err) {
+      console.log(`[GD Music] ${source} failed for id=${id}:`, err.message);
+    }
+  }
+
+  addFailedCache(key);
+  return null;
+}
+
+// ========== 多平台音源解锁结束 ==========
+
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -3040,6 +3255,7 @@ async function fetchMyPodcastItems(key, info, limit, offset) {
 // ---------- 业务: 取歌曲URL (探测试听) ----------
 //   返回 { url, trial, level, br }
 //   trial=true 表示这是试听片段 (freeTrialInfo 非空)
+//   降级链路: 网易云 → unblockMusic (咪咕/酷狗/酷我/PyNCM) → GD Music (Joox/Tidal)
 async function handleSongUrl(id, loginInfo, qualityPreference) {
   console.log('[SongUrl] id:', id, 'logged-in:', !!userCookie);
   const requestedQuality = normalizeQualityPreference(qualityPreference);
@@ -3086,6 +3302,48 @@ async function handleSongUrl(id, loginInfo, qualityPreference) {
       console.log('[SongUrl]', q.level, 'failed:', err.message);
     }
   }
+
+  // 网易云失败或仅试听 → 尝试多平台音源解锁
+  if (lastData) {
+    const restriction = classifyNeteasePlaybackRestriction(lastData, loginInfo);
+    const needsFallback = ['trial_only', 'vip_required', 'paid_required', 'copyright_unavailable', 'url_unavailable'].includes(restriction.category);
+    
+    if (needsFallback) {
+      console.log(`[SongUrl] 🔄 网易云${restriction.message}，尝试多平台音源...`);
+      
+      // 获取歌曲完整信息用于音源匹配
+      let songDetail = null;
+      try {
+        const detailResult = await song_detail({ c: JSON.stringify([{ id: parseInt(String(id), 10) }]), cookie: userCookie });
+        const detailList = detailResult.body && detailResult.body.songs && detailResult.body.songs[0];
+        if (detailList) {
+          songDetail = {
+            name: detailList.name || '',
+            artists: (detailList.artists || []).map(a => ({ name: a.name || '' })),
+            album: { name: (detailList.album && detailList.album.name) || '' },
+          };
+        }
+      } catch (e) { /* ignore */ }
+
+      // Step 1: @unblockneteasemusic (咪咕/酷狗/酷我/PyNCM)
+      const enabledPlatforms = getMusicSourceConfig();
+      const unblockResult = await resolveUnblockMusic(id, songDetail || lastData, enabledPlatforms);
+      if (unblockResult) {
+        console.log('[SongUrl] ✅ 多平台音源成功:', unblockResult.platform);
+        return { ...unblockResult, requestedQuality };
+      }
+
+      // Step 2: GD Music (Joox/Tidal)
+      const gdResult = await resolveGDMusic(id, songDetail || lastData);
+      if (gdResult) {
+        console.log('[SongUrl] ✅ GD Music 成功');
+        return { ...gdResult, requestedQuality };
+      }
+
+      console.log('[SongUrl] ❌ 所有音源均失败');
+    }
+  }
+
   if (trialFallback) return trialFallback;
   const restriction = classifyNeteasePlaybackRestriction(lastData, loginInfo);
   return {
@@ -4179,6 +4437,35 @@ const server = http.createServer(async (req, res) => {
       while (true) { const c = await reader.read(); if (c.done) break; res.write(c.value); }
       res.end();
     } catch (err) { console.error('[Audio]', err); res.writeHead(500); res.end(); }
+    return;
+  }
+
+  // ---------- 音源设置 API ----------
+  if (pn === '/api/music/sources') {
+    try {
+      const body = await readRequestBody(req);
+      const sources = body.sources;
+      if (Array.isArray(sources) && sources.length > 0) {
+        saveMusicSourceConfig(sources);
+        sendJSON(res, { ok: true, sources });
+      } else {
+        sendJSON(res, { ok: false, error: 'Invalid sources' }, 400);
+      }
+    } catch (err) {
+      console.error('[MusicSources]', err);
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/music/sources/list') {
+    try {
+      const cfg = getMusicSourceConfig();
+      sendJSON(res, { ok: true, sources: cfg });
+    } catch (err) {
+      console.error('[MusicSourcesList]', err);
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
     return;
   }
 
