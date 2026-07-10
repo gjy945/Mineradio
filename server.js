@@ -45,6 +45,7 @@ const {
   lyric_new,
   toplist,
   top_artists,
+  top_song,
   personal_fm,
 } = require('NeteaseCloudMusicApi');
 const http = require('http');
