@@ -1939,45 +1939,45 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
     </div>
 
     <div class="home-grid">
-      <button class="home-card" data-home-tone="library" type="button" onclick="openHomeLibrary()">
-        <div class="home-card-label">Library</div>
-        <div class="home-card-title" id="home-weather-card-title">我的歌单</div>
-        <div class="home-card-sub" id="home-weather-card-sub">打开左侧歌单库</div>
-        <div class="home-card-art" id="home-weather-art"></div>
-      </button>
-      <button class="home-card" data-home-tone="mix" type="button" onclick="playHomeSong(0)">
-        <div class="home-card-label">Daily</div>
-        <div class="home-card-title" id="home-daily-title">每日推荐</div>
-        <div class="home-card-sub" id="home-daily-sub">登录后同步你的今日歌曲</div>
-        <div class="home-card-art" id="home-daily-art"></div>
-      </button>
-      <button class="home-card" data-home-tone="playlist" type="button" onclick="playHomeSong(1)">
-        <div class="home-card-label">Song</div>
-        <div class="home-card-title" id="home-private-title">私人电台</div>
-        <div class="home-card-sub" id="home-private-sub">从你的推荐和歌单里开播</div>
-        <div class="home-card-art" id="home-private-art"></div>
-      </button>
-      <button class="home-card" data-home-tone="mix" type="button" onclick="playHomeRecent()">
-        <div class="home-card-label">Continue</div>
-        <div class="home-card-title" id="home-continue-title">继续听</div>
-        <div class="home-card-sub" id="home-continue-sub">最近播放会出现在这里</div>
-        <div class="home-card-art" id="home-continue-art"></div>
-      </button>
-      <button class="home-card" data-home-tone="local" type="button" onclick="openHomeInsight()">
-        <div class="home-card-label">Profile</div>
-        <div class="home-card-title" id="home-profile-title">听歌画像</div>
-        <div class="home-card-sub" id="home-profile-sub">播放几首后生成偏好</div>
-        <div class="home-card-art" id="home-profile-art"></div>
-      </button>
-      <button class="home-card" data-home-tone="local" type="button" onclick="playHomeSong(2)">
-        <div class="home-card-label">Song</div>
-        <div class="home-card-title" id="home-library-title">常听歌手</div>
-        <div class="home-card-sub" id="home-library-sub">你的偏好会在这里汇总</div>
-        <div class="home-card-art" id="home-library-art"></div>
-      </button>
-    </div>
+          <button class="home-card" data-home-tone="library" type="button" onclick="openHomeLibrary()">
+            <div class="home-card-label">Library</div>
+            <div class="home-card-title" id="home-weather-card-title">我的歌单</div>
+            <div class="home-card-sub">点击浏览你的收藏歌单</div>
+            <div class="home-card-art" id="home-weather-card-art"></div>
+          </button>
+          <button class="home-card" data-home-tone="mix" type="button" onclick="playHomeSong(0)">
+            <div class="home-card-label">Daily</div>
+            <div class="home-card-title" id="home-daily-title">每日推荐</div>
+            <div class="home-card-sub" id="home-daily-sub">登录后同步你的今日歌曲</div>
+            <div class="home-card-art" id="home-daily-art"></div>
+          </button>
+          <button class="home-card" data-home-tone="mix" type="button" onclick="if(typeof homeToplistData !=='undefined'&&homeToplistData.length)loadPlaylistIntoQueueById(homeToplistData[0].id,true,homeToplistData[0].name);else playHomeSong(1)">
+            <div class="home-card-label">Top</div>
+            <div class="home-card-title" id="home-private-title">飙升榜</div>
+            <div class="home-card-sub" id="home-private-sub">最热门的歌曲榜单</div>
+            <div class="home-card-art" id="home-private-art"></div>
+          </button>
+          <button class="home-card" data-home-tone="local" type="button" onclick="openPlaylistPanelTab('playlists',false)">
+            <div class="home-card-label">Lists</div>
+            <div class="home-card-title" id="home-continue-title">歌单广场</div>
+            <div class="home-card-sub" id="home-continue-sub">发现更多精彩歌单</div>
+            <div class="home-card-art" id="home-continue-art"></div>
+          </button>
+          <button class="home-card" data-home-tone="local" type="button" onclick="if(typeof homeToplistData !=='undefined'&&homeToplistData.length>1)loadPlaylistIntoQueueById(homeToplistData[1].id,true,homeToplistData[1].name);else openHomeInsight()">
+            <div class="home-card-label">Chart</div>
+            <div class="home-card-title" id="home-profile-title">新歌榜</div>
+            <div class="home-card-sub" id="home-profile-sub">最新发行的热门歌曲</div>
+            <div class="home-card-art" id="home-profile-art"></div>
+          </button>
+          <button class="home-card" data-home-tone="local" type="button" onclick="openHomeLibrary()">
+            <div class="home-card-label">Album</div>
+            <div class="home-card-title" id="home-library-title">我的收藏</div>
+            <div class="home-card-sub" id="home-library-sub">收藏的专辑和歌单</div>
+            <div class="home-card-art" id="home-library-art"></div>
+          </button>
+        </div>
 
-    <div class="home-rail">
+        <div class="home-rail">
       <div class="home-section-head">
         <div class="home-section-title" id="home-rail-title">为你准备</div>
         <div class="home-section-note" id="home-rail-note">正在整理推荐</div>
@@ -15507,6 +15507,24 @@ function renderHomeTiles() {
   var title = document.getElementById('home-rail-title');
   var note = document.getElementById('home-rail-note');
   if (!row) return;
+  // 不再用旧的 tile 逻辑，改用排行榜
+  if (typeof homeToplistData !== 'undefined' && homeToplistData.length) {
+    if (title) title.textContent = '排行榜';
+    if (note) note.textContent = homeToplistData.length + ' 个榜单';
+    row.innerHTML = '';
+    row.style.gridTemplateColumns = 'repeat(4,1fr)';
+    row._homeTiles = homeToplistData.slice(0,8).map(function(t){
+      var cover = t.cover ? 'style="background-image:url(' + escHtml(t.cover) + ')"' : '';
+      return '<button class="home-tile" data-kind="toplist" type="button" onclick="loadPlaylistIntoQueueById(' + t.id + ',true,' + JSON.stringify(t.name||'排行榜') + ');setTimeout(function(){openPlaylistPanelTab(\'playlists\',false)},300)">' +
+        '<div class="home-tile-cover has-cover" ' + cover + '></div>' +
+        '<div class="home-tile-title">' + escHtml(t.name) + '</div>' +
+        '<div class="home-tile-sub">' + (t.trackCount||0) + ' 首</div></button>';
+    });
+    row._homeTiles = homeToplistData.slice(0,8);
+    renderHomeMosaic(row._homeTiles);
+    return;
+  }
+  // 原来逻辑（降级）
   var tiles = [];
   var loggedOutHome = !homeDiscoverState.loggedIn && !hasAnyPlatformLogin();
   var weatherSongs = homeWeatherRadioState.radio && homeWeatherRadioState.radio.songs || [];
@@ -15661,6 +15679,15 @@ async function loadHomeDiscover(force) {
   } finally {
     if (token === homeDiscoverToken) {
       homeDiscoverState.loading = false;
+      // 异步加载排行榜数据
+      if (typeof homeToplistData === 'undefined') {
+        apiJson('/api/discover/extra?t=' + Date.now()).then(function(extra){
+          if (extra && extra.toplist) {
+            homeToplistData = extra.toplist;
+            renderHomeTiles();
+          }
+        }).catch(function(e){});
+      }
       renderHomeDiscover();
     }
   }
