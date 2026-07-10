@@ -26953,10 +26953,9 @@ animate();
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  // 等待首页渲染完成后，加载额外数据
   function waitAndLoad() {
-    var hero = document.getElementById('home-hero-art');
-    if (!hero || !hero.style) {
+    var row = document.getElementById('home-tile-row');
+    if (!row || !row.children || !row.children.length) {
       setTimeout(waitAndLoad, 300);
       return;
     }
@@ -26967,16 +26966,74 @@ animate();
       })
       .catch(function(e) { console.log('[HomeExtra] fetch failed:', e.message); });
   }
-  
+
+  // 找到首页容器并插入扩展内容
+  function renderExtra(data) {
+    if (!data || loaded) return;
+    loaded = true;
+    var row = document.getElementById('home-tile-row');
+    if (!row) return;
+    // 获取承载首页的 <section>
+    var section = row.closest ? row.closest('section') : row.parentNode;
+    while (section && section.parentNode) {
+      if (section.tagName === 'SECTION') break;
+      section = section.parentNode;
+    }
+    if (!section || section.tagName !== 'SECTION') section = row.parentNode;
+    
+    var html = '';
+    // 1. 排行榜
+    if (data.toplist && data.toplist.length) {
+      html += '<div class="home-new-section" style="padding:0 18px"><div class="home-section-head"><span class="home-section-title">🏆 排行榜</span><span class="home-section-note">' + data.toplist.length + ' 个榜单</span></div>';
+      html += '<div class="home-toplists">';
+      data.toplist.slice(0, 8).forEach(function(t, i) {
+        var topTrack = (t.tracks && t.tracks[0]) ? esc(t.tracks[0].name + (t.tracks[0].artist ? ' - ' + t.tracks[0].artist : '')) : (t.trackCount + ' 首');
+        html += '<div class="toplist-item" onclick="openPlaylistPanel(' + t.id + ', \'netease\')">';
+        html += '<div class="rank">' + (i + 1) + '</div>';
+        html += '<div class="info"><div class="tl-name">' + esc(t.name) + '</div>';
+        html += '<div class="tl-song">' + topTrack + '</div></div></div>';
+      });
+      html += '</div></div>';
+    }
+    // 2. 新歌速递
+    if (data.newSongs && data.newSongs.length) {
+      html += '<div class="home-new-section" style="padding:0 18px"><div class="home-section-head"><span class="home-section-title">🔥 新歌速递</span><span class="home-section-note">最新发行</span></div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 18px">';
+      data.newSongs.slice(0, 6).forEach(function(s) {
+        html += '<div class="home-tile" onclick="playSongById(' + s.id + ')">';
+        html += '<div class="home-tile-cover" style="background-image:url(' + (s.cover || '') + ')"></div>';
+        html += '<div class="home-tile-info"><div class="home-tile-title">' + esc(s.name || '') + '</div>';
+        html += '<div class="home-tile-sub">' + esc(s.artist || '') + '</div></div></div>';
+      });
+      html += '</div></div>';
+    }
+    // 3. 热门歌手
+    if (data.topArtists && data.topArtists.length) {
+      html += '<div class="home-new-section" style="padding:0 18px"><div class="home-section-head"><span class="home-section-title">🎤 热门歌手</span><span class="home-section-note">推荐音乐人</span></div>';
+      html += '<div class="home-artist-grid" style="padding:0 18px">';
+      data.topArtists.slice(0, 6).forEach(function(a) {
+        html += '<div class="home-artist-card" onclick="openArtistDetail(' + a.id + ')">';
+        html += '<img src="' + (a.cover || '') + '" alt="' + esc(a.name) + '" onerror="this.style.display=\'none\'">';
+        html += '<div class="name">' + esc(a.name) + '</div></div>';
+      });
+      html += '</div></div>';
+    }
+    
+    section.insertAdjacentHTML('beforeend', html);
+    console.log('[HomeExtra] 排行榜/新歌速递/热门歌手 已加载');
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
   if (document.readyState === 'complete') {
-    setTimeout(waitAndLoad, 1000);
+    setTimeout(waitAndLoad, 1500);
   } else {
-    window.addEventListener('load', function() { setTimeout(waitAndLoad, 1000); });
+    window.addEventListener('load', function() { setTimeout(waitAndLoad, 1500); });
   }
 })();
 </script>
-</body>
-</html>
+<!-- ========== 音源设置面板 (Mineradio 多平台音源) ========== -->
+<style>
 #ms-panel-wrap {
   position: fixed; top: 44px; right: 20px; z-index: 99999;
   font-family: var(--font-sans);
