@@ -26877,8 +26877,153 @@ function animate() {
 animate();
 </script>
 
-<!-- ========== 音源设置面板 (Mineradio 多平台音源) ========== -->
+<!-- ========== 新增功能：排行榜、新歌速递、热门歌手 ========== -->
 <style>
+.home-new-section { margin-top: 14px; }
+.home-new-section .home-section-head { margin-bottom: 10px; }
+.home-artist-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.home-artist-card { border-radius: 14px; overflow: hidden; cursor: pointer; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); transition: all .2s; padding: 14px 10px 10px; text-align: center; }
+.home-artist-card:hover { background: rgba(255,255,255,.08); transform: translateY(-2px); border-color: rgba(0,245,212,.3); }
+.home-artist-card img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin: 0 auto 8px; display: block; }
+.home-artist-card .name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.8); }
+.home-toplists { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.home-toplists .toplist-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.05); transition: all .2s; }
+.home-toplists .toplist-item:hover { background: rgba(255,255,255,.07); border-color: rgba(0,245,212,.2); }
+.home-toplists .toplist-item .rank { font-size: 15px; font-weight: 800; color: rgba(0,245,212,.7); min-width: 24px; text-align: center; }
+.home-toplists .toplist-item .info { flex: 1; min-width: 0; }
+.home-toplists .toplist-item .info .tl-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-toplists .toplist-item .info .tl-song { font-size: 11px; color: rgba(255,255,255,.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
+
+<div id="home-extra-sections" style="display:contents"></div>
+
+<script>
+(function() {
+  // 扩展 homeDiscoverState 以支持新功能
+  if (typeof homeDiscoverState !== 'undefined') {
+    homeDiscoverState.toplist = [];
+    homeDiscoverState.topArtists = [];
+    homeDiscoverState.hotSongs = [];
+    homeDiscoverState.newSongs = [];
+  }
+
+  // 改写 renderHomeDiscover 以包含新数据
+  var origRenderHomeDiscover = window.renderHomeDiscover;
+  if (typeof origRenderHomeDiscover === 'function') {
+    window.renderHomeDiscover = function() {
+      origRenderHomeDiscover();
+      renderHomeExtraSections();
+    };
+  }
+
+  // 在 loadHomeDiscover 成功回调中也存储新数据
+  var origSuccessHandler = null;
+  // 通过观察每个请求保存额外的数据（在 loadHomeDiscover 中 fetch 成功后）
+  var observeData = function(data) {
+    if (!data || !homeDiscoverState) return;
+    homeDiscoverState.toplist = data.toplist || [];
+    homeDiscoverState.topArtists = data.topArtists || [];
+    homeDiscoverState.hotSongs = data.hotSongs || [];
+    homeDiscoverState.newSongs = data.newSongs || [];
+  };
+
+  // 包装原始的 data 处理逻辑
+  var origThenHandler = null;
+  // 在 fetch 成功后的 .then 中已经填充了 homeDiscoverState.songs 等，
+  // 这里通过 MutationObserver 监听 homeDiscoverState 的变化来触发额外渲染
+  var stateProto = null;
+
+  // 渲染新的首页区域
+  function renderHomeExtraSections() {
+    if (!homeDiscoverState) return;
+    var container = document.getElementById('home-extra-sections');
+    if (!container) return;
+    
+    var html = '';
+    
+    // 1. 排行榜
+    if (homeDiscoverState.toplist && homeDiscoverState.toplist.length) {
+      html += '<div class="home-new-section"><div class="home-section-head"><span class="home-section-title">🏆 排行榜</span><span class="home-section-note">' + homeDiscoverState.toplist.length + ' 个榜单</span></div>';
+      html += '<div class="home-toplists">';
+      homeDiscoverState.toplist.slice(0, 8).forEach(function(t, i) {
+        var topTrack = (t.tracks && t.tracks[0]) ? t.tracks[0].name + (t.tracks[0].artist ? ' - ' + t.tracks[0].artist : '') : '';
+        html += '<div class="toplist-item" onclick="handleToplistClick(' + JSON.stringify(t.id) + ')">';
+        html += '<div class="rank">' + (i + 1) + '</div>';
+        html += '<div class="info"><div class="tl-name">' + escHtml(t.name) + '</div>';
+        html += '<div class="tl-song">' + escHtml(topTrack || t.trackCount + ' 首') + '</div></div></div>';
+      });
+      html += '</div></div>';
+    }
+    
+    // 2. 新歌速递
+    if (homeDiscoverState.newSongs && homeDiscoverState.newSongs.length) {
+      html += '<div class="home-new-section"><div class="home-section-head"><span class="home-section-title">🔥 新歌速递</span><span class="home-section-note">最新发行</span></div>';
+      html += '<div class="home-grid" style="grid-template-columns:repeat(3,1fr)">';
+      homeDiscoverState.newSongs.slice(0, 6).forEach(function(s) {
+        html += '<div class="home-tile" onclick="handleNewSongClick(' + s.id + ')">';
+        html += '<div class="home-tile-cover" style="background-image:url(' + (s.cover || '') + ')"></div>';
+        html += '<div class="home-tile-info"><div class="home-tile-title">' + escHtml(s.name || '') + '</div>';
+        html += '<div class="home-tile-sub">' + escHtml(s.artist || '') + '</div></div></div>';
+      });
+      html += '</div></div>';
+    }
+    
+    // 3. 热门歌手
+    if (homeDiscoverState.topArtists && homeDiscoverState.topArtists.length) {
+      html += '<div class="home-new-section"><div class="home-section-head"><span class="home-section-title">🎤 热门歌手</span><span class="home-section-note">推荐音乐人</span></div>';
+      html += '<div class="home-artist-grid">';
+      homeDiscoverState.topArtists.slice(0, 6).forEach(function(a) {
+        html += '<div class="home-artist-card" onclick="handleArtistClick(' + a.id + ')">';
+        html += '<img src="' + (a.cover || '') + '" alt="' + escHtml(a.name) + '" onerror="this.src=\'\'">';
+        html += '<div class="name">' + escHtml(a.name) + '</div></div>';
+      });
+      html += '</div></div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  // 工具函数
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // 全局点击处理函数
+  window.handleToplistClick = function(id) {
+    if (typeof openPlaylistPanel === 'function') {
+      openPlaylistPanel(id, 'netease');
+    }
+  };
+  window.handleNewSongClick = function(id) {
+    if (typeof playSongById === 'function') {
+      playSongById(id);
+    } else if (typeof searchAndPlay === 'function') {
+      searchAndPlay(id);
+    }
+  };
+  window.handleArtistClick = function(id) {
+    if (typeof openArtistDetail === 'function') {
+      openArtistDetail(id);
+    }
+  };
+
+  // 每次 loadHomeDiscover 完成后，触发额外的数据存储和渲染
+  // 通过 setInterval 轮询 homeDiscoverState 的变化
+  var lastSongsLen = 0;
+  setInterval(function() {
+    if (homeDiscoverState && homeDiscoverState.songs && homeDiscoverState.songs.length !== lastSongsLen) {
+      lastSongsLen = homeDiscoverState.songs.length;
+      // 新数据已加载，re-render 额外区域
+      renderHomeExtraSections();
+    }
+  }, 500);
+
+  console.log('[HomeExtra] 扩展功能已加载: 排行榜/新歌速递/热门歌手');
+})();
+</script>
+</body>
+</html>
 #ms-panel-wrap {
   position: fixed; top: 44px; right: 20px; z-index: 99999;
   font-family: var(--font-sans);
