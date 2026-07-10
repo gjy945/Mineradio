@@ -1917,29 +1917,31 @@ async function handleSearch(keywords, limit) {
 async function handleDiscoverHome() {
   const info = await getLoginInfo();
   const loggedIn = !!(info && info.loggedIn);
-  
-  // 并行获取所有数据（登录相关 + 公开数据）
+  if (!loggedIn) {
+    return {
+      loggedIn: false,
+      user: null,
+      dailySongs: [],
+      playlists: [],
+      podcasts: [],
+      mode: 'starter',
+      updatedAt: Date.now(),
+    };
+  }
   const tasks = [
     personalized({ limit: 8, cookie: userCookie, timestamp: Date.now() }),
     dj_hot({ limit: 6, offset: 0, cookie: userCookie, timestamp: Date.now() }),
     recommend_resource({ cookie: userCookie, timestamp: Date.now() }),
     recommend_songs({ cookie: userCookie, timestamp: Date.now() }),
-    // 公开数据：不依赖登录
-    toplist({ cookie: userCookie, timestamp: Date.now() }),
-    top_artists({ limit: 12, cookie: userCookie, timestamp: Date.now() }),
-    top_song({ type: 0, cookie: userCookie, timestamp: Date.now() }), // 0=全部
-    top_song({ type: 7, cookie: userCookie, timestamp: Date.now() }), // 7=新歌
   ];
   const result = await Promise.allSettled(tasks);
 
-  // 推荐歌单（个性化）
   const personalizedBody = result[0].status === 'fulfilled' && result[0].value && result[0].value.body || {};
   const publicPlaylists = (personalizedBody.result || personalizedBody.data || [])
     .map(pl => mapDiscoverPlaylist(pl, '推荐歌单'))
     .filter(pl => pl.id && pl.name)
     .slice(0, 8);
 
-  // 热门播客
   const podcastBody = result[1].status === 'fulfilled' && result[1].value && result[1].value.body || {};
   const podcastRaw = podcastBody.djRadios || podcastBody.djradios || podcastBody.radios || podcastBody.data || [];
   const podcasts = (Array.isArray(podcastRaw) ? podcastRaw : [])
@@ -1947,7 +1949,6 @@ async function handleDiscoverHome() {
     .filter(p => p.id && !isLowSignalPodcastItem(p))
     .slice(0, 6);
 
-  // 私人推荐歌单
   let privatePlaylists = [];
   if (result[2].status === 'fulfilled' && result[2].value) {
     const body = result[2].value.body || {};
@@ -1958,7 +1959,6 @@ async function handleDiscoverHome() {
       .slice(0, 6);
   }
 
-  // 每日推荐歌曲
   let dailySongs = [];
   if (result[3].status === 'fulfilled' && result[3].value) {
     const body = result[3].value.body || {};
@@ -1969,10 +1969,30 @@ async function handleDiscoverHome() {
       .slice(0, 12);
   }
 
-  // 排行榜
+  return {
+    loggedIn,
+    user: loggedIn ? { userId: info.userId, nickname: info.nickname || '', avatar: info.avatar || '' } : null,
+    dailySongs,
+    playlists: privatePlaylists.concat(publicPlaylists).slice(0, 10),
+    podcasts,
+    updatedAt: Date.now(),
+  };
+}
+
+/**
+ * 获取首页额外数据：排行榜、热门歌手、新歌速递（不依赖登录）
+ */
+async function handleDiscoverExtra() {
+  const tasks = [
+    toplist({ cookie: userCookie, timestamp: Date.now() }),
+    top_artists({ limit: 12, cookie: userCookie, timestamp: Date.now() }),
+    top_song({ type: 7, cookie: userCookie, timestamp: Date.now() }), // 7=新歌
+  ];
+  const result = await Promise.allSettled(tasks);
+
   let toplistData = [];
-  if (result[4].status === 'fulfilled' && result[4].value) {
-    const body = result[4].value.body || {};
+  if (result[0].status === 'fulfilled' && result[0].value) {
+    const body = result[0].value.body || {};
     const list = body.list || [];
     toplistData = list.slice(0, 12).map(t => ({
       id: t.id,
@@ -1981,7 +2001,6 @@ async function handleDiscoverHome() {
       description: t.description || '',
       trackCount: t.trackCount || t.track_count || 0,
       playCount: t.playCount || t.play_count || 0,
-      updateFrequency: t.updateFrequency || t.update_frequency || '',
       tracks: (t.tracks || []).slice(0, 3).map(s => ({
         name: s.name || s.first || '',
         artist: (s.artists || s.artists_name || '').map(a => a.name || a).join(' / ') || s.second || ''
@@ -1989,10 +2008,9 @@ async function handleDiscoverHome() {
     }));
   }
 
-  // 热门歌手
   let topArtists = [];
-  if (result[5].status === 'fulfilled' && result[5].value) {
-    const body = result[5].value.body || {};
+  if (result[1].status === 'fulfilled' && result[1].value) {
+    const body = result[1].value.body || {};
     const list = body.artists || [];
     topArtists = list.slice(0, 12).map(a => ({
       id: a.id,
@@ -2003,21 +2021,9 @@ async function handleDiscoverHome() {
     }));
   }
 
-  // 热门歌曲（全类型）
-  let hotSongs = [];
-  if (result[6].status === 'fulfilled' && result[6].value) {
-    const body = result[6].value.body || {};
-    const list = body.data || [];
-    hotSongs = (Array.isArray(list) ? list : [])
-      .map(mapSongRecord)
-      .filter(s => s.id && s.name)
-      .slice(0, 12);
-  }
-
-  // 新歌速递
   let newSongs = [];
-  if (result[7].status === 'fulfilled' && result[7].value) {
-    const body = result[7].value.body || {};
+  if (result[2].status === 'fulfilled' && result[2].value) {
+    const body = result[2].value.body || {};
     const list = body.data || [];
     newSongs = (Array.isArray(list) ? list : [])
       .map(mapSongRecord)
@@ -2025,18 +2031,7 @@ async function handleDiscoverHome() {
       .slice(0, 12);
   }
 
-  return {
-    loggedIn,
-    user: loggedIn ? { userId: info.userId, nickname: info.nickname || '', avatar: info.avatar || '' } : null,
-    dailySongs,
-    playlists: privatePlaylists.concat(publicPlaylists).slice(0, 10),
-    podcasts,
-    toplist: toplistData,
-    topArtists,
-    hotSongs,
-    newSongs,
-    updatedAt: Date.now(),
-  };
+  return { toplist: toplistData, topArtists, newSongs };
 }
 
 const QQ_MUSICU_URL = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
@@ -3775,6 +3770,16 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       console.error('[DiscoverHome]', err);
       sendJSON(res, { error: err.message, loggedIn: false, dailySongs: [], playlists: [], podcasts: [] }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/discover/extra') {
+    try {
+      sendJSON(res, await handleDiscoverExtra());
+    } catch (err) {
+      console.error('[DiscoverExtra]', err);
+      sendJSON(res, { error: err.message, toplist: [], topArtists: [], newSongs: [] }, 500);
     }
     return;
   }
