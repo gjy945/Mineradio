@@ -2954,46 +2954,41 @@ async function handleQQSongUrl(mid, mediaMid, qualityPreference) {
     hasPlaybackKey: !!(uin && playbackKey),
   });
   
-  // QQ 播放失败 → 尝试多平台音源降级（仿 AlgerMusicPlayer）
-  console.log(`[QQSongUrl] QQ失败，尝试多平台音源降级...`);
+  // QQ 播放失败 → 先用歌名搜索网易云获取真实ID → 走多平台音源（仿 AlgerMusicPlayer）
+  console.log(`[QQSongUrl] QQ失败，尝试网易云搜索+多平台音源降级...`);
   try {
-    // 获取歌曲详细信息（名、歌手）
     let qqInfo = await qqSongDetail(songmid, null);
     if (qqInfo && qqInfo.name) {
-      const qqSongMeta = {
-        id: 0,
-        name: qqInfo.name,
-        alias: [],
-        duration: qqInfo.duration || 0,
-        artists: (qqInfo.artists || []).map(a => ({ id: a.id || a.mid || 0, name: a.name || '' })),
-        album: { id: 0, name: qqInfo.album || '' }
-      };
-      const platforms = getMusicSourceConfig();
-      const enabledPlatforms = (platforms || ALL_UNBLOCK_PLATFORMS)
-        .filter(p => ALL_UNBLOCK_PLATFORMS.includes(p));
+      // 用歌名+歌手搜索网易云，获取真实歌曲ID
+      const artistName = (qqInfo.artists || []).map(a => a.name).filter(Boolean).join(' ');
+      const searchKw = (qqInfo.name + ' ' + artistName).trim();
+      const searchResult = await cloudsearch({ keywords: searchKw, limit: 5, cookie: userCookie });
+      const songs = searchResult.body && searchResult.body.result && searchResult.body.result.songs;
+      const matchedSong = songs && songs.find(s => {
+        const sName = (s.name || '').toLowerCase();
+        const qName = (qqInfo.name || '').toLowerCase();
+        return sName.includes(qName) || qName.includes(sName);
+      });
       
-      for (const platform of enabledPlatforms) {
-        try {
-          const result = await matchUnblock(0, [platform], qqSongMeta);
-          if (result && result.url) {
-            console.log(`[QQSongUrl] ✅ 多平台音源 ${platform} 成功: ${qqInfo.name}`);
-            return {
-              provider: 'qq',
-              url: result.url,
-              trial: false,
-              playable: true,
-              level: 'higher',
-              quality: platform,
-              platform,
-            };
-          }
-        } catch (e) {
-          console.log(`[QQSongUrl] ${platform} failed:`, e ? e.message : 'unknown');
+      if (matchedSong && matchedSong.id) {
+        const neteaseId = matchedSong.id;
+        const platforms = getMusicSourceConfig();
+        const unblockResult = await resolveUnblockMusic(neteaseId, {
+          id: neteaseId,
+          name: matchedSong.name || '',
+          alias: matchedSong.alias || [],
+          duration: matchedSong.dt || matchedSong.duration || 0,
+          artists: (matchedSong.artists || matchedSong.ar || []).map(a => ({ id: a.id, name: a.name || '' })),
+          album: { id: (matchedSong.album || matchedSong.al || {}).id, name: (matchedSong.album || matchedSong.al || {}).name || '' }
+        }, platforms);
+        if (unblockResult) {
+          console.log(`[QQSongUrl] ✅ 网易云搜索+多平台音源成功: ${qqInfo.name}`);
+          return { provider: 'qq', ...unblockResult };
         }
       }
     }
   } catch (e) {
-    console.log('[QQSongUrl] 多平台音源降级失败:', e.message);
+    console.log('[QQSongUrl] 网易云搜索+多平台音源降级失败:', e.message);
   }
   
   return {
