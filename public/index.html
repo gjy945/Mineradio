@@ -2762,7 +2762,8 @@ var visualGuideState = { bottomWasVisible: false, searchWasPeek: false, manual: 
 var emptyHomeActive = false;
 var homeForcedOpen = false;
 var homeSuppressed = false;
-var homeDiscoverState = { loading: false, loaded: false, loggedIn: false, mode: 'starter', songs: [], playlists: [], podcasts: [], error: '', updatedAt: 0 };
+var homeDiscoverState = { loading: false, loaded: false, loggedIn: false, songs: [], playlists: [], podcasts: [], error: '', updatedAt: 0, mode: 'starter' };
+var homeToplistData;
 var homeDiscoverToken = 0;
 var homeVisualPresetActive = false;
 var homeVisualPrevPreset = 0;
@@ -15509,6 +15510,7 @@ function renderHomeTiles() {
   if (!row) return;
   // 不再用旧的 tile 逻辑，改用排行榜
   if (typeof homeToplistData !== 'undefined' && homeToplistData.length) {
+    console.log('[HomeExtra] renderToplistTiles:', homeToplistData.length);
     if (title) title.textContent = '排行榜';
     if (note) note.textContent = homeToplistData.length + ' 个榜单';
     row.innerHTML = '';
