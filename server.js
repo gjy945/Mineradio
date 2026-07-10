@@ -146,9 +146,9 @@ function normalizeSongForUnblock(songData) {
 /**
  * 通过 @unblockneteasemusic 解析歌曲URL
  * 依次尝试所有 enabled platforms
- * 传 null 给 data 参数，让 match 内部通过 song_detail API 获取完整信息
+ * songDetail 必须传完整歌曲信息（从已登录的 API 获取），否则用已登录 cookie 自行获取
  */
-async function resolveUnblockMusic(id, songData, enabledPlatforms) {
+async function resolveUnblockMusic(id, songDetail, enabledPlatforms) {
   if (!matchUnblock) return null;
   
   const key = `${id}_${enabledPlatforms.join(',')}`;
@@ -159,23 +159,51 @@ async function resolveUnblockMusic(id, songData, enabledPlatforms) {
   
   if (!filteredPlatforms.length) return null;
 
+  // 优先用传入的 songDetail，没有则用已登录的 API 获取
+  let processedSong = songDetail;
+  if (!processedSong || !processedSong.name) {
+    try {
+      const detailResult = await song_detail({ ids: [parseInt(String(id), 10)].join(','), cookie: userCookie });
+      const s = detailResult.body && detailResult.body.songs && detailResult.body.songs[0];
+      if (s) {
+        processedSong = {
+          id: s.id,
+          name: s.name || '',
+          alias: s.alias || [],
+          duration: s.dt || s.duration || 0,
+          artists: (s.artists || s.ar || []).map(a => ({
+            id: a.id,
+            name: a.name || ''
+          })),
+          album: {
+            id: (s.album || s.al || {}).id,
+            name: (s.album || s.al || {}).name || ''
+          }
+        };
+      }
+    } catch (e) {
+      console.log(`[Unblock] song_detail failed for id=${id}:`, e.message);
+      return null;
+    }
+  }
+  if (!processedSong || !processedSong.name) return null;
+
   const startTime = Date.now();
-  const TIMEOUT = 25000; // 25秒总超时（包含内部请求时间）
+  const TIMEOUT = 25000;
 
   for (const platform of filteredPlatforms) {
     if (Date.now() - startTime > TIMEOUT) break;
     
     try {
-      // 传 null 让 match 内部通过 song_detail API 获取歌曲信息
       const result = await matchUnblock(
         parseInt(String(id), 10),
         [platform],
-        null  // 传 null → 使用内部 HTTP 请求
+        processedSong
       );
       
       if (result && result.url) {
         console.log(`[Unblock] ✅ ${platform} resolved id=${id} (${Date.now() - startTime}ms)`);
-        setCachedMusicUrl(id, { url: result.url, br: result.br || 320000, size: result.size || 0, platform });
+        setCachedMusicUrl(id, { ...result, platform });
         return {
           url: result.url,
           trial: false,
@@ -3313,23 +3341,32 @@ async function handleSongUrl(id, loginInfo, qualityPreference) {
     if (needsFallback) {
       console.log(`[SongUrl] 🔄 网易云${restriction.message}，尝试多平台音源...`);
       
-      // 获取歌曲完整信息用于音源匹配
+      // 获取歌曲完整信息用于音源匹配 (完整字段，供 @unblockneteasemusic 使用)
       let songDetail = null;
       try {
         const detailResult = await song_detail({ ids: [parseInt(String(id), 10)].join(','), cookie: userCookie });
-        const detailList = detailResult.body && detailResult.body.songs && detailResult.body.songs[0];
-        if (detailList) {
+        const s = detailResult.body && detailResult.body.songs && detailResult.body.songs[0];
+        if (s) {
           songDetail = {
-            name: detailList.name || '',
-            artists: ((detailList.artists || [])).map(a => ({ name: a.name || '' })),
-            album: { name: (detailList.album && detailList.album.name) || '' },
+            id: s.id,
+            name: s.name || '',
+            alias: s.alias || [],
+            duration: s.dt || s.duration || 0,
+            artists: (s.artists || s.ar || []).map(a => ({
+              id: a.id,
+              name: a.name || ''
+            })),
+            album: {
+              id: (s.album || s.al || {}).id,
+              name: (s.album || s.al || {}).name || ''
+            }
           };
         }
       } catch (e) { /* ignore */ }
 
-      // Step 1: @unblockneteasemusic (咪咕/酷狗/酷我/PyNCM) - 传null让match内部获取歌曲信息
+      // Step 1: @unblockneteasemusic (咪咕/酷狗/酷我/PyNCM)
       const enabledPlatforms = getMusicSourceConfig();
-      const unblockResult = await resolveUnblockMusic(id, null, enabledPlatforms);
+      const unblockResult = await resolveUnblockMusic(id, songDetail, enabledPlatforms);
       if (unblockResult) {
         console.log('[SongUrl] ✅ 多平台音源成功:', unblockResult.platform);
         return { ...unblockResult, requestedQuality };
