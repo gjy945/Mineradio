@@ -26962,65 +26962,46 @@ animate();
     fetch('/api/discover/extra')
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (data && !data.error) renderExtra(data);
+        if (data && !data.error) replaceHomeTilesWithToplists(data);
       })
       .catch(function(e) { console.log('[HomeExtra] fetch failed:', e.message); });
   }
 
-  // 找到首页容器并插入扩展内容
-  function renderExtra(data) {
-    if (!data || loaded) return;
-    loaded = true;
+  // 替换"接着听"区域为排行榜歌单
+  function replaceHomeTilesWithToplists(data) {
     var row = document.getElementById('home-tile-row');
-    if (!row) return;
-    // 获取承载首页的 <section>
-    var section = row.closest ? row.closest('section') : row.parentNode;
-    while (section && section.parentNode) {
-      if (section.tagName === 'SECTION') break;
-      section = section.parentNode;
-    }
-    if (!section || section.tagName !== 'SECTION') section = row.parentNode;
+    if (!row || !data.toplist || !data.toplist.length) return;
     
-    var html = '';
-    // 1. 排行榜
-    if (data.toplist && data.toplist.length) {
-      html += '<div class="home-new-section" style="padding:0 18px"><div class="home-section-head"><span class="home-section-title">🏆 排行榜</span><span class="home-section-note">' + data.toplist.length + ' 个榜单</span></div>';
-      html += '<div class="home-toplists">';
-      data.toplist.slice(0, 8).forEach(function(t, i) {
-        var topTrack = (t.tracks && t.tracks[0]) ? esc(t.tracks[0].name + (t.tracks[0].artist ? ' - ' + t.tracks[0].artist : '')) : (t.trackCount + ' 首');
-        html += '<div class="toplist-item" onclick="openPlaylistPanel(' + t.id + ', \'netease\')">';
-        html += '<div class="rank">' + (i + 1) + '</div>';
-        html += '<div class="info"><div class="tl-name">' + esc(t.name) + '</div>';
-        html += '<div class="tl-song">' + topTrack + '</div></div></div>';
-      });
-      html += '</div></div>';
-    }
-    // 2. 新歌速递
-    if (data.newSongs && data.newSongs.length) {
-      html += '<div class="home-new-section" style="padding:0 18px"><div class="home-section-head"><span class="home-section-title">🔥 新歌速递</span><span class="home-section-note">最新发行</span></div>';
-      html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 18px">';
-      data.newSongs.slice(0, 6).forEach(function(s) {
-        html += '<div class="home-tile" onclick="playSongById(' + s.id + ')">';
-        html += '<div class="home-tile-cover" style="background-image:url(' + (s.cover || '') + ')"></div>';
-        html += '<div class="home-tile-info"><div class="home-tile-title">' + esc(s.name || '') + '</div>';
-        html += '<div class="home-tile-sub">' + esc(s.artist || '') + '</div></div></div>';
-      });
-      html += '</div></div>';
-    }
-    // 3. 热门歌手
-    if (data.topArtists && data.topArtists.length) {
-      html += '<div class="home-new-section" style="padding:0 18px"><div class="home-section-head"><span class="home-section-title">🎤 热门歌手</span><span class="home-section-note">推荐音乐人</span></div>';
-      html += '<div class="home-artist-grid" style="padding:0 18px">';
-      data.topArtists.slice(0, 6).forEach(function(a) {
-        html += '<div class="home-artist-card" onclick="openArtistDetail(' + a.id + ')">';
-        html += '<img src="' + (a.cover || '') + '" alt="' + esc(a.name) + '" onerror="this.style.display=\'none\'">';
-        html += '<div class="name">' + esc(a.name) + '</div></div>';
-      });
-      html += '</div></div>';
-    }
+    // 修改标题为"排行榜"
+    var title = document.getElementById('home-section-title');
+    if (title) title.textContent = '排行榜';
+    var note = document.getElementById('home-section-note');
+    if (note) note.textContent = data.toplist.length + ' 个榜单';
     
-    section.insertAdjacentHTML('beforeend', html);
-    console.log('[HomeExtra] 排行榜/新歌速递/热门歌手 已加载');
+    // 清空并填入排行榜歌单
+    row.innerHTML = '';
+    row.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    row._homeTiles = [];
+    
+    data.toplist.slice(0, 8).forEach(function(t, i) {
+      var tile = document.createElement('button');
+      tile.className = 'home-tile';
+      tile.innerHTML = '<div class="home-tile-cover" style="background-image:url(' + (t.cover || '') + ')"></div>' +
+        '<div class="home-tile-info"><div class="home-tile-title">' + esc(t.name) + '</div>' +
+        '<div class="home-tile-sub">' + (t.trackCount || 0) + ' 首</div></div>';
+      tile.onclick = function() {
+        if (typeof loadPlaylistIntoQueueById === 'function') {
+          loadPlaylistIntoQueueById(t.id, true, t.name || '排行榜');
+          if (typeof openPlaylistPanelTab === 'function') {
+            openPlaylistPanelTab('playlists', false);
+          }
+        }
+      };
+      row.appendChild(tile);
+      row._homeTiles.push({ kind: 'toplist', id: t.id, name: t.name });
+    });
+    
+    console.log('[HomeExtra] 排行榜已替换接着听');
   }
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
