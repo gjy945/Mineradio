@@ -62,8 +62,8 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 let matchUnblock = null;
 try { matchUnblock = require('@unblockneteasemusic/server').default || require('@unblockneteasemusic/server'); } catch (e) { console.warn('[Unblock] @unblockneteasemusic not available:', e.message); }
 
-// 所有可用音源平台
-const ALL_UNBLOCK_PLATFORMS = ['migu', 'kugou', 'kuwo', 'pyncmd'];
+// 所有可用音源平台（pyncmd 第一，返回网易云自身 CDN 的有效 URL）
+const ALL_UNBLOCK_PLATFORMS = ['pyncmd', 'migu', 'kugou', 'kuwo'];
 
 // 音乐URL缓存 (id -> { url, br, size, platform, expireAt })
 const MUSIC_URL_CACHE = new Map();

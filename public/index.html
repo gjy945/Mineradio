@@ -26956,13 +26956,13 @@ animate();
 <script>
 (function() {
   var PLATFORMS = [
+    { key: 'pyncmd', label: 'PyNCM', desc: '网易云原版音源' },
     { key: 'migu', label: '咪咕音乐', desc: '中国移动音源' },
     { key: 'kugou', label: '酷狗音乐', desc: 'QQ音源' },
     { key: 'kuwo', label: '酷我音乐', desc: 'WY音源' },
-    { key: 'pyncmd', label: 'PyNCM', desc: '社区音源' },
   ];
   
-  var enabledPlatforms = ['migu','kugou','kuwo','pyncmd'];
+  var enabledPlatforms = ['pyncmd','migu','kugou','kuwo'];
   var panelOpen = false;
   
   function loadConfig() {
