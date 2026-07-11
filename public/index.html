@@ -1959,9 +1959,9 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
           </button>
           <button class="home-card" data-home-tone="local" type="button" onclick="(async function(){var r=await fetch('/api/personal/fm');var d=await r.json();if(d.songs&&d.songs.length){playQueue=d.songs.map(function(s){return JSON.parse(JSON.stringify(s))});currentIdx=0;safeRenderQueuePanel('fm');safeSwitchPlaylistTab('queue','fm');safeShelfRebuild('fm',true);forcePlaybackControlsInteractive();try{await playQueueAt(0)}catch(e){console.warn('[FM]',e)}showToast('私人FM已启动')}else showToast('FM暂无推荐')})()">
             <div class="home-card-label">FM</div>
-            <div class="home-card-title" id="home-profile-title">私人FM</div>
-            <div class="home-card-sub" id="home-profile-sub">智能推荐你喜欢的歌曲</div>
-            <div class="home-card-art" id="home-profile-art"></div>
+            <div class="home-card-title" id="home-fm-title">私人FM</div>
+            <div class="home-card-sub" id="home-fm-sub">根据你的喜好随机推荐</div>
+            <div class="home-card-art" id="home-fm-art"></div>
           </button>
         </div>
   </div>
