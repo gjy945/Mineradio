@@ -15513,17 +15513,19 @@ function renderHomeTiles() {
     console.log('[HomeExtra] renderToplistTiles:', homeToplistData.length);
     if (title) title.textContent = '排行榜';
     if (note) note.textContent = homeToplistData.length + ' 个榜单';
-    row.innerHTML = '';
-    row.style.gridTemplateColumns = 'repeat(4,1fr)';
-    row._homeTiles = homeToplistData.slice(0,8).map(function(t){
+    var list = homeToplistData.slice(0, 8);
+    var tileObjs = [];
+    row.innerHTML = list.map(function(t, i){
+      tileObjs.push({ kind: 'toplist', index: i, id: t.id, title: t.name || '', sub: (t.trackCount||0) + ' 首', cover: t.cover });
       var cover = t.cover ? 'style="background-image:url(' + escHtml(t.cover) + ')"' : '';
-      return '<button class="home-tile" data-kind="toplist" type="button" onclick="loadPlaylistIntoQueueById(' + t.id + ',true,' + JSON.stringify(t.name||'排行榜') + ');setTimeout(function(){openPlaylistPanelTab(\'playlists\',false)},300)">' +
-        '<div class="home-tile-cover has-cover" ' + cover + '></div>' +
+      var onClick = "loadPlaylistIntoQueueById(" + t.id + ",true," + JSON.stringify(t.name||'排行榜') + ");setTimeout(function(){openPlaylistPanelTab('playlists',false)},300)";
+      return '<button class="home-tile" data-kind="toplist" type="button" onclick="' + escHtml(onClick) + '">' +
+        '<div class="home-tile-cover' + (t.cover ? ' has-cover' : '') + '" ' + (cover||'') + '></div>' +
         '<div class="home-tile-title">' + escHtml(t.name) + '</div>' +
         '<div class="home-tile-sub">' + (t.trackCount||0) + ' 首</div></button>';
-    });
-    row._homeTiles = homeToplistData.slice(0,8);
-    renderHomeMosaic(row._homeTiles);
+    }).join('');
+    row._homeTiles = tileObjs;
+    renderHomeMosaic(tileObjs);
     return;
   }
   // 原来逻辑（降级）
