@@ -1951,25 +1951,25 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
             <div class="home-card-sub" id="home-daily-sub">登录后同步你的今日歌曲</div>
             <div class="home-card-art" id="home-daily-art"></div>
           </button>
-          <button class="home-card" data-home-tone="mix" type="button" onclick="if(typeof homeToplistData !=='undefined'&&homeToplistData.length)loadPlaylistIntoQueueById(homeToplistData[0].id,true,homeToplistData[0].name);else playHomeSong(1)">
-            <div class="home-card-label">Top</div>
-            <div class="home-card-title" id="home-private-title">飙升榜</div>
-            <div class="home-card-sub" id="home-private-sub">最热门的歌曲榜单</div>
+          <button class="home-card" data-home-tone="local" type="button" onclick="playHomeRecent()">
+            <div class="home-card-label">Next</div>
+            <div class="home-card-title" id="home-private-title">下一首</div>
+            <div class="home-card-sub" id="home-private-sub">继续播放上次未听完的歌曲</div>
             <div class="home-card-art" id="home-private-art"></div>
           </button>
           <button class="home-card" data-home-tone="local" type="button" onclick="openPlaylistPanelTab('playlists',false)">
-            <div class="home-card-label">Lists</div>
-            <div class="home-card-title" id="home-continue-title">歌单广场</div>
-            <div class="home-card-sub" id="home-continue-sub">发现更多精彩歌单</div>
+            <div class="home-card-label">Radar</div>
+            <div class="home-card-title" id="home-continue-title">雷达</div>
+            <div class="home-card-sub" id="home-continue-sub">发现新的歌单和音乐</div>
             <div class="home-card-art" id="home-continue-art"></div>
           </button>
-          <button class="home-card" data-home-tone="local" type="button" onclick="if(typeof homeToplistData !=='undefined'&&homeToplistData.length>1)loadPlaylistIntoQueueById(homeToplistData[1].id,true,homeToplistData[1].name);else openHomeInsight()">
+          <button class="home-card" data-home-tone="local" type="button" onclick="openHomeLibrary()">
             <div class="home-card-label">Chart</div>
-            <div class="home-card-title" id="home-profile-title">新歌榜</div>
-            <div class="home-card-sub" id="home-profile-sub">最新发行的热门歌曲</div>
+            <div class="home-card-title" id="home-profile-title">排行榜</div>
+            <div class="home-card-sub" id="home-profile-sub">热门的音乐榜单</div>
             <div class="home-card-art" id="home-profile-art"></div>
           </button>
-          <button class="home-card" data-home-tone="local" type="button" onclick="openHomeLibrary()">
+          <button class="home-card" data-home-tone="library" type="button" onclick="openHomeLibrary()">
             <div class="home-card-label">Album</div>
             <div class="home-card-title" id="home-library-title">我的收藏</div>
             <div class="home-card-sub" id="home-library-sub">收藏的专辑和歌单</div>
