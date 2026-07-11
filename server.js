@@ -3802,6 +3802,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pn === '/api/personal/fm') {
+    try {
+      const body = (await personal_fm({ cookie: userCookie, timestamp: Date.now() })).body;
+      const songs = (body && body.data || []).map(mapSongRecord).filter(s => s.id && s.name);
+      sendJSON(res, { songs });
+    } catch (err) {
+      console.error('[PersonalFM]', err);
+      sendJSON(res, { error: err.message, songs: [] }, 500);
+    }
+    return;
+  }
+
   if (pn === '/api/weather/radio') {
     try {
       const data = await buildWeatherRadio({
