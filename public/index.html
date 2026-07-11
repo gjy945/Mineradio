@@ -1945,16 +1945,16 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
             <div class="home-card-sub">点击浏览你的收藏歌单</div>
             <div class="home-card-art" id="home-weather-card-art"></div>
           </button>
-          <button class="home-card" data-home-tone="mix" type="button" onclick="playHomeSong(0)">
+          <button class="home-card" data-home-tone="mix" type="button" onclick="playHomeSong(0);setTimeout(function(){openPlaylistPanelTab('queue',false)},500)">
             <div class="home-card-label">Daily</div>
             <div class="home-card-title" id="home-daily-title">每日推荐</div>
-            <div class="home-card-sub" id="home-daily-sub">登录后同步你的今日歌曲</div>
+            <div class="home-card-sub" id="home-daily-sub">你的今日推荐歌曲</div>
             <div class="home-card-art" id="home-daily-art"></div>
           </button>
-          <button class="home-card" data-home-tone="local" type="button" onclick="playHomeRecent()">
+          <button class="home-card" data-home-tone="local" type="button" onclick="nextTrack();setTimeout(function(){openPlaylistPanelTab('queue',false)},500)">
             <div class="home-card-label">Next</div>
             <div class="home-card-title" id="home-private-title">下一首</div>
-            <div class="home-card-sub" id="home-private-sub">继续播放上次未听完的歌曲</div>
+            <div class="home-card-sub" id="home-private-sub">切换到下一首歌</div>
             <div class="home-card-art" id="home-private-art"></div>
           </button>
           <button class="home-card" data-home-tone="local" type="button" onclick="openPlaylistPanelTab('playlists',false)">
@@ -1963,27 +1963,19 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
             <div class="home-card-sub" id="home-continue-sub">发现新的歌单和音乐</div>
             <div class="home-card-art" id="home-continue-art"></div>
           </button>
-          <button class="home-card" data-home-tone="local" type="button" onclick="openHomeLibrary()">
-            <div class="home-card-label">Chart</div>
-            <div class="home-card-title" id="home-profile-title">排行榜</div>
-            <div class="home-card-sub" id="home-profile-sub">热门的音乐榜单</div>
+          <button class="home-card" data-home-tone="local" type="button" onclick="playHomeSong(1);setTimeout(function(){openPlaylistPanelTab('queue',false)},500)">
+            <div class="home-card-label">Hot</div>
+            <div class="home-card-title" id="home-profile-title">热歌</div>
+            <div class="home-card-sub" id="home-profile-sub">热门推荐歌曲</div>
             <div class="home-card-art" id="home-profile-art"></div>
           </button>
           <button class="home-card" data-home-tone="library" type="button" onclick="openHomeLibrary()">
-            <div class="home-card-label">Album</div>
+            <div class="home-card-label">Fav</div>
             <div class="home-card-title" id="home-library-title">我的收藏</div>
             <div class="home-card-sub" id="home-library-sub">收藏的专辑和歌单</div>
             <div class="home-card-art" id="home-library-art"></div>
           </button>
         </div>
-
-        <div class="home-rail">
-      <div class="home-section-head">
-        <div class="home-section-title" id="home-rail-title">为你准备</div>
-        <div class="home-section-note" id="home-rail-note">正在整理推荐</div>
-      </div>
-      <div id="home-tile-row" class="home-tile-row"></div>
-    </div>
   </div>
 </section>
 
@@ -26954,8 +26946,8 @@ animate();
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   function waitAndLoad() {
-    var row = document.getElementById('home-tile-row');
-    if (!row || !row.children || !row.children.length) {
+    var grid = document.querySelector('.home-grid');
+    if (!grid || !grid.children || !grid.children.length) {
       setTimeout(waitAndLoad, 300);
       return;
     }
@@ -26968,18 +26960,18 @@ animate();
   }
 
   function renderHomeBottom(data) {
-    var rail = document.getElementById('home-rail');
-    if (!rail) return;
+    var grid = document.querySelector('.home-grid');
+    if (!grid) return;
+    var parent = grid.parentNode;
+    if (!parent) return;
     var toplist = data.toplist || [];
     var recommendations = data.recommendations || [];
-    // 隐藏旧的"接着听"区域
-    rail.style.display = 'none';
     // 如果已经插入过，更新内容
     var existing = document.getElementById('home-bottom-section');
     if (existing) {
       existing.parentNode.removeChild(existing);
     }
-    // 在 home-rail 之后插入新区域
+    // 在 home-grid 的父容器末尾插入
     var wrapper = document.createElement('div');
     wrapper.id = 'home-bottom-section';
     wrapper.innerHTML =
@@ -27024,8 +27016,9 @@ animate();
         collapseCol(btn, data);
       }
     });
-    // 插入到 home-rail 后面
-    rail.parentNode.insertBefore(wrapper, rail.nextSibling);
+    // 插入到 home-grid 所属容器末尾
+    wrapper.style.marginTop = '16px';
+    parent.appendChild(wrapper);
   }
 
   function renderCol(title, items, kind) {
