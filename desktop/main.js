@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, screen, session, globalShortcut, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, screen, session, globalShortcut, dialog, Tray, Menu, nativeImage } = require('electron');
 const net = require('net');
 const path = require('path');
 const fs = require('fs');
@@ -24,6 +24,9 @@ let desktopWallpaperPrevState = null;
 let desktopWallpaperPinTimer = null;
 let desktopWallpaperMinimizeHandler = null;
 let desktopWallpaperFocusHandler = null;
+let desktopWallpaperForegroundTimer = null;
+let desktopWallpaperPausedState = false;
+let appTray = null;
 let htmlFullscreenActive = false;
 let windowFullscreenActive = false;
 let mainWindowStateTimer = null;
@@ -1109,10 +1112,17 @@ using System;
 using System.Runtime.InteropServices;
 public class MineradioPinWin {
   [DllImport("user32.dll", SetLastError=true)] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+  [DllImport("user32.dll", SetLastError=true)] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+  [DllImport("user32.dll", SetLastError=true)] public static extern bool IsWindowVisible(IntPtr hWnd);
 }
 "@
 }
 $target = [IntPtr]::new([Int64]${hwnd})
+# Win+D 用 SW_HIDE 隐藏窗口，这里强制恢复显示（SW_SHOWNOACTIVATE=4 不抢焦点）
+if (-not [MineradioPinWin]::IsWindowVisible($target)) {
+  [MineradioPinWin]::ShowWindow($target, 4) | Out-Null
+}
+# 钉到普通窗口最底（HWND_BOTTOM=-2），flags: SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE=0x0013
 [MineradioPinWin]::SetWindowPos($target, [IntPtr]::new(-2), 0, 0, 0, 0, 0x0013) | Out-Null
 `;
   execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
@@ -1153,15 +1163,12 @@ function enterDesktopWallpaperMode() {
   // 通知渲染层激活壁纸模式 CSS + mousemove 动态穿透监听
   mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: true });
 
-  // 300ms 定时：重新钉底 + 检查是否被隐藏（Win+D 在 Win10/11 上用 SW_HIDE 而非 minimize）
+  // 150ms 定时：钉底 + 强制显示（pinMainWindowToBottom 内部已检查 IsWindowVisible）
+  // Win+D 用 SW_HIDE 隐藏窗口，只有高频定时器能在用户无感的情况下恢复
   desktopWallpaperPinTimer = setInterval(() => {
     if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
-    if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
-      mainWindow.restore();
-      mainWindow.show();
-    }
     pinMainWindowToBottom();
-  }, 300);
+  }, 150);
 
   // Win+D 抵抗：minimize/hide 事件立即恢复（双保险，定时器兜底）
   desktopWallpaperMinimizeHandler = () => {
@@ -1182,6 +1189,9 @@ function enterDesktopWallpaperMode() {
     setImmediate(pinMainWindowToBottom);
   };
   mainWindow.on('focus', desktopWallpaperFocusHandler);
+
+  // 1000ms 定时检查前台窗口：其他应用在前台时通知渲染层暂停粒子渲染
+  desktopWallpaperForegroundTimer = setInterval(checkForegroundWindowForWallpaper, 1000);
 }
 
 function exitDesktopWallpaperMode() {
@@ -1193,6 +1203,13 @@ function exitDesktopWallpaperMode() {
     clearInterval(desktopWallpaperPinTimer);
     desktopWallpaperPinTimer = null;
   }
+
+  // 停止前台窗口检查定时器
+  if (desktopWallpaperForegroundTimer) {
+    clearInterval(desktopWallpaperForegroundTimer);
+    desktopWallpaperForegroundTimer = null;
+  }
+  desktopWallpaperPausedState = false;
 
   // 移除事件监听
   if (desktopWallpaperMinimizeHandler && mainWindow && !mainWindow.isDestroyed()) {
@@ -1224,6 +1241,89 @@ function exitDesktopWallpaperMode() {
     mainWindow.focus();
   }
   desktopWallpaperPrevState = null;
+}
+
+// ========== 系统托盘 ==========
+function createTray() {
+  if (appTray || process.platform !== 'win32') return;
+  const iconPath = fs.existsSync(APP_ICON_ICO) ? APP_ICON_ICO : null;
+  if (!iconPath) return;
+  appTray = new Tray(nativeImage.createFromPath(iconPath));
+  appTray.setToolTip('Mineradio');
+  const contextMenu = Menu.buildFromTemplate([
+    { label: '显示主窗口', click: () => focusMainWindow() },
+    { type: 'separator' },
+    { label: '退出', click: () => app.quit() }
+  ]);
+  appTray.setContextMenu(contextMenu);
+  appTray.on('click', () => focusMainWindow());
+}
+
+// ========== 壁纸模式后台检测：前台窗口不是桌面也不是自己时，暂停粒子 ==========
+function checkForegroundWindowForWallpaper() {
+  if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
+  const hwnd = nativeWindowHandleDecimal(mainWindow);
+  const script = `
+$ErrorActionPreference = "Stop"
+if (-not ("MineradioFg" -as [type])) {
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class MineradioFg {
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll", CharSet=CharSet.Auto)] public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+}
+"@
+}
+$progman = [MineradioFg]::FindWindow("Progman", $null)
+$fg = [MineradioFg]::GetForegroundWindow()
+$self = [IntPtr]::new([Int64]${hwnd})
+if ($fg -eq $progman -or $fg -eq $self) { "ACTIVE" } else { "BACKGROUND" }
+`;
+  execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+    windowsHide: true,
+    timeout: 3000,
+  }, (error, stdout) => {
+    if (error) return;
+    const state = String(stdout || '').trim();
+    const shouldPause = state === 'BACKGROUND';
+    if (shouldPause !== desktopWallpaperPausedState) {
+      desktopWallpaperPausedState = shouldPause;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('mineradio-desktop-wallpaper-pause', { paused: shouldPause });
+      }
+    }
+  });
+}
+
+// ========== 获取 Windows 桌面壁纸路径 ==========
+function getDesktopWallpaperPath() {
+  return new Promise((resolve) => {
+    if (process.platform !== 'win32') { resolve(''); return; }
+    const script = `
+$ErrorActionPreference = "Stop"
+if (-not ("MineradioWp" -as [type])) {
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+public class MineradioWp {
+  [DllImport("user32.dll", CharSet=CharSet.Auto)] public static extern bool SystemParametersInfo(int uAction, int uParam, StringBuilder lpvParam, int fuWinIni);
+}
+"@
+}
+$sb = New-Object System.Text.StringBuilder(260)
+[MineradioWp]::SystemParametersInfo(0x0073, $sb.Capacity, $sb, 0) | Out-Null
+$sb.ToString()
+`;
+    execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+      windowsHide: true,
+      timeout: 3000,
+    }, (error, stdout) => {
+      if (error) { resolve(''); return; }
+      resolve(String(stdout || '').trim());
+    });
+  });
 }
 
 function closeOverlayWindows() {
@@ -1475,6 +1575,15 @@ ipcMain.handle('mineradio-desktop-wallpaper-capture', async (_event, capture) =>
   }
 });
 
+ipcMain.handle('mineradio-desktop-wallpaper-path', async () => {
+  try {
+    const wallpaperPath = await getDesktopWallpaperPath();
+    return { ok: true, path: wallpaperPath };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
 async function createWindow() {
   htmlFullscreenActive = false;
   windowFullscreenActive = false;
@@ -1605,6 +1714,7 @@ if (!gotSingleInstanceLock) {
     screen.on('display-added', () => scheduleWindowStateSend(mainWindow));
     screen.on('display-removed', () => scheduleWindowStateSend(mainWindow));
     await createWindow();
+    createTray();
   });
 
   app.on('activate', () => {

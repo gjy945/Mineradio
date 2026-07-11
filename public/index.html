@@ -3702,6 +3702,8 @@ function installRenderPowerHooks() {
 var desktopWallpaperActive = false;
 var desktopWallpaperCaptureCurrent = null;
 var desktopWallpaper3dLocked = false;
+var desktopWallpaperPaused = false; // 后台时暂停粒子渲染（省 CPU/GPU）
+var desktopWallpaperBrightness = 0.5; // 桌面壁纸平均亮度 0-1，0=纯黑 1=纯白
 
 function toggleDesktopWallpaper() {
   var api = window.desktopWindow;
@@ -3727,6 +3729,7 @@ function applyDesktopWallpaperMode(active) {
     document.body.classList.remove('desktop-wallpaper-mode');
     desktopWallpaperCaptureCurrent = null;
     desktopWallpaper3dLocked = false;
+    desktopWallpaperPaused = false;
     var lockBtn = document.getElementById('desktop-wallpaper-3d-lock');
     if (lockBtn) lockBtn.setAttribute('aria-pressed', 'false');
   }
@@ -3781,7 +3784,81 @@ document.addEventListener('mousemove', function(e) {
 if (window.desktopWindow && typeof window.desktopWindow.onDesktopWallpaperModeChange === 'function') {
   window.desktopWindow.onDesktopWallpaperModeChange(function(payload) {
     applyDesktopWallpaperMode(payload && payload.active);
+    if (payload && payload.active) {
+      // 进入壁纸模式时采样壁纸亮度
+      sampleDesktopWallpaperBrightness();
+    }
   });
+}
+
+// 注册后台暂停监听：其他应用在前台时暂停粒子渲染
+if (window.desktopWindow && typeof window.desktopWindow.onDesktopWallpaperPause === 'function') {
+  window.desktopWindow.onDesktopWallpaperPause(function(payload) {
+    desktopWallpaperPaused = !!(payload && payload.paused);
+  });
+}
+
+// 壁纸亮度采样：获取壁纸图片路径，用 Canvas 计算平均亮度，调整粒子对比度
+function sampleDesktopWallpaperBrightness() {
+  var api = window.desktopWindow;
+  if (!api || typeof api.getDesktopWallpaperPath !== 'function') return;
+  api.getDesktopWallpaperPath().then(function(res) {
+    if (!res || !res.ok || !res.path) return;
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      try {
+        var canvas = document.createElement('canvas');
+        var w = 64, h = 36;
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        var data = ctx.getImageData(0, 0, w, h).data;
+        var total = 0;
+        for (var i = 0; i < data.length; i += 4) {
+          // 感知亮度公式：0.299R + 0.587G + 0.114B
+          total += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        }
+        var pixelCount = data.length / 4;
+        var avgBrightness = total / pixelCount / 255; // 归一化到 0-1
+        desktopWallpaperBrightness = avgBrightness;
+        applyWallpaperBrightnessAdaptation(avgBrightness);
+      } catch (e) {
+        // 图片可能跨域无法读取像素，用保守值
+        desktopWallpaperBrightness = 0.5;
+      }
+    };
+    img.onerror = function() {
+      desktopWallpaperBrightness = 0.5;
+    };
+    // 用 file:// 协议加载本地壁纸图片
+    img.src = 'file:///' + encodeURI(res.path.replace(/\\/g, '/'));
+  });
+}
+
+// 根据壁纸亮度调整粒子可见性：亮色壁纸加深粒子描边 + 增加发光，暗色壁纸恢复正常
+function applyWallpaperBrightnessAdaptation(brightness) {
+  var styleId = 'desktop-wallpaper-brightness-css';
+  var existing = document.getElementById(styleId);
+  if (existing) existing.remove();
+  var style = document.createElement('style');
+  style.id = styleId;
+  if (brightness > 0.55) {
+    // 亮色壁纸：加暗色背板提升对比度，粒子加阴影
+    style.textContent = [
+      '.desktop-wallpaper-mode #canvas-container{filter:drop-shadow(0 0 3px rgba(0,0,0,.85)) drop-shadow(0 0 1px rgba(0,0,0,.95))}',
+      '.desktop-wallpaper-mode #bottom-bar,.desktop-wallpaper-mode .home-card,.desktop-wallpaper-mode .home-tile,.desktop-wallpaper-mode .home-rail,.desktop-wallpaper-mode #search-area,.desktop-wallpaper-mode #playlist-panel,.desktop-wallpaper-mode #fx-panel{background:rgba(8,8,14,.72)!important}'
+    ].join('');
+  } else if (brightness > 0.35) {
+    // 中等亮度：轻微加阴影
+    style.textContent = [
+      '.desktop-wallpaper-mode #canvas-container{filter:drop-shadow(0 0 2px rgba(0,0,0,.5))}'
+    ].join('');
+  } else {
+    // 暗色壁纸：无需额外处理
+    style.textContent = '';
+  }
+  document.head.appendChild(style);
 }
 
 // ============================================================
@@ -26706,6 +26783,8 @@ function sampleRenderPerf(now, dt) {
 }
 function animate() {
   requestAnimationFrame(animate);
+  // 壁纸模式后台暂停：其他应用在前台时跳过所有渲染，省 CPU/GPU
+  if (typeof desktopWallpaperPaused !== 'undefined' && desktopWallpaperPaused) return;
   var now = performance.now();
   if (shouldSkipAdaptiveRenderFrame(now)) return;
   var dt = Math.min((now - prevTime) / 1000, 0.05);
