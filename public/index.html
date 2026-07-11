@@ -1958,21 +1958,21 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
             <div class="home-card-art" id="home-private-art"></div>
           </button>
           <button class="home-card" data-home-tone="local" type="button" onclick="openPlaylistPanelTab('playlists',false)">
-            <div class="home-card-label">Radar</div>
-            <div class="home-card-title" id="home-continue-title">雷达</div>
-            <div class="home-card-sub" id="home-continue-sub">发现新的歌单和音乐</div>
+            <div class="home-card-label">Chart</div>
+            <div class="home-card-title" id="home-continue-title">排行榜</div>
+            <div class="home-card-sub" id="home-continue-sub">发现热门歌单和排行榜</div>
             <div class="home-card-art" id="home-continue-art"></div>
           </button>
-          <button class="home-card" data-home-tone="local" type="button" onclick="playHomeSong(1);setTimeout(function(){openPlaylistPanelTab('queue',false)},500)">
-            <div class="home-card-label">Hot</div>
-            <div class="home-card-title" id="home-profile-title">热歌</div>
-            <div class="home-card-sub" id="home-profile-sub">热门推荐歌曲</div>
+          <button class="home-card" data-home-tone="local" type="button" onclick="playHomePrivateRadio();setTimeout(function(){openPlaylistPanelTab('queue',false)},500)">
+            <div class="home-card-label">FM</div>
+            <div class="home-card-title" id="home-profile-title">私人电台</div>
+            <div class="home-card-sub" id="home-profile-sub">智能推荐你喜欢的歌曲</div>
             <div class="home-card-art" id="home-profile-art"></div>
           </button>
-          <button class="home-card" data-home-tone="library" type="button" onclick="openHomeLibrary()">
-            <div class="home-card-label">Fav</div>
-            <div class="home-card-title" id="home-library-title">我的收藏</div>
-            <div class="home-card-sub" id="home-library-sub">收藏的专辑和歌单</div>
+          <button class="home-card" data-home-tone="local" type="button" onclick="openHomePodcast()">
+            <div class="home-card-label">Podcast</div>
+            <div class="home-card-title" id="home-library-title">播客</div>
+            <div class="home-card-sub" id="home-library-sub">发现热门播客节目</div>
             <div class="home-card-art" id="home-library-art"></div>
           </button>
         </div>
@@ -27010,10 +27010,6 @@ animate();
         if (typeof openPlaylistPanelTab === 'function') {
           setTimeout(function(){ openPlaylistPanelTab('playlists', false); }, 300);
         }
-      } else if (action === 'expand') {
-        expandCol(btn, data);
-      } else if (action === 'collapse') {
-        collapseCol(btn, data);
       }
     });
     // 插入到 home-grid 所属容器末尾
@@ -27022,67 +27018,33 @@ animate();
   }
 
   function renderCol(title, items, kind) {
-    if (!items || !items.length) return '<div class="home-col"><div class="home-col-title">' + title + '</div><div class="home-scroll-row" style="color:#666;font-size:12px">暂无数据</div></div>';
-    var showItems = items.slice(0, 2);
-    var tilesHtml = showItems.map(function(item){
+    if (!items || !items.length) return '<div class="home-col"><div class="home-col-title">' + title + '</div><div class="home-scroll-row" style="color:#888;font-size:12px;padding:20px 0">暂无数据</div></div>';
+    var tilesHtml = items.map(function(item){
       var cover = item.cover ? 'style="background-image:url(' + escAttr(item.cover) + ')"' : '';
       return '<button class="home-tile" data-action="playlist" data-id="' + item.id + '" data-name="' + escAttr(item.name) + '">' +
         '<div class="home-tile-cover" ' + cover + '></div>' +
         '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
         '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
     }).join('');
-    var expandBtn = items.length > 2
-      ? '<button class="home-expand-btn" data-action="expand" data-kind="' + kind + '">展开全部 ›</button>'
-      : '';
     return '<div class="home-col">' +
-      '<div class="home-col-header">' +
-        '<div class="home-col-title">' + title + '</div>' +
-        expandBtn +
-      '</div>' +
-      '<div class="home-scroll-row" id="home-' + kind + '-row" data-kind="' + kind + '" data-expanded="false" data-all="' + escAttr(JSON.stringify(items)) + '">' +
+      '<div class="home-col-header"><div class="home-col-title">' + title + '</div></div>' +
+      '<div class="home-scroll-row" id="home-' + kind + '-row">' +
         tilesHtml +
       '</div></div>';
   }
 
-  function expandCol(btn, data) {
-    var kind = btn.getAttribute('data-kind');
-    var row = document.getElementById('home-' + kind + '-row');
-    if (!row) return;
-    var allData = kind === 'toplist' ? (data.toplist||[]) : (data.recommendations||[]);
-    var tilesHtml = allData.map(function(item){
-      var cover = item.cover ? 'style="background-image:url(' + escAttr(item.cover) + ')"' : '';
-      return '<button class="home-tile" data-action="playlist" data-id="' + item.id + '" data-name="' + escAttr(item.name) + '">' +
-        '<div class="home-tile-cover" ' + cover + '></div>' +
-        '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
-        '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
-    }).join('');
-    row.innerHTML = tilesHtml;
-    row.setAttribute('data-expanded', 'true');
-    btn.textContent = '‹ 收起';
-    btn.setAttribute('data-action', 'collapse');
-  }
-
-  function collapseCol(btn, data) {
-    var kind = btn.getAttribute('data-kind');
-    var row = document.getElementById('home-' + kind + '-row');
-    if (!row) return;
-    var allData = kind === 'toplist' ? (data.toplist||[]) : (data.recommendations||[]);
-    var showItems = allData.slice(0, 2);
-    var tilesHtml = showItems.map(function(item){
-      var cover = item.cover ? 'style="background-image:url(' + escAttr(item.cover) + ')"' : '';
-      return '<button class="home-tile" data-action="playlist" data-id="' + item.id + '" data-name="' + escAttr(item.name) + '">' +
-        '<div class="home-tile-cover" ' + cover + '></div>' +
-        '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
-        '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
-    }).join('');
-    row.innerHTML = tilesHtml;
-    row.setAttribute('data-expanded', 'false');
-    btn.textContent = '展开全部 ›';
-    btn.setAttribute('data-action', 'expand');
-  }
-
   function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function escAttr(s) { return escHtml(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  // 添加鼠标滚轮水平滑动
+  document.addEventListener('wheel', function(e){
+    var target = e.target;
+    var row = target.closest('.home-scroll-row');
+    if (row) {
+      e.preventDefault();
+      row.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
 
   if (document.readyState === 'complete') {
     setTimeout(waitAndLoad, 1500);
