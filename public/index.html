@@ -2762,8 +2762,7 @@ var visualGuideState = { bottomWasVisible: false, searchWasPeek: false, manual: 
 var emptyHomeActive = false;
 var homeForcedOpen = false;
 var homeSuppressed = false;
-var homeDiscoverState = { loading: false, loaded: false, loggedIn: false, songs: [], playlists: [], podcasts: [], error: '', updatedAt: 0, mode: 'starter' };
-var homeToplistData;
+var homeDiscoverState = { loading: false, loaded: false, loggedIn: false, mode: 'starter', songs: [], playlists: [], podcasts: [], error: '', updatedAt: 0 };
 var homeDiscoverToken = 0;
 var homeVisualPresetActive = false;
 var homeVisualPrevPreset = 0;
@@ -15508,27 +15507,6 @@ function renderHomeTiles() {
   var title = document.getElementById('home-rail-title');
   var note = document.getElementById('home-rail-note');
   if (!row) return;
-  // 不再用旧的 tile 逻辑，改用排行榜
-  if (typeof homeToplistData !== 'undefined' && homeToplistData.length) {
-    console.log('[HomeExtra] renderToplistTiles:', homeToplistData.length);
-    if (title) title.textContent = '排行榜';
-    if (note) note.textContent = homeToplistData.length + ' 个榜单';
-    var list = homeToplistData.slice(0, 8);
-    var tileObjs = [];
-    row.innerHTML = list.map(function(t, i){
-      tileObjs.push({ kind: 'toplist', index: i, id: t.id, title: t.name || '', sub: (t.trackCount||0) + ' 首', cover: t.cover });
-      var cover = t.cover ? 'style="background-image:url(' + escHtml(t.cover) + ')"' : '';
-      var onClick = "loadPlaylistIntoQueueById(" + t.id + ",true," + JSON.stringify(t.name||'排行榜') + ");setTimeout(function(){openPlaylistPanelTab('playlists',false)},300)";
-      return '<button class="home-tile" data-kind="toplist" type="button" onclick="' + escHtml(onClick) + '">' +
-        '<div class="home-tile-cover' + (t.cover ? ' has-cover' : '') + '" ' + (cover||'') + '></div>' +
-        '<div class="home-tile-title">' + escHtml(t.name) + '</div>' +
-        '<div class="home-tile-sub">' + (t.trackCount||0) + ' 首</div></button>';
-    }).join('');
-    row._homeTiles = tileObjs;
-    renderHomeMosaic(tileObjs);
-    return;
-  }
-  // 原来逻辑（降级）
   var tiles = [];
   var loggedOutHome = !homeDiscoverState.loggedIn && !hasAnyPlatformLogin();
   var weatherSongs = homeWeatherRadioState.radio && homeWeatherRadioState.radio.songs || [];
@@ -15683,15 +15661,6 @@ async function loadHomeDiscover(force) {
   } finally {
     if (token === homeDiscoverToken) {
       homeDiscoverState.loading = false;
-      // 异步加载排行榜数据
-      if (typeof homeToplistData === 'undefined') {
-        apiJson('/api/discover/extra?t=' + Date.now()).then(function(extra){
-          if (extra && extra.toplist) {
-            homeToplistData = extra.toplist;
-            renderHomeTiles();
-          }
-        }).catch(function(e){});
-      }
       renderHomeDiscover();
     }
   }
@@ -26993,49 +26962,123 @@ animate();
     fetch('/api/discover/extra')
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (data && !data.error) replaceHomeTilesWithToplists(data);
+        if (data && !data.error) renderHomeBottom(data);
       })
-      .catch(function(e) { console.log('[HomeExtra] fetch failed:', e.message); });
+      .catch(function(e) { console.log('[HomeBottom] fetch failed:', e.message); });
   }
 
-  // 替换"接着听"区域为排行榜歌单
-  function replaceHomeTilesWithToplists(data) {
-    var row = document.getElementById('home-tile-row');
-    if (!row || !data.toplist || !data.toplist.length) return;
-    
-    // 修改标题为"排行榜"
-    var title = document.getElementById('home-rail-title');
-    if (title) title.textContent = '排行榜';
-    var note = document.getElementById('home-rail-note');
-    if (note) note.textContent = data.toplist.length + ' 个榜单';
-    
-    // 清空并填入排行榜歌单
-    row.innerHTML = '';
-    row.style.gridTemplateColumns = 'repeat(4, 1fr)';
-    row._homeTiles = [];
-    
-    data.toplist.slice(0, 8).forEach(function(t, i) {
-      var tile = document.createElement('button');
-      tile.className = 'home-tile';
-      tile.innerHTML = '<div class="home-tile-cover" style="background-image:url(' + (t.cover || '') + ')"></div>' +
-        '<div class="home-tile-info"><div class="home-tile-title">' + esc(t.name) + '</div>' +
-        '<div class="home-tile-sub">' + (t.trackCount || 0) + ' 首</div></div>';
-      tile.onclick = function() {
+  function renderHomeBottom(data) {
+    var rail = document.getElementById('home-rail');
+    if (!rail) return;
+    var toplist = data.toplist || [];
+    var recommendations = data.recommendations || [];
+    // Build HTML
+    rail.innerHTML =
+      '<div class="home-section-head"><div class="home-section-title">推荐歌单 &amp; 排行榜</div></div>' +
+      '<div class="home-two-col">' +
+        renderCol('推荐歌单', recommendations, 'recommend') +
+        renderCol('排行榜', toplist, 'toplist') +
+      '</div>' +
+      '<style>' +
+        '.home-two-col{display:flex;gap:16px;margin-top:8px}' +
+        '.home-two-col .home-col{flex:1;min-width:0}' +
+        '.home-two-col .home-col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}' +
+        '.home-two-col .home-col-title{font-size:13px;font-weight:600;color:var(--text-secondary,#999)}' +
+        '.home-two-col .home-expand-btn{font-size:12px;color:var(--accent,#1db954);cursor:pointer;background:none;border:none;padding:2px 6px}' +
+        '.home-two-col .home-expand-btn:hover{opacity:.8}' +
+        '.home-two-col .home-scroll-row{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}' +
+        '.home-two-col .home-scroll-row::-webkit-scrollbar{height:3px}' +
+        '.home-two-col .home-scroll-row::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}' +
+        '.home-two-col .home-tile{flex:0 0 auto;scroll-snap-align:start;width:140px;border-radius:10px;overflow:hidden;background:transparent;cursor:pointer;border:none;padding:0;text-align:left}' +
+        '.home-two-col .home-tile-cover{width:140px;height:140px;border-radius:10px;background-size:cover;background-position:center;background-color:rgba(255,255,255,.06)}' +
+        '.home-two-col .home-tile-title{font-size:13px;font-weight:500;color:#eee;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+        '.home-two-col .home-tile-sub{font-size:11px;color:#888;margin-top:2px}' +
+      '</style>';
+    // Click delegation
+    rail.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var action = btn.getAttribute('data-action');
+      var id = btn.getAttribute('data-id');
+      var name = btn.getAttribute('data-name') || '';
+      if (action === 'playlist' && id) {
+        var numId = parseInt(id, 10);
         if (typeof loadPlaylistIntoQueueById === 'function') {
-          loadPlaylistIntoQueueById(t.id, true, t.name || '排行榜');
-          if (typeof openPlaylistPanelTab === 'function') {
-            openPlaylistPanelTab('playlists', false);
-          }
+          loadPlaylistIntoQueueById(numId, true, name);
         }
-      };
-      row.appendChild(tile);
-      row._homeTiles.push({ kind: 'toplist', id: t.id, name: t.name });
+        if (typeof openPlaylistPanelTab === 'function') {
+          setTimeout(function(){ openPlaylistPanelTab('playlists', false); }, 300);
+        }
+      } else if (action === 'expand') {
+        expandCol(btn, data);
+      } else if (action === 'collapse') {
+        collapseCol(btn, data);
+      }
     });
-    
-    console.log('[HomeExtra] 排行榜已替换接着听');
   }
 
-  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function renderCol(title, items, kind) {
+    if (!items || !items.length) return '<div class="home-col"><div class="home-col-title">' + title + '</div><div class="home-scroll-row" style="color:#666;font-size:12px">暂无数据</div></div>';
+    var showItems = items.slice(0, 2);
+    var tilesHtml = showItems.map(function(item){
+      var cover = item.cover ? 'style="background-image:url(' + escAttr(item.cover) + ')"' : '';
+      return '<button class="home-tile" data-action="playlist" data-id="' + item.id + '" data-name="' + escAttr(item.name) + '">' +
+        '<div class="home-tile-cover" ' + cover + '></div>' +
+        '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
+        '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
+    }).join('');
+    var expandBtn = items.length > 2
+      ? '<button class="home-expand-btn" data-action="expand" data-kind="' + kind + '">展开全部 ›</button>'
+      : '';
+    return '<div class="home-col">' +
+      '<div class="home-col-header">' +
+        '<div class="home-col-title">' + title + '</div>' +
+        expandBtn +
+      '</div>' +
+      '<div class="home-scroll-row" id="home-' + kind + '-row" data-kind="' + kind + '" data-expanded="false" data-all="' + escAttr(JSON.stringify(items)) + '">' +
+        tilesHtml +
+      '</div></div>';
+  }
+
+  function expandCol(btn, data) {
+    var kind = btn.getAttribute('data-kind');
+    var row = document.getElementById('home-' + kind + '-row');
+    if (!row) return;
+    var allData = kind === 'toplist' ? (data.toplist||[]) : (data.recommendations||[]);
+    var tilesHtml = allData.map(function(item){
+      var cover = item.cover ? 'style="background-image:url(' + escAttr(item.cover) + ')"' : '';
+      return '<button class="home-tile" data-action="playlist" data-id="' + item.id + '" data-name="' + escAttr(item.name) + '">' +
+        '<div class="home-tile-cover" ' + cover + '></div>' +
+        '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
+        '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
+    }).join('');
+    row.innerHTML = tilesHtml;
+    row.setAttribute('data-expanded', 'true');
+    btn.textContent = '‹ 收起';
+    btn.setAttribute('data-action', 'collapse');
+  }
+
+  function collapseCol(btn, data) {
+    var kind = btn.getAttribute('data-kind');
+    var row = document.getElementById('home-' + kind + '-row');
+    if (!row) return;
+    var allData = kind === 'toplist' ? (data.toplist||[]) : (data.recommendations||[]);
+    var showItems = allData.slice(0, 2);
+    var tilesHtml = showItems.map(function(item){
+      var cover = item.cover ? 'style="background-image:url(' + escAttr(item.cover) + ')"' : '';
+      return '<button class="home-tile" data-action="playlist" data-id="' + item.id + '" data-name="' + escAttr(item.name) + '">' +
+        '<div class="home-tile-cover" ' + cover + '></div>' +
+        '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
+        '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
+    }).join('');
+    row.innerHTML = tilesHtml;
+    row.setAttribute('data-expanded', 'false');
+    btn.textContent = '展开全部 ›';
+    btn.setAttribute('data-action', 'expand');
+  }
+
+  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escAttr(s) { return escHtml(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
   if (document.readyState === 'complete') {
     setTimeout(waitAndLoad, 1500);

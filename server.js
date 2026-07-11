@@ -2032,7 +2032,24 @@ async function handleDiscoverExtra() {
       .slice(0, 12);
   }
 
-  return { toplist: toplistData, topArtists, newSongs };
+  // 推荐歌单（仿 AlgerMusicPlayer）
+  let recommendations = [];
+  try {
+    const pResult = await personalized({ limit: 10, cookie: userCookie, timestamp: Date.now() });
+    if (pResult && pResult.body && pResult.body.result) {
+      recommendations = pResult.body.result.slice(0, 10).map(t => ({
+        id: t.id,
+        name: t.name || '',
+        cover: t.picUrl || t.coverImgUrl || '',
+        trackCount: t.trackCount || 0,
+        playCount: t.playCount || 0,
+      }));
+    }
+  } catch (e) {
+    console.warn('[DiscoverExtra] personalized failed:', e.message);
+  }
+
+  return { toplist: toplistData, topArtists, newSongs, recommendations };
 }
 
 const QQ_MUSICU_URL = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
