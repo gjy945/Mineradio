@@ -1957,9 +1957,9 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
             <div class="home-card-sub" id="home-private-sub">切换到下一首歌</div>
             <div class="home-card-art" id="home-private-art"></div>
           </button>
-          <button class="home-card" data-home-tone="local" type="button" onclick="playHomePrivateRadio();setTimeout(function(){openPlaylistPanelTab('queue',false)},500)">
+          <button class="home-card" data-home-tone="local" type="button" onclick="playHomePrivateRadio()">
             <div class="home-card-label">FM</div>
-            <div class="home-card-title" id="home-profile-title">私人电台</div>
+            <div class="home-card-title" id="home-profile-title">私人FM</div>
             <div class="home-card-sub" id="home-profile-sub">智能推荐你喜欢的歌曲</div>
             <div class="home-card-art" id="home-profile-art"></div>
           </button>
@@ -26969,8 +26969,8 @@ animate();
         renderCol('排行榜', toplist, 'toplist') +
       '</div>' +
       '<style>' +
-        '.home-two-col{display:flex;gap:16px;margin-top:8px}' +
-        '.home-two-col .home-col{flex:1;min-width:0}' +
+        '.home-two-col{display:block}' +
+        '.home-two-col .home-col{margin-bottom:16px}' +
         '.home-two-col .home-col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}' +
         '.home-two-col .home-col-title{font-size:13px;font-weight:600;color:var(--text-secondary,#999)}' +
         '.home-two-col .home-expand-btn{font-size:12px;color:var(--accent,#1db954);cursor:pointer;background:none;border:none;padding:2px 6px}' +
