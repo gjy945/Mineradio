@@ -19,6 +19,11 @@ let desktopLyricsHotBounds = null;
 let desktopLyricsLastMiddleAt = 0;
 let wallpaperWindow = null;
 let wallpaperState = {};
+let desktopWallpaperActive = false;
+let desktopWallpaperPrevState = null;
+let desktopWallpaperPinTimer = null;
+let desktopWallpaperMinimizeHandler = null;
+let desktopWallpaperFocusHandler = null;
 let htmlFullscreenActive = false;
 let windowFullscreenActive = false;
 let mainWindowStateTimer = null;
@@ -1092,6 +1097,135 @@ function closeWallpaperWindow() {
   wallpaperWindow = null;
 }
 
+// ========== 桌面壁纸模式（变换主窗口，浮于图标上方 + 动态点击穿透） ==========
+function pinMainWindowToBottom() {
+  if (process.platform !== 'win32' || !mainWindow || mainWindow.isDestroyed()) return;
+  const hwnd = nativeWindowHandleDecimal(mainWindow);
+  const script = `
+$ErrorActionPreference = "Stop"
+if (-not ("MineradioPinWin" -as [type])) {
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class MineradioPinWin {
+  [DllImport("user32.dll", SetLastError=true)] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+}
+"@
+}
+$target = [IntPtr]::new([Int64]${hwnd})
+[MineradioPinWin]::SetWindowPos($target, [IntPtr]::new(-2), 0, 0, 0, 0, 0x0013) | Out-Null
+`;
+  execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+    windowsHide: true,
+    timeout: 3000,
+  }, (error) => {
+    if (error) console.warn('Desktop wallpaper pin-to-bottom failed:', error.message);
+  });
+}
+
+function enterDesktopWallpaperMode() {
+  if (desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
+  desktopWallpaperActive = true;
+
+  // 保存主窗口状态
+  desktopWallpaperPrevState = {
+    bounds: mainWindow.getBounds(),
+    isMaximized: mainWindow.isMaximized(),
+    isFullScreen: mainWindow.isFullScreen(),
+  };
+
+  // 不出现在任务栏 + 禁止最小化（抵抗 Win+D 的 MinimizeAll）
+  mainWindow.setSkipTaskbar(true);
+  mainWindow.setMinimizable(false);
+  if (mainWindow.isMaximized()) mainWindow.unmaximize();
+  if (mainWindow.isFullScreen()) mainWindow.setFullScreen(false);
+
+  // 全屏覆盖主显示器
+  const bounds = screen.getPrimaryDisplay().bounds;
+  mainWindow.setBounds(bounds, false);
+
+  // 默认点击穿透（forward 保证 mousemove 仍转发给渲染层）
+  mainWindow.setIgnoreMouseEvents(true, { forward: true });
+
+  // 钉到普通窗口最底（高于桌面图标，低于其他应用窗口）
+  pinMainWindowToBottom();
+
+  // 通知渲染层激活壁纸模式 CSS + mousemove 动态穿透监听
+  mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: true });
+
+  // 300ms 定时：重新钉底 + 检查是否被隐藏（Win+D 在 Win10/11 上用 SW_HIDE 而非 minimize）
+  desktopWallpaperPinTimer = setInterval(() => {
+    if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
+    if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
+      mainWindow.restore();
+      mainWindow.show();
+    }
+    pinMainWindowToBottom();
+  }, 300);
+
+  // Win+D 抵抗：minimize/hide 事件立即恢复（双保险，定时器兜底）
+  desktopWallpaperMinimizeHandler = () => {
+    if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
+    setImmediate(() => {
+      if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      pinMainWindowToBottom();
+    });
+  };
+  mainWindow.on('minimize', desktopWallpaperMinimizeHandler);
+  mainWindow.on('hide', desktopWallpaperMinimizeHandler);
+
+  // 点击按钮获得焦点后立即重新钉底，避免浮到其他应用之上
+  desktopWallpaperFocusHandler = () => {
+    if (!desktopWallpaperActive) return;
+    setImmediate(pinMainWindowToBottom);
+  };
+  mainWindow.on('focus', desktopWallpaperFocusHandler);
+}
+
+function exitDesktopWallpaperMode() {
+  if (!desktopWallpaperActive) return;
+  desktopWallpaperActive = false;
+
+  // 停止钉底定时器
+  if (desktopWallpaperPinTimer) {
+    clearInterval(desktopWallpaperPinTimer);
+    desktopWallpaperPinTimer = null;
+  }
+
+  // 移除事件监听
+  if (desktopWallpaperMinimizeHandler && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.removeListener('minimize', desktopWallpaperMinimizeHandler);
+    mainWindow.removeListener('hide', desktopWallpaperMinimizeHandler);
+  }
+  desktopWallpaperMinimizeHandler = null;
+  if (desktopWallpaperFocusHandler && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.removeListener('focus', desktopWallpaperFocusHandler);
+  }
+  desktopWallpaperFocusHandler = null;
+
+  // 恢复窗口
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setIgnoreMouseEvents(false);
+    mainWindow.setSkipTaskbar(false);
+    mainWindow.setMinimizable(true);
+    mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: false });
+
+    if (desktopWallpaperPrevState) {
+      if (desktopWallpaperPrevState.isFullScreen) {
+        mainWindow.setFullScreen(true);
+      } else if (desktopWallpaperPrevState.isMaximized) {
+        mainWindow.maximize();
+      } else if (desktopWallpaperPrevState.bounds) {
+        mainWindow.setBounds(desktopWallpaperPrevState.bounds, false);
+      }
+    }
+    mainWindow.focus();
+  }
+  desktopWallpaperPrevState = null;
+}
+
 function closeOverlayWindows() {
   closeDesktopLyricsWindow();
   closeWallpaperWindow();
@@ -1314,6 +1448,30 @@ ipcMain.handle('mineradio-wallpaper-update', async (_event, payload) => {
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e.message || 'WALLPAPER_UPDATE_FAILED' };
+  }
+});
+
+ipcMain.handle('mineradio-desktop-wallpaper-toggle', async () => {
+  try {
+    if (desktopWallpaperActive) {
+      exitDesktopWallpaperMode();
+    } else {
+      enterDesktopWallpaperMode();
+    }
+    return { ok: true, active: desktopWallpaperActive };
+  } catch (e) {
+    return { ok: false, error: e.message || 'DESKTOP_WALLPAPER_FAILED' };
+  }
+});
+
+ipcMain.handle('mineradio-desktop-wallpaper-capture', async (_event, capture) => {
+  try {
+    if (!mainWindow || mainWindow.isDestroyed() || !desktopWallpaperActive) return { ok: false };
+    // capture=true → 窗口捕获点击（不穿透）; capture=false → 点击穿透 + mousemove 转发
+    mainWindow.setIgnoreMouseEvents(!capture, { forward: !capture });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
   }
 });
 

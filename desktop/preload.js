@@ -39,6 +39,14 @@ contextBridge.exposeInMainWorld('desktopWindow', {
   },
   setWallpaperMode: (enabled, payload) => ipcRenderer.invoke('mineradio-wallpaper-set-enabled', !!enabled, payload || {}),
   updateWallpaperMode: (payload) => ipcRenderer.invoke('mineradio-wallpaper-update', payload || {}),
+  toggleDesktopWallpaperMode: () => ipcRenderer.invoke('mineradio-desktop-wallpaper-toggle'),
+  setDesktopWallpaperCapture: (capture) => ipcRenderer.invoke('mineradio-desktop-wallpaper-capture', !!capture),
+  onDesktopWallpaperModeChange: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const listener = (_event, payload) => callback(payload || {});
+    ipcRenderer.on('mineradio-desktop-wallpaper-mode', listener);
+    return () => ipcRenderer.removeListener('mineradio-desktop-wallpaper-mode', listener);
+  },
   onStateChange: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on('desktop-window-state', listener);
