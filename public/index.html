@@ -27031,14 +27031,6 @@ animate();
     }
   }, { passive: false });
 
-  // 增强底部控制条触发区域：鼠标靠近底部40px自动唤醒
-  document.addEventListener('mousemove', function(e){
-    if (e.clientY >= window.innerHeight - 40) {
-      if (typeof wakeBottomHandle === 'function') wakeBottomHandle();
-      if (typeof revealBottomControls === 'function') revealBottomControls(600);
-    }
-  }, { passive: true });
-
   if (document.readyState === 'complete') {
     setTimeout(waitAndLoad, 1500);
   } else {
