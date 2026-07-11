@@ -26964,24 +26964,16 @@ animate();
     wrapper.id = 'home-bottom-section';
     wrapper.innerHTML =
       '<div class="home-section-head"><div class="home-section-title">推荐歌单 &amp; 排行榜</div></div>' +
-      '<div class="home-two-col">' +
-        renderCol('推荐歌单', recommendations, 'recommend') +
-        renderCol('排行榜', toplist, 'toplist') +
-      '</div>' +
+        renderCol('', recommendations, 'recommend') +
+        renderCol('', toplist, 'toplist') +
       '<style>' +
-        '.home-two-col{display:block}' +
-        '.home-two-col .home-col{margin-bottom:16px}' +
-        '.home-two-col .home-col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}' +
-        '.home-two-col .home-col-title{font-size:13px;font-weight:600;color:var(--text-secondary,#999)}' +
-        '.home-two-col .home-expand-btn{font-size:12px;color:var(--accent,#1db954);cursor:pointer;background:none;border:none;padding:2px 6px}' +
-        '.home-two-col .home-expand-btn:hover{opacity:.8}' +
-        '.home-two-col .home-scroll-row{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}' +
-        '.home-two-col .home-scroll-row::-webkit-scrollbar{height:3px}' +
-        '.home-two-col .home-scroll-row::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}' +
-        '.home-two-col .home-tile{flex:0 0 auto;scroll-snap-align:start;width:140px;border-radius:10px;overflow:hidden;background:transparent;cursor:pointer;border:none;padding:0;text-align:left}' +
-        '.home-two-col .home-tile-cover{width:140px;height:140px;border-radius:10px;background-size:cover;background-position:center;background-color:rgba(255,255,255,.06)}' +
-        '.home-two-col .home-tile-title{font-size:13px;font-weight:500;color:#eee;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-        '.home-two-col .home-tile-sub{font-size:11px;color:#888;margin-top:2px}' +
+        '.home-scroll-row{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;margin-bottom:10px}' +
+        '.home-scroll-row::-webkit-scrollbar{height:3px}' +
+        '.home-scroll-row::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}' +
+        '.home-scroll-row .home-tile{flex:0 0 auto;scroll-snap-align:start;width:140px;border-radius:10px;overflow:hidden;background:transparent;cursor:pointer;border:none;padding:0;text-align:left}' +
+        '.home-scroll-row .home-tile-cover{width:140px;height:140px;border-radius:10px;background-size:cover;background-position:center;background-color:rgba(255,255,255,.06)}' +
+        '.home-scroll-row .home-tile-title{font-size:13px;font-weight:500;color:#eee;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+        '.home-scroll-row .home-tile-sub{font-size:11px;color:#888;margin-top:2px}' +
       '</style>';
     // Click delegation on wrapper
     wrapper.addEventListener('click', function(e){
@@ -27014,11 +27006,9 @@ animate();
         '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
         '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
     }).join('');
-    return '<div class="home-col">' +
-      '<div class="home-col-header"><div class="home-col-title">' + title + '</div></div>' +
-      '<div class="home-scroll-row" id="home-' + kind + '-row">' +
+    return '<div class="home-scroll-row" id="home-' + kind + '-row" style="margin-bottom:10px">' +
         tilesHtml +
-      '</div></div>';
+      '</div>';
   }
 
   function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
