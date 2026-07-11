@@ -1851,7 +1851,7 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
   </div>
   <div class="desktop-window-controls">
     <button id="visual-guide-btn" class="icon-btn" type="button" onclick="startVisualGuide({ manual: true })" title="查看使用引导" aria-label="查看使用引导">?</button>
-    <button id="update-entry" class="update-entry"
+    <button id="update-entry" class="update-entry" type="button" onclick="openUpdatePanel()" title="发现新版本" aria-label="发现新版本">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle class="update-ring" cx="12" cy="12" r="8.8"></circle>
         <circle id="update-progress-ring" class="update-progress-ring" cx="12" cy="12" r="8.8"></circle>
@@ -27030,21 +27030,11 @@ animate();
       row.scrollLeft += e.deltaY;
     }
   }, { passive: false });
-    })
-    .catch(function(e) {
-      showToast('❌ 网络错误: ' + e.message);
-      btn.textContent = '保存并启用';
-      btn.disabled = false;
-    });
-  };
-  
-  function showToast(msg) {
-    var toast = document.createElement('div');
-    toast.id = 'ms-toast';
-    toast.className = 'ms-toast';
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    setTimeout(function() { toast.remove(); }, 3000);
+
+  if (document.readyState === 'complete') {
+    setTimeout(waitAndLoad, 1500);
+  } else {
+    window.addEventListener('load', function() { setTimeout(waitAndLoad, 1500); });
   }
 })();
 </script>
