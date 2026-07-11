@@ -26972,8 +26972,17 @@ animate();
     if (!rail) return;
     var toplist = data.toplist || [];
     var recommendations = data.recommendations || [];
-    // Build HTML
-    rail.innerHTML =
+    // 隐藏旧的"接着听"区域
+    rail.style.display = 'none';
+    // 如果已经插入过，更新内容
+    var existing = document.getElementById('home-bottom-section');
+    if (existing) {
+      existing.parentNode.removeChild(existing);
+    }
+    // 在 home-rail 之后插入新区域
+    var wrapper = document.createElement('div');
+    wrapper.id = 'home-bottom-section';
+    wrapper.innerHTML =
       '<div class="home-section-head"><div class="home-section-title">推荐歌单 &amp; 排行榜</div></div>' +
       '<div class="home-two-col">' +
         renderCol('推荐歌单', recommendations, 'recommend') +
@@ -26994,8 +27003,8 @@ animate();
         '.home-two-col .home-tile-title{font-size:13px;font-weight:500;color:#eee;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
         '.home-two-col .home-tile-sub{font-size:11px;color:#888;margin-top:2px}' +
       '</style>';
-    // Click delegation
-    rail.addEventListener('click', function(e){
+    // Click delegation on wrapper
+    wrapper.addEventListener('click', function(e){
       var btn = e.target.closest('[data-action]');
       if (!btn) return;
       var action = btn.getAttribute('data-action');
@@ -27015,6 +27024,8 @@ animate();
         collapseCol(btn, data);
       }
     });
+    // 插入到 home-rail 后面
+    rail.parentNode.insertBefore(wrapper, rail.nextSibling);
   }
 
   function renderCol(title, items, kind) {
