@@ -5566,10 +5566,23 @@ function applyControlsAutoHidePreference() {
   var bar = document.getElementById('bottom-bar');
   var handle = document.getElementById('bottom-handle');
   if (!bar) return;
+  // handle 的 mouseleave 延迟定时器（独立于 controlsHideTimer）
+  // 用于区分"假离开"（pointer-events 切换）和"真离开"
+  var handleLeaveTimer = null;
+
+  function hideBarNow(){
+    var barEl = document.getElementById('bottom-bar');
+    if (barEl) {
+      barEl.classList.remove('visible');
+      barEl.classList.add('soft-hidden');
+    }
+    updateControlsChromeState();
+  }
+
   function enterControls(){
     controlsHovering = true;
     if (controlsHideTimer) { clearTimeout(controlsHideTimer); controlsHideTimer = null; }
-    // 鼠标进入 bar 时确保 visible（之前只 setControlsHidden(false) 不加 visible，导致没反应）
+    if (handleLeaveTimer) { clearTimeout(handleLeaveTimer); handleLeaveTimer = null; }
     var barEl = document.getElementById('bottom-bar');
     if (barEl) {
       barEl.classList.add('visible');
@@ -5578,21 +5591,38 @@ function applyControlsAutoHidePreference() {
     wakeBottomHandle();
     updateControlsChromeState();
   }
+
   function leaveControls(){
+    // bar 的 mouseleave：鼠标真正离开了 bar 区域
     controlsHovering = false;
-    // 不立即移除 visible + soft-hidden，延迟 220ms 给鼠标在 handle↔bar 之间移动留缓冲
-    // 之前立即隐藏导致 handle 的 pointer-events 反复切换 → 抖动
-    scheduleControlsHide(220);
+    if (controlsHideTimer) clearTimeout(controlsHideTimer);
+    controlsHideTimer = setTimeout(function(){
+      controlsHideTimer = null;
+      if (controlsHovering) return;
+      hideBarNow();
+    }, 200);
     wakeBottomHandle(900);
   }
+
   bar.addEventListener('mouseenter', enterControls);
   bar.addEventListener('mouseleave', leaveControls);
   if (handle) {
     handle.addEventListener('mouseenter', function(){
       controlsHovering = true;
+      if (handleLeaveTimer) { clearTimeout(handleLeaveTimer); handleLeaveTimer = null; }
       revealBottomControls(900);
     });
-    handle.addEventListener('mouseleave', leaveControls);
+    // handle 的 mouseleave 不直接触发 leaveControls
+    // 原因：bar 可见后 handle.pointer-events 变 none 会产生"假 mouseleave"
+    // 延迟 150ms 检查 controlsHovering，如果鼠标已进入 bar 则 controlsHovering=true 不隐藏
+    handle.addEventListener('mouseleave', function(){
+      if (handleLeaveTimer) clearTimeout(handleLeaveTimer);
+      handleLeaveTimer = setTimeout(function(){
+        handleLeaveTimer = null;
+        if (controlsHovering) return; // 鼠标已进入 bar，不隐藏
+        hideBarNow();
+      }, 150);
+    });
     handle.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); toggleBottomControlsFromHandle(); });
   }
   updateControlsChromeState();
