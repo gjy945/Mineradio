@@ -27002,7 +27002,7 @@ animate();
     var tilesHtml = items.map(function(item){
       var cover = item.cover ? 'style="background-image:url(' + escAttr(item.cover) + ')"' : '';
       return '<button class="home-tile" data-action="playlist" data-id="' + item.id + '" data-name="' + escAttr(item.name) + '">' +
-        '<div class="home-tile-cover" ' + cover + '></div>' +
+        '<div class="home-tile-cover' + (item.cover ? ' has-cover' : '') + '" ' + (item.cover ? cover : '') + '></div>' +
         '<div class="home-tile-title">' + escHtml(item.name) + '</div>' +
         '<div class="home-tile-sub">' + (item.trackCount||0) + ' 首</div></button>';
     }).join('');
