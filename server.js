@@ -77,23 +77,8 @@ const MUSIC_URL_CACHE_TTL = 30 * 60 * 1000; // 30分钟
 const FAILED_CACHE = new Map();
 const FAILED_CACHE_TTL = 60 * 1000; // 1分钟
 
-// 用户启用的音源配置 (从 localStorage 读取，默认全部启用)
-const MUSIC_SOURCE_CONFIG_KEY = 'mineradio_music_sources';
-function getMusicSourceConfig() {
-  try {
-    const raw = fs.readFileSync(path.join(app.getPath ? app.getPath('userData') : __dirname, MUSIC_SOURCE_CONFIG_KEY), 'utf8');
-    const cfg = JSON.parse(raw);
-    return Array.isArray(cfg) && cfg.length > 0 ? cfg : [...ALL_UNBLOCK_PLATFORMS];
-  } catch (e) {
-    return [...ALL_UNBLOCK_PLATFORMS];
-  }
-}
-function saveMusicSourceConfig(sources) {
-  try {
-    const dir = app.getPath ? app.getPath('userData') : __dirname;
-    fs.writeFileSync(path.join(dir, MUSIC_SOURCE_CONFIG_KEY), JSON.stringify(sources, null, 2));
-  } catch (e) { /* ignore */ }
-}
+// 用户启用的音源配置（默认全部启用，不再支持运行时切换）
+function getMusicSourceConfig() { return [...ALL_UNBLOCK_PLATFORMS]; }
 
 /**
  * 检查是否在失败缓存期内
@@ -4612,35 +4597,6 @@ const server = http.createServer(async (req, res) => {
       while (true) { const c = await reader.read(); if (c.done) break; res.write(c.value); }
       res.end();
     } catch (err) { console.error('[Audio]', err); res.writeHead(500); res.end(); }
-    return;
-  }
-
-  // ---------- 音源设置 API ----------
-  if (pn === '/api/music/sources') {
-    try {
-      const body = await readRequestBody(req);
-      const sources = body.sources;
-      if (Array.isArray(sources) && sources.length > 0) {
-        saveMusicSourceConfig(sources);
-        sendJSON(res, { ok: true, sources });
-      } else {
-        sendJSON(res, { ok: false, error: 'Invalid sources' }, 400);
-      }
-    } catch (err) {
-      console.error('[MusicSources]', err);
-      sendJSON(res, { ok: false, error: err.message }, 500);
-    }
-    return;
-  }
-
-  if (pn === '/api/music/sources/list') {
-    try {
-      const cfg = getMusicSourceConfig();
-      sendJSON(res, { ok: true, sources: cfg });
-    } catch (err) {
-      console.error('[MusicSourcesList]', err);
-      sendJSON(res, { ok: false, error: err.message }, 500);
-    }
     return;
   }
 

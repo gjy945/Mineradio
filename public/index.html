@@ -1851,10 +1851,7 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
   </div>
   <div class="desktop-window-controls">
     <button id="visual-guide-btn" class="icon-btn" type="button" onclick="startVisualGuide({ manual: true })" title="查看使用引导" aria-label="查看使用引导">?</button>
-    <button id="music-source-settings-btn" class="icon-btn" type="button" title="多平台音源设置" aria-label="多平台音源设置" onclick="msTogglePanel()">
-      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-    </button>
-    <button id="update-entry" class="update-entry" type="button" onclick="openUpdatePanel()" title="发现新版本" aria-label="发现新版本">
+    <button id="update-entry" class="update-entry"
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle class="update-ring" cx="12" cy="12" r="8.8"></circle>
         <circle id="update-progress-ring" class="update-progress-ring" cx="12" cy="12" r="8.8"></circle>
@@ -1934,9 +1931,18 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 <section id="empty-home" aria-label="Mineradio home">
   <div class="empty-home-shell">
     <div class="home-hero">
-      <div class="home-hero-inner home-construction-inner">
-        <div class="home-title home-construction-title">🚧此处施工，敬请期待🚧</div>
-        <button class="home-chip home-console-chip" type="button" onclick="openHomePlayerConsole()">展开播放器控制台</button>
+      <div class="home-hero-inner">
+        <!-- Now Playing Section -->
+        <div class="home-kicker" style="grid-column:1">MINERADIO</div>
+        <div class="home-title" style="max-width:380px">正在播放</div>
+        <div class="home-sub" id="home-hero-sub" style="grid-column:1">点击卡片或歌单开始播放音乐</div>
+        <div class="home-quick-row" style="grid-column:1">
+          <button class="home-chip" type="button" onclick="openHomeLibrary()">我的歌单</button>
+          <button class="home-chip" type="button" onclick="openHomePlayerConsole()">播放器控制台</button>
+        </div>
+        <!-- Right side: cover art placeholder -->
+        <div class="home-sleeve" id="home-hero-sleeve"></div>
+        <div class="home-disc" id="home-hero-disc"></div>
       </div>
     </div>
 
@@ -27033,170 +27039,6 @@ animate();
       row.scrollLeft += e.deltaY;
     }
   }, { passive: false });
-
-  if (document.readyState === 'complete') {
-    setTimeout(waitAndLoad, 1500);
-  } else {
-    window.addEventListener('load', function() { setTimeout(waitAndLoad, 1500); });
-  }
-})();
-</script>
-<!-- ========== 音源设置面板 (Mineradio 多平台音源) ========== -->
-<style>
-#ms-panel-wrap {
-  position: fixed; top: 44px; right: 20px; z-index: 99999;
-  font-family: var(--font-sans);
-}
-#ms-panel {
-  width: 340px; max-height: 450px; overflow-y: auto;
-  background: rgba(12,12,18,0.55); backdrop-filter: blur(40px) saturate(1.4);
-  -webkit-backdrop-filter: blur(40px) saturate(1.4);
-  border: 1px solid rgba(255,255,255,.08); border-radius: 14px;
-  padding: 18px; display: none;
-}
-#ms-panel.open { display: block; }
-#ms-panel .ms-title {
-  font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px;
-  display: flex; align-items: center; gap: 8px;
-}
-#ms-panel .ms-desc {
-  font-size: 12px; color: rgba(255,255,255,.4); margin-bottom: 14px;
-}
-#ms-panel .ms-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.05);
-}
-#ms-panel .ms-item:last-child { border-bottom: none; }
-#ms-panel .ms-label {
-  font-size: 13px; color: rgba(255,255,255,.7);
-}
-#ms-panel .ms-status {
-  font-size: 11px; padding: 2px 8px; border-radius: 6px;
-  display: inline-block;
-}
-#ms-panel .ms-status.ok { background: rgba(0,245,212,.15); color: #00f5d4; }
-#ms-panel .ms-status.fail { background: rgba(255,80,80,.15); color: #ff5050; }
-#ms-panel .ms-save-btn {
-  width: 100%; padding: 10px; margin-top: 12px; border-radius: 10px;
-  background: linear-gradient(135deg, #00f5d4, #00e0be);
-  color: #000; font-weight: 600; font-size: 13px; border: none;
-  cursor: pointer; transition: all .2s;
-}
-#ms-panel .ms-save-btn:hover { opacity: .85; transform: translateY(-1px); }
-#ms-panel .ms-save-btn:disabled { opacity: .5; cursor: not-allowed; }
-#ms-panel .ms-check {
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
-}
-#ms-panel .ms-check input[type="checkbox"] {
-  appearance: none; width: 18px; height: 18px; border-radius: 4px;
-  border: 2px solid rgba(255,255,255,.3); background: transparent;
-  cursor: pointer; position: relative; flex-shrink: 0;
-}
-#ms-panel .ms-check input[type="checkbox"]:checked {
-  border-color: #00f5d4; background: #00f5d4;
-}
-#ms-panel .ms-check input[type="checkbox"]:checked::after {
-  content: '✓'; position: absolute; top: -1px; left: 2px;
-  color: #000; font-size: 13px; font-weight: bold;
-}
-#ms-toast {
-  position: fixed; top: 70px; right: 20px;
-  background: rgba(0,245,212,.15); color: #00f5d4;
-  padding: 10px 16px; border-radius: 10px; font-size: 13px;
-  border: 1px solid rgba(0,245,212,.3);
-  animation: ms-fade-in .3s ease;
-  z-index: 100000;
-}
-@keyframes ms-fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-</style>
-<div id="ms-panel-wrap">
-  <div id="ms-panel">
-    <div class="ms-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> 多平台音源设置</div>
-    <p class="ms-desc">网易云VIP/试听歌曲自动切换其他音源</p>
-    <div id="ms-list"></div>
-    <button class="ms-save-btn" id="ms-save-btn" onclick="msSaveSources()">保存并启用</button>
-  </div>
-</div>
-<script>
-(function() {
-  var PLATFORMS = [
-    { key: 'pyncmd', label: 'PyNCM', desc: '网易云原版音源' },
-    { key: 'migu', label: '咪咕音乐', desc: '中国移动音源' },
-    { key: 'kugou', label: '酷狗音乐', desc: 'QQ音源' },
-    { key: 'kuwo', label: '酷我音乐', desc: 'WY音源' },
-  ];
-  
-  var enabledPlatforms = ['pyncmd','migu','kugou','kuwo'];
-  var panelOpen = false;
-  
-  function loadConfig() {
-    fetch('/api/music/sources/list')
-      .then(r => r.json())
-      .then(data => {
-        if (data.ok && data.sources) {
-          enabledPlatforms = data.sources;
-          renderCheckboxes();
-        }
-      }).catch(function(e) { console.log('[MusicSource] load config failed:', e.message); });
-  }
-  
-  function renderCheckboxes() {
-    var container = document.getElementById('ms-list');
-    if (!container) return;
-    var html = '';
-    PLATFORMS.forEach(function(p) {
-      var checked = enabledPlatforms.indexOf(p.key) >= 0 ? 'checked' : '';
-      html += '<div class="ms-item">' +
-        '<label class="ms-check"><input type="checkbox" value="' + p.key + '" ' + checked + '>' +
-        '<span><span style="color:#fff;font-weight:500">' + p.label + '</span>' +
-        '<br><span style="font-size:11px;color:rgba(255,255,255,.35)">' + p.desc + '</span></span></label>' +
-        '</div>';
-    });
-    container.innerHTML = html;
-  }
-  
-  window.msTogglePanel = function() {
-    var panel = document.getElementById('ms-panel');
-    if (!panelOpen) {
-      panel.classList.add('open');
-      panelOpen = true;
-      loadConfig();
-    } else {
-      panel.classList.remove('open');
-      panelOpen = false;
-    }
-  };
-  
-  window.msSaveSources = function() {
-    var checks = document.querySelectorAll('#ms-list input[type="checkbox"]');
-    var sources = [];
-    checks.forEach(function(c) {
-      if (c.checked) sources.push(c.value);
-    });
-    if (sources.length === 0) {
-      showToast('请至少选择一个音源');
-      return;
-    }
-    var btn = document.getElementById('ms-save-btn');
-    btn.disabled = true;
-    btn.textContent = '保存中...';
-    
-    fetch('/api/music/sources', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sources: sources })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) {
-        showToast('✅ 音源设置已保存，新歌曲将生效');
-        btn.textContent = '已保存 ✓';
-        setTimeout(function() { btn.textContent = '保存并启用'; btn.disabled = false; }, 2000);
-      } else {
-        showToast('❌ 保存失败: ' + (data.error || ''));
-        btn.textContent = '保存并启用';
-        btn.disabled = false;
-      }
     })
     .catch(function(e) {
       showToast('❌ 网络错误: ' + e.message);
