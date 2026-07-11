@@ -5406,7 +5406,12 @@ function applyControlsAutoHidePreference() {
   }
   function leaveControls(){
     controlsHovering = false;
-    scheduleControlsHide(70);
+    var bar = document.getElementById('bottom-bar');
+    if (bar) {
+      bar.classList.remove('visible');
+      bar.classList.add('soft-hidden');
+    }
+    setControlsHidden(true);
     wakeBottomHandle(900);
   }
   bar.addEventListener('mouseenter', enterControls);
