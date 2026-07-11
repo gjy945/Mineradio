@@ -5568,18 +5568,21 @@ function applyControlsAutoHidePreference() {
   if (!bar) return;
   function enterControls(){
     controlsHovering = true;
-    wakeBottomHandle();
-    setControlsHidden(false);
     if (controlsHideTimer) { clearTimeout(controlsHideTimer); controlsHideTimer = null; }
+    // 鼠标进入 bar 时确保 visible（之前只 setControlsHidden(false) 不加 visible，导致没反应）
+    var barEl = document.getElementById('bottom-bar');
+    if (barEl) {
+      barEl.classList.add('visible');
+      barEl.classList.remove('soft-hidden');
+    }
+    wakeBottomHandle();
+    updateControlsChromeState();
   }
   function leaveControls(){
     controlsHovering = false;
-    var bar = document.getElementById('bottom-bar');
-    if (bar) {
-      bar.classList.remove('visible');
-      bar.classList.add('soft-hidden');
-    }
-    setControlsHidden(true);
+    // 不立即移除 visible + soft-hidden，延迟 220ms 给鼠标在 handle↔bar 之间移动留缓冲
+    // 之前立即隐藏导致 handle 的 pointer-events 反复切换 → 抖动
+    scheduleControlsHide(220);
     wakeBottomHandle(900);
   }
   bar.addEventListener('mouseenter', enterControls);
