@@ -1114,13 +1114,22 @@ public class MineradioPinWin {
   [DllImport("user32.dll", SetLastError=true)] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
   [DllImport("user32.dll", SetLastError=true)] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
   [DllImport("user32.dll", SetLastError=true)] public static extern bool IsWindowVisible(IntPtr hWnd);
+  [DllImport("user32.dll", SetLastError=true)] public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+  [DllImport("user32.dll", SetLastError=true)] public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 }
 "@
 }
 $target = [IntPtr]::new([Int64]${hwnd})
-# Win+D 用 SW_HIDE 隐藏窗口，这里强制恢复显示（SW_SHOWNOACTIVATE=4 不抢焦点）
-if (-not [MineradioPinWin]::IsWindowVisible($target)) {
-  [MineradioPinWin]::ShowWindow($target, 4) | Out-Null
+# 彻底抵抗 Win+D / 显示桌面：检测并恢复 SW_HIDE 和 SW_MINIMIZE 状态
+# SW_SHOWNA=8 (不激活), SW_RESTORE=9 (从最小化恢复)
+$isVisible = [MineradioPinWin]::IsWindowVisible($target)
+if (-not $isVisible) {
+  [MineradioPinWin]::ShowWindow($target, 8) | Out-Null
+}
+# 移除 WS_MINIMIZEBOX 样式位（0x00020000），从窗口样式层面禁止最小化
+$style = [MineradioPinWin]::GetWindowLong($target, -16)
+if ($style -band 0x00020000) {
+  [MineradioPinWin]::SetWindowLong($target, -16, $style -bxor 0x00020000) | Out-Null
 }
 # 钉到普通窗口最底（HWND_BOTTOM=-2），flags: SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE=0x0013
 [MineradioPinWin]::SetWindowPos($target, [IntPtr]::new(-2), 0, 0, 0, 0, 0x0013) | Out-Null
@@ -1227,6 +1236,32 @@ function exitDesktopWallpaperMode() {
     mainWindow.setIgnoreMouseEvents(false);
     mainWindow.setSkipTaskbar(false);
     mainWindow.setMinimizable(true);
+    // 恢复 WS_MINIMIZEBOX 样式位
+    const hwnd = nativeWindowHandleDecimal(mainWindow);
+    const restoreScript = `
+$ErrorActionPreference = "Stop"
+if (-not ("MineradioRestoreWin" -as [type])) {
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class MineradioRestoreWin {
+  [DllImport("user32.dll", SetLastError=true)] public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+  [DllImport("user32.dll", SetLastError=true)] public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+}
+"@
+}
+$target = [IntPtr]::new([Int64]${hwnd})
+$style = [MineradioRestoreWin]::GetWindowLong($target, -16)
+if (-not ($style -band 0x00020000)) {
+  [MineradioRestoreWin]::SetWindowLong($target, -16, $style -bor 0x00020000) | Out-Null
+}
+`;
+    execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', restoreScript], {
+      windowsHide: true,
+      timeout: 3000,
+    }, (error) => {
+      if (error) console.warn('Desktop wallpaper restore minimize box failed:', error.message);
+    });
     mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: false });
 
     if (desktopWallpaperPrevState) {
