@@ -26017,6 +26017,8 @@ function drawMineradioSplashWebgl(elapsed) {
 function drawMineradioSplash() {
   if (!splashAnimating || (!splashCtx && !splashGl)) return;
   requestAnimationFrame(drawMineradioSplash);
+  // 壁纸模式后台暂停：其他应用在前台时跳过粒子渲染
+  if (typeof desktopWallpaperPaused !== 'undefined' && desktopWallpaperPaused) return;
   var elapsed = (performance.now() - splashStartedAt) / 1000;
   if (splashGl && splashGlProgram) {
     drawMineradioSplashWebgl(elapsed);
