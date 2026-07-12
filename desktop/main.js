@@ -1114,19 +1114,23 @@ public class MineradioPinWin {
   [DllImport("user32.dll", SetLastError=true)] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
   [DllImport("user32.dll", SetLastError=true)] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
   [DllImport("user32.dll", SetLastError=true)] public static extern bool IsWindowVisible(IntPtr hWnd);
+  [DllImport("user32.dll", SetLastError=true)] public static extern bool IsIconic(IntPtr hWnd);
   [DllImport("user32.dll", SetLastError=true)] public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
   [DllImport("user32.dll", SetLastError=true)] public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 }
 "@
 }
 $target = [IntPtr]::new([Int64]${hwnd})
-# 彻底抵抗 Win+D / 显示桌面：检测并恢复 SW_HIDE 和 SW_MINIMIZE 状态
-# SW_SHOWNA=8 (不激活), SW_RESTORE=9 (从最小化恢复)
-$isVisible = [MineradioPinWin]::IsWindowVisible($target)
-if (-not $isVisible) {
+# 彻底抵抗 Win+D / 显示桌面：
+# 1. 检测最小化状态并恢复（SW_RESTORE=9）
+# 2. 检测隐藏状态并显示（SW_SHOWNA=8）
+# 3. 移除 WS_MINIMIZEBOX 样式位防止再次最小化
+if ([MineradioPinWin]::IsIconic($target)) {
+  [MineradioPinWin]::ShowWindow($target, 9) | Out-Null
+}
+if (-not [MineradioPinWin]::IsWindowVisible($target)) {
   [MineradioPinWin]::ShowWindow($target, 8) | Out-Null
 }
-# 移除 WS_MINIMIZEBOX 样式位（0x00020000），从窗口样式层面禁止最小化
 $style = [MineradioPinWin]::GetWindowLong($target, -16)
 if ($style -band 0x00020000) {
   [MineradioPinWin]::SetWindowLong($target, -16, $style -bxor 0x00020000) | Out-Null
@@ -1172,12 +1176,11 @@ function enterDesktopWallpaperMode() {
   // 通知渲染层激活壁纸模式 CSS + mousemove 动态穿透监听
   mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: true });
 
-  // 150ms 定时：钉底 + 强制显示（pinMainWindowToBottom 内部已检查 IsWindowVisible）
-  // Win+D 用 SW_HIDE 隐藏窗口，只有高频定时器能在用户无感的情况下恢复
+  // 50ms 高频定时：钉底 + 强制恢复最小化/隐藏（Win+D 批量最小化后需要快速恢复）
   desktopWallpaperPinTimer = setInterval(() => {
     if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
     pinMainWindowToBottom();
-  }, 150);
+  }, 50);
 
   // Win+D 抵抗：minimize/hide 事件立即恢复（双保险，定时器兜底）
   desktopWallpaperMinimizeHandler = () => {
