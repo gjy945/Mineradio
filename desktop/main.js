@@ -1,8 +1,41 @@
-const { app, BrowserWindow, ipcMain, shell, screen, session, globalShortcut, dialog, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, screen, session, globalShortcut, dialog, nativeImage, Tray, Menu } = require('electron');
 const net = require('net');
 const path = require('path');
 const fs = require('fs');
 const { execFile, spawn } = require('child_process');
+
+// ========== koffi FFI：直接调用 user32.dll，替代 PowerShell ==========
+let user32 = null;
+let _SetWindowPos = null;
+let _ShowWindow = null;
+let _IsWindowVisible = null;
+let _IsIconic = null;
+let _GetWindowLong = null;
+let _SetWindowLong = null;
+function ensureUser32() {
+  if (user32) return;
+  try {
+    const koffi = require('koffi');
+    user32 = koffi.load('user32.dll');
+    _SetWindowPos = user32.func('bool SetWindowPos(ptr hWnd, ptr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags)');
+    _ShowWindow = user32.func('bool ShowWindow(ptr hWnd, int nCmdShow)');
+    _IsWindowVisible = user32.func('bool IsWindowVisible(ptr hWnd)');
+    _IsIconic = user32.func('bool IsIconic(ptr hWnd)');
+    _GetWindowLong = user32.func('int GetWindowLongA(ptr hWnd, int nIndex)');
+    _SetWindowLong = user32.func('int SetWindowLongA(ptr hWnd, int nIndex, int dwNewLong)');
+  } catch (e) {
+    console.warn('koffi user32 load failed, falling back to PowerShell:', e.message);
+  }
+}
+const HWND_BOTTOM_PTR = Buffer.from([-2, -1, -1, -1]); // IntPtr(-2) little-endian
+const SWP_FLAGS = 0x0013; // SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE
+const SW_RESTORE = 9;
+const SW_SHOWNA = 8;
+const GWL_STYLE = -16;
+const GWL_EXSTYLE = -20;
+const WS_MINIMIZEBOX = 0x00020000;
+const WS_EX_TOOLWINDOW = 0x00000080;
+const SWP_FRAMECHANGED = 0x0020;
 
 let mainWindow = null;
 let localServer = null;
@@ -1103,47 +1136,24 @@ function closeWallpaperWindow() {
 // ========== 桌面壁纸模式（变换主窗口，浮于图标上方 + 动态点击穿透） ==========
 function pinMainWindowToBottom() {
   if (process.platform !== 'win32' || !mainWindow || mainWindow.isDestroyed()) return;
-  const hwnd = nativeWindowHandleDecimal(mainWindow);
-  const script = `
-$ErrorActionPreference = "Stop"
-if (-not ("MineradioPinWin" -as [type])) {
-Add-Type @"
-using System;
-using System.Runtime.InteropServices;
-public class MineradioPinWin {
-  [DllImport("user32.dll", SetLastError=true)] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-  [DllImport("user32.dll", SetLastError=true)] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-  [DllImport("user32.dll", SetLastError=true)] public static extern bool IsWindowVisible(IntPtr hWnd);
-  [DllImport("user32.dll", SetLastError=true)] public static extern bool IsIconic(IntPtr hWnd);
-  [DllImport("user32.dll", SetLastError=true)] public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-  [DllImport("user32.dll", SetLastError=true)] public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-}
-"@
-}
-$target = [IntPtr]::new([Int64]${hwnd})
-# 彻底抵抗 Win+D / 显示桌面：
-# 1. 检测最小化状态并恢复（SW_RESTORE=9）
-# 2. 检测隐藏状态并显示（SW_SHOWNA=8）
-# 3. 移除 WS_MINIMIZEBOX 样式位防止再次最小化
-if ([MineradioPinWin]::IsIconic($target)) {
-  [MineradioPinWin]::ShowWindow($target, 9) | Out-Null
-}
-if (-not [MineradioPinWin]::IsWindowVisible($target)) {
-  [MineradioPinWin]::ShowWindow($target, 8) | Out-Null
-}
-$style = [MineradioPinWin]::GetWindowLong($target, -16)
-if ($style -band 0x00020000) {
-  [MineradioPinWin]::SetWindowLong($target, -16, $style -bxor 0x00020000) | Out-Null
-}
-# 钉到普通窗口最底（HWND_BOTTOM=-2），flags: SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE=0x0013
-[MineradioPinWin]::SetWindowPos($target, [IntPtr]::new(-2), 0, 0, 0, 0, 0x0013) | Out-Null
-`;
-  execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
-    windowsHide: true,
-    timeout: 3000,
-  }, (error) => {
-    if (error) console.warn('Desktop wallpaper pin-to-bottom failed:', error.message);
-  });
+  ensureUser32();
+  if (!user32) return; // koffi 加载失败则静默跳过
+  const hwnd = mainWindow.getNativeWindowHandle(); // Buffer，可直接传给 koffi ptr 参数
+  // 1. 加 WS_EX_TOOLWINDOW 扩展样式（不受 MinimizeAll/Win+D 影响）
+  const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
+  if (!(exStyle & WS_EX_TOOLWINDOW)) {
+    _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+    _SetWindowPos(hwnd, Buffer.alloc(8), 0, 0, 0, 0, SWP_FRAMECHANGED | 0x0001 | 0x0002 | 0x0004);
+  }
+  // 2. 检测最小化并恢复
+  if (_IsIconic(hwnd)) _ShowWindow(hwnd, SW_RESTORE);
+  // 3. 检测隐藏并显示
+  if (!_IsWindowVisible(hwnd)) _ShowWindow(hwnd, SW_SHOWNA);
+  // 4. 移除 WS_MINIMIZEBOX 防止再次最小化
+  const style = _GetWindowLong(hwnd, GWL_STYLE);
+  if (style & WS_MINIMIZEBOX) _SetWindowLong(hwnd, GWL_STYLE, style ^ WS_MINIMIZEBOX);
+  // 5. 钉到普通窗口最底
+  _SetWindowPos(hwnd, HWND_BOTTOM_PTR, 0, 0, 0, 0, SWP_FLAGS);
 }
 
 function enterDesktopWallpaperMode() {
@@ -1239,32 +1249,18 @@ function exitDesktopWallpaperMode() {
     mainWindow.setIgnoreMouseEvents(false);
     mainWindow.setSkipTaskbar(false);
     mainWindow.setMinimizable(true);
-    // 恢复 WS_MINIMIZEBOX 样式位
-    const hwnd = nativeWindowHandleDecimal(mainWindow);
-    const restoreScript = `
-$ErrorActionPreference = "Stop"
-if (-not ("MineradioRestoreWin" -as [type])) {
-Add-Type @"
-using System;
-using System.Runtime.InteropServices;
-public class MineradioRestoreWin {
-  [DllImport("user32.dll", SetLastError=true)] public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-  [DllImport("user32.dll", SetLastError=true)] public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-}
-"@
-}
-$target = [IntPtr]::new([Int64]${hwnd})
-$style = [MineradioRestoreWin]::GetWindowLong($target, -16)
-if (-not ($style -band 0x00020000)) {
-  [MineradioRestoreWin]::SetWindowLong($target, -16, $style -bor 0x00020000) | Out-Null
-}
-`;
-    execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', restoreScript], {
-      windowsHide: true,
-      timeout: 3000,
-    }, (error) => {
-      if (error) console.warn('Desktop wallpaper restore minimize box failed:', error.message);
-    });
+    // 用 koffi 恢复 WS_MINIMIZEBOX + 移除 WS_EX_TOOLWINDOW
+    ensureUser32();
+    if (user32) {
+      const hwnd = mainWindow.getNativeWindowHandle();
+      const style = _GetWindowLong(hwnd, GWL_STYLE);
+      if (!(style & WS_MINIMIZEBOX)) _SetWindowLong(hwnd, GWL_STYLE, style | WS_MINIMIZEBOX);
+      const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
+      if (exStyle & WS_EX_TOOLWINDOW) {
+        _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle ^ WS_EX_TOOLWINDOW);
+        _SetWindowPos(hwnd, Buffer.alloc(8), 0, 0, 0, 0, SWP_FRAMECHANGED | 0x0001 | 0x0002 | 0x0004);
+      }
+    }
     mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: false });
 
     if (desktopWallpaperPrevState) {
@@ -1297,41 +1293,16 @@ function createTray() {
   appTray.on('click', () => focusMainWindow());
 }
 
-// ========== 壁纸模式后台检测：前台窗口不是桌面也不是自己时，暂停粒子 ==========
+// ========== 壁纸模式后台检测：窗口未获得焦点时暂停粒子渲染 ==========
 function checkForegroundWindowForWallpaper() {
   if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
-  const hwnd = nativeWindowHandleDecimal(mainWindow);
-  const script = `
-$ErrorActionPreference = "Stop"
-if (-not ("MineradioFg" -as [type])) {
-Add-Type @"
-using System;
-using System.Runtime.InteropServices;
-public class MineradioFg {
-  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
-  [DllImport("user32.dll", CharSet=CharSet.Auto)] public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-}
-"@
-}
-$progman = [MineradioFg]::FindWindow("Progman", $null)
-$fg = [MineradioFg]::GetForegroundWindow()
-$self = [IntPtr]::new([Int64]${hwnd})
-if ($fg -eq $progman -or $fg -eq $self) { "ACTIVE" } else { "BACKGROUND" }
-`;
-  execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
-    windowsHide: true,
-    timeout: 3000,
-  }, (error, stdout) => {
-    if (error) return;
-    const state = String(stdout || '').trim();
-    const shouldPause = state === 'BACKGROUND';
-    if (shouldPause !== desktopWallpaperPausedState) {
-      desktopWallpaperPausedState = shouldPause;
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('mineradio-desktop-wallpaper-pause', { paused: shouldPause });
-      }
-    }
-  });
+  // 用 Electron 原生 isFocused() 判断，比 PowerShell GetForegroundWindow 更可靠
+  // 窗口未获得焦点 = 其他应用在前台 = 暂停粒子
+  const shouldPause = !mainWindow.isFocused();
+  if (shouldPause !== desktopWallpaperPausedState) {
+    desktopWallpaperPausedState = shouldPause;
+    mainWindow.webContents.send('mineradio-desktop-wallpaper-pause', { paused: shouldPause });
+  }
 }
 
 // ========== 获取 Windows 桌面壁纸路径 ==========
