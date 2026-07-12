@@ -3854,21 +3854,18 @@ function applyWallpaperBrightnessAdaptation(brightness) {
   var style = document.createElement('style');
   style.id = styleId;
   if (brightness > 0.55) {
-    // 亮色壁纸：加暗色背板提升对比度，粒子加阴影
+    // 亮色壁纸：面板背景加深
     style.textContent = [
-      '.desktop-wallpaper-mode #canvas-container{filter:drop-shadow(0 0 3px rgba(0,0,0,.85)) drop-shadow(0 0 1px rgba(0,0,0,.95))}',
       '.desktop-wallpaper-mode #bottom-bar,.desktop-wallpaper-mode .home-card,.desktop-wallpaper-mode .home-tile,.desktop-wallpaper-mode .home-rail,.desktop-wallpaper-mode #search-area,.desktop-wallpaper-mode #playlist-panel,.desktop-wallpaper-mode #fx-panel{background:rgba(8,8,14,.72)!important}'
     ].join('');
-  } else if (brightness > 0.35) {
-    // 中等亮度：轻微加阴影
-    style.textContent = [
-      '.desktop-wallpaper-mode #canvas-container{filter:drop-shadow(0 0 2px rgba(0,0,0,.5))}'
-    ].join('');
   } else {
-    // 暗色壁纸：无需额外处理
     style.textContent = '';
   }
   document.head.appendChild(style);
+  // 把壁纸亮度传给 3D shader uniform，让粒子自动变亮+加暗色描边
+  if (typeof uniforms !== 'undefined' && uniforms.uWallpaperBrightness) {
+    uniforms.uWallpaperBrightness.value = brightness;
+  }
 }
 
 // ============================================================
@@ -6045,6 +6042,7 @@ var uniforms = {
   uParticleDim:{ value: 1 },          // 覆盖层打开时只压低粒子背景, 不影响 3D 卡片
   uFloatAlpha: { value: 0 },          // 空场/浮空粒子透明度
   uLoading:    { value: 0 },          // 加载动画混合度 0..1 (1 = 完全聚成圆环)
+  uWallpaperBrightness: { value: 0 }, // 桌面壁纸平均亮度 0-1，亮色壁纸下粒子自动变亮+加暗色描边
 };
 installRenderPowerHooks();
 applyRendererPowerMode();
@@ -6528,7 +6526,7 @@ void main(){
 var fs = `
 precision highp float;
 uniform sampler2D uDotTex;
-uniform float uAlpha, uPreset, uParticleDim;
+uniform float uAlpha, uPreset, uParticleDim, uWallpaperBrightness;
 varying vec3 vColor;
 varying float vBright, vRipple, vEdgeBoost, vAlpha, vSourceLum;
 
@@ -6547,6 +6545,11 @@ void main(){
   float darkParticle = (1.0 - smoothstep(0.20, 0.50, outLum)) * nonBlack;
   col = mix(col, vec3(0.0), readableRim * lightParticle * 0.38);
   col = mix(col, vec3(1.0), readableRim * darkParticle * 0.20);
+  // 亮色壁纸自适应：粒子变亮 + 加暗色描边
+  float wpBright = clamp(uWallpaperBrightness, 0.0, 1.0);
+  float brightBoost = smoothstep(0.45, 0.85, wpBright);
+  col = mix(col, col * 1.6 + vec3(0.15), brightBoost * 0.55);
+  col = mix(col, vec3(0.0), readableRim * brightBoost * 0.55 * nonBlack);
   col = clamp(col, vec3(0.0), vec3(1.6));
   gl_FragColor = vec4(col, tex.a * uAlpha * uParticleDim * vAlpha);
 }
