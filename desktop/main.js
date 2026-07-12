@@ -17,25 +17,35 @@ function ensureUser32() {
   try {
     const koffi = require('koffi');
     user32 = koffi.load('user32.dll');
-    _SetWindowPos = user32.func('bool SetWindowPos(ptr hWnd, ptr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags)');
-    _ShowWindow = user32.func('bool ShowWindow(ptr hWnd, int nCmdShow)');
-    _IsWindowVisible = user32.func('bool IsWindowVisible(ptr hWnd)');
-    _IsIconic = user32.func('bool IsIconic(ptr hWnd)');
-    _GetWindowLong = user32.func('int GetWindowLongA(ptr hWnd, int nIndex)');
-    _SetWindowLong = user32.func('int SetWindowLongA(ptr hWnd, int nIndex, int dwNewLong)');
+    // Windows API 用 __stdcall 调用约定
+    // HWND 在 64 位系统上是 8 字节指针，用 uint64 类型直接传整数值
+    _SetWindowPos = user32.func('bool __stdcall SetWindowPos(uint64 hWnd, uint64 hWndInsertAfter, int X, int Y, int cx, int cy, uint32 uFlags)');
+    _ShowWindow = user32.func('bool __stdcall ShowWindow(uint64 hWnd, int nCmdShow)');
+    _IsWindowVisible = user32.func('bool __stdcall IsWindowVisible(uint64 hWnd)');
+    _IsIconic = user32.func('bool __stdcall IsIconic(uint64 hWnd)');
+    _GetWindowLong = user32.func('int __stdcall GetWindowLongA(uint64 hWnd, int nIndex)');
+    _SetWindowLong = user32.func('int __stdcall SetWindowLongA(uint64 hWnd, int nIndex, int dwNewLong)');
   } catch (e) {
-    console.warn('koffi user32 load failed, falling back to PowerShell:', e.message);
+    console.warn('koffi user32 load failed:', e.message);
   }
 }
-const HWND_BOTTOM_PTR = Buffer.from([-2, -1, -1, -1]); // IntPtr(-2) little-endian
-const SWP_FLAGS = 0x0013; // SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE
+// HWND 常量（64 位 BigInt）
+const HWND_TOP = 0n;
+const HWND_BOTTOM = 1n;
+const HWND_TOPMOST = 0xFFFFFFFFFFFFFFFFn;  // -1
+const HWND_NOTOPMOST = 0xFFFFFFFFFFFFFFFEn;  // -2
+const SWP_NOMOVE = 0x0001;
+const SWP_NOSIZE = 0x0002;
+const SWP_NOACTIVATE = 0x0010;
+const SWP_NOZORDER = 0x0004;
+const SWP_FRAMECHANGED = 0x0020;
+const SWP_FLAGS = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
 const SW_RESTORE = 9;
 const SW_SHOWNA = 8;
 const GWL_STYLE = -16;
 const GWL_EXSTYLE = -20;
 const WS_MINIMIZEBOX = 0x00020000;
 const WS_EX_TOOLWINDOW = 0x00000080;
-const SWP_FRAMECHANGED = 0x0020;
 
 let mainWindow = null;
 let localServer = null;
@@ -1137,23 +1147,29 @@ function closeWallpaperWindow() {
 function pinMainWindowToBottom() {
   if (process.platform !== 'win32' || !mainWindow || mainWindow.isDestroyed()) return;
   ensureUser32();
-  if (!user32) return; // koffi 加载失败则静默跳过
-  const hwnd = mainWindow.getNativeWindowHandle(); // Buffer，可直接传给 koffi ptr 参数
-  // 1. 加 WS_EX_TOOLWINDOW 扩展样式（不受 MinimizeAll/Win+D 影响）
-  const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
-  if (!(exStyle & WS_EX_TOOLWINDOW)) {
-    _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
-    _SetWindowPos(hwnd, Buffer.alloc(8), 0, 0, 0, 0, SWP_FRAMECHANGED | 0x0001 | 0x0002 | 0x0004);
+  if (!user32) return;
+  // 从 getNativeWindowHandle() 返回的 Buffer 中读出 HWND 值（64 位小端无符号整数）
+  const hwndBuf = mainWindow.getNativeWindowHandle();
+  const hwnd = hwndBuf.readBigUInt64LE();
+  try {
+    // 1. 加 WS_EX_TOOLWINDOW 扩展样式（不受 MinimizeAll/Win+D 影响）
+    const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
+    if (!(exStyle & WS_EX_TOOLWINDOW)) {
+      _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+      _SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+    }
+    // 2. 检测最小化并恢复
+    if (_IsIconic(hwnd)) _ShowWindow(hwnd, SW_RESTORE);
+    // 3. 检测隐藏并显示
+    if (!_IsWindowVisible(hwnd)) _ShowWindow(hwnd, SW_SHOWNA);
+    // 4. 移除 WS_MINIMIZEBOX 防止再次最小化
+    const style = _GetWindowLong(hwnd, GWL_STYLE);
+    if (style & WS_MINIMIZEBOX) _SetWindowLong(hwnd, GWL_STYLE, style ^ WS_MINIMIZEBOX);
+    // 5. 钉到普通窗口最底
+    _SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_FLAGS);
+  } catch (e) {
+    // koffi 调用出错时不影响后续逻辑
   }
-  // 2. 检测最小化并恢复
-  if (_IsIconic(hwnd)) _ShowWindow(hwnd, SW_RESTORE);
-  // 3. 检测隐藏并显示
-  if (!_IsWindowVisible(hwnd)) _ShowWindow(hwnd, SW_SHOWNA);
-  // 4. 移除 WS_MINIMIZEBOX 防止再次最小化
-  const style = _GetWindowLong(hwnd, GWL_STYLE);
-  if (style & WS_MINIMIZEBOX) _SetWindowLong(hwnd, GWL_STYLE, style ^ WS_MINIMIZEBOX);
-  // 5. 钉到普通窗口最底
-  _SetWindowPos(hwnd, HWND_BOTTOM_PTR, 0, 0, 0, 0, SWP_FLAGS);
 }
 
 function enterDesktopWallpaperMode() {
@@ -1252,14 +1268,17 @@ function exitDesktopWallpaperMode() {
     // 用 koffi 恢复 WS_MINIMIZEBOX + 移除 WS_EX_TOOLWINDOW
     ensureUser32();
     if (user32) {
-      const hwnd = mainWindow.getNativeWindowHandle();
-      const style = _GetWindowLong(hwnd, GWL_STYLE);
-      if (!(style & WS_MINIMIZEBOX)) _SetWindowLong(hwnd, GWL_STYLE, style | WS_MINIMIZEBOX);
-      const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
-      if (exStyle & WS_EX_TOOLWINDOW) {
-        _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle ^ WS_EX_TOOLWINDOW);
-        _SetWindowPos(hwnd, Buffer.alloc(8), 0, 0, 0, 0, SWP_FRAMECHANGED | 0x0001 | 0x0002 | 0x0004);
-      }
+      const hwndBuf = mainWindow.getNativeWindowHandle();
+      const hwnd = hwndBuf.readBigUInt64LE();
+      try {
+        const style = _GetWindowLong(hwnd, GWL_STYLE);
+        if (!(style & WS_MINIMIZEBOX)) _SetWindowLong(hwnd, GWL_STYLE, style | WS_MINIMIZEBOX);
+        const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
+        if (exStyle & WS_EX_TOOLWINDOW) {
+          _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle ^ WS_EX_TOOLWINDOW);
+          _SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+        }
+      } catch (e) {}
     }
     mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: false });
 
