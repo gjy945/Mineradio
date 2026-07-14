@@ -5,6 +5,19 @@ const fs = require('fs');
 const { execFile, spawn } = require('child_process');
 
 // ========== koffi FFI：直接调用 user32.dll，替代 PowerShell ==========
+let koffi = null;
+try { koffi = require('koffi'); } catch (e) { console.warn('koffi load failed:', e.message); }
+
+// 结构体定义（koffi 加载成功后才定义）
+const POINT = koffi ? koffi.struct('POINT', { x: 'int32', y: 'int32' }) : null;
+const MSLLHOOKSTRUCT = koffi ? koffi.struct('MSLLHOOKSTRUCT', {
+  pt: POINT,
+  mouseData: 'uint32',
+  flags: 'uint32',
+  time: 'uint32',
+  dwExtraInfo: 'uintptr',
+}) : null;
+
 let user32 = null;
 let _SetWindowPos = null;
 let _ShowWindow = null;
@@ -12,28 +25,47 @@ let _IsWindowVisible = null;
 let _IsIconic = null;
 let _GetWindowLong = null;
 let _SetWindowLong = null;
+let _FindWindow = null;
+let _FindWindowEx = null;
+let _SetParent = null;
+let _SendMessageTimeout = null;
+let _GetForegroundWindow = null;
+let _PostMessage = null;
+let _SetWindowsHookEx = null;
+let _UnhookWindowsHookEx = null;
+let _CallNextHookEx = null;
+let _GetSystemMetrics = null;
+let _GetWindowRect = null;
+
 function ensureUser32() {
-  if (user32) return;
+  if (user32 || !koffi) return;
   try {
-    const koffi = require('koffi');
     user32 = koffi.load('user32.dll');
-    // Windows API 用 __stdcall 调用约定
-    // HWND 在 64 位系统上是 8 字节指针，用 uint64 类型直接传整数值
     _SetWindowPos = user32.func('bool __stdcall SetWindowPos(uint64 hWnd, uint64 hWndInsertAfter, int X, int Y, int cx, int cy, uint32 uFlags)');
     _ShowWindow = user32.func('bool __stdcall ShowWindow(uint64 hWnd, int nCmdShow)');
     _IsWindowVisible = user32.func('bool __stdcall IsWindowVisible(uint64 hWnd)');
     _IsIconic = user32.func('bool __stdcall IsIconic(uint64 hWnd)');
     _GetWindowLong = user32.func('int __stdcall GetWindowLongA(uint64 hWnd, int nIndex)');
     _SetWindowLong = user32.func('int __stdcall SetWindowLongA(uint64 hWnd, int nIndex, int dwNewLong)');
+    _FindWindow = user32.func('uint64 __stdcall FindWindowA(str lpClassName, str lpWindowName)');
+    _FindWindowEx = user32.func('uint64 __stdcall FindWindowExA(uint64 parent, uint64 childAfter, str className, str windowName)');
+    _SetParent = user32.func('uint64 __stdcall SetParent(uint64 hWndChild, uint64 hWndNewParent)');
+    _SendMessageTimeout = user32.func('int64 __stdcall SendMessageTimeoutA(uint64 hWnd, uint32 Msg, uint64 wParam, int64 lParam, uint32 fuFlags, uint32 uTimeout, void *lpdwResult)');
+    _GetForegroundWindow = user32.func('uint64 __stdcall GetForegroundWindow()');
+    _PostMessage = user32.func('bool __stdcall PostMessageA(uint64 hWnd, uint32 Msg, uint64 wParam, int64 lParam)');
+    _SetWindowsHookEx = user32.func('uint64 __stdcall SetWindowsHookExA(int idHook, void *lpfn, uint64 hMod, uint32 dwThreadId)');
+    _UnhookWindowsHookEx = user32.func('bool __stdcall UnhookWindowsHookEx(uint64 hhk)');
+    _CallNextHookEx = user32.func('int64 __stdcall CallNextHookEx(uint64 hhk, int nCode, uint64 wParam, int64 lParam)');
+    _GetSystemMetrics = user32.func('int __stdcall GetSystemMetrics(int nIndex)');
+    _GetWindowRect = user32.func('bool __stdcall GetWindowRect(uint64 hWnd, void *lpRect)');
   } catch (e) {
     console.warn('koffi user32 load failed:', e.message);
   }
 }
-// HWND 常量（64 位 BigInt）
+
+// Win32 常量
 const HWND_TOP = 0n;
 const HWND_BOTTOM = 1n;
-const HWND_TOPMOST = 0xFFFFFFFFFFFFFFFFn;  // -1
-const HWND_NOTOPMOST = 0xFFFFFFFFFFFFFFFEn;  // -2
 const SWP_NOMOVE = 0x0001;
 const SWP_NOSIZE = 0x0002;
 const SWP_NOACTIVATE = 0x0010;
@@ -46,6 +78,15 @@ const GWL_STYLE = -16;
 const GWL_EXSTYLE = -20;
 const WS_MINIMIZEBOX = 0x00020000;
 const WS_EX_TOOLWINDOW = 0x00000080;
+const WH_MOUSE_LL = 14;
+const HC_ACTION = 0;
+const WM_LBUTTONDOWN = 0x0201;
+const WM_LBUTTONUP = 0x0202;
+const WM_RBUTTONDOWN = 0x0204;
+const WM_RBUTTONUP = 0x0205;
+const WM_MOUSEMOVE = 0x0200;
+const SM_CXSCREEN = 0;
+const SM_CYSCREEN = 1;
 
 let mainWindow = null;
 let localServer = null;
@@ -69,6 +110,8 @@ let desktopWallpaperMinimizeHandler = null;
 let desktopWallpaperFocusHandler = null;
 let desktopWallpaperForegroundTimer = null;
 let desktopWallpaperPausedState = false;
+let desktopWallpaperOriginalParent = 0n; // SetParent 前的原始父窗口
+let workerWHandle = 0n; // WorkerW 窗口句柄
 let appTray = null;
 let htmlFullscreenActive = false;
 let windowFullscreenActive = false;
@@ -1143,38 +1186,32 @@ function closeWallpaperWindow() {
   wallpaperWindow = null;
 }
 
-// ========== 桌面壁纸模式（变换主窗口，浮于图标上方 + 动态点击穿透） ==========
-function pinMainWindowToBottom() {
+// ========== 桌面壁纸模式（伪壁纸：顶级窗口 + 高频检测恢复 Win+D） ==========
+
+// 高频检测窗口是否被最小化/隐藏，立即恢复
+// Win+D 调用 ToggleDesktop/MinimizeAll 强制最小化所有顶级窗口
+// 我们在 16ms（约一帧）内检测并恢复，用户几乎无感
+function pinMainWindowToDesktop() {
   if (process.platform !== 'win32' || !mainWindow || mainWindow.isDestroyed()) return;
-  ensureUser32();
   if (!user32) return;
-  // 从 getNativeWindowHandle() 返回的 Buffer 中读出 HWND 值（64 位小端无符号整数）
-  const hwndBuf = mainWindow.getNativeWindowHandle();
-  const hwnd = hwndBuf.readBigUInt64LE();
   try {
-    // 1. 加 WS_EX_TOOLWINDOW 扩展样式（不受 MinimizeAll/Win+D 影响）
-    const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
-    if (!(exStyle & WS_EX_TOOLWINDOW)) {
-      _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
-      _SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+    const hwndBuf = mainWindow.getNativeWindowHandle();
+    const hwnd = hwndBuf.readBigUInt64LE();
+    // 检测最小化并立即恢复
+    if (_IsIconic(hwnd)) {
+      _ShowWindow(hwnd, SW_RESTORE);
     }
-    // 2. 检测最小化并恢复
-    if (_IsIconic(hwnd)) _ShowWindow(hwnd, SW_RESTORE);
-    // 3. 检测隐藏并显示
-    if (!_IsWindowVisible(hwnd)) _ShowWindow(hwnd, SW_SHOWNA);
-    // 4. 移除 WS_MINIMIZEBOX 防止再次最小化
-    const style = _GetWindowLong(hwnd, GWL_STYLE);
-    if (style & WS_MINIMIZEBOX) _SetWindowLong(hwnd, GWL_STYLE, style ^ WS_MINIMIZEBOX);
-    // 5. 钉到普通窗口最底
-    _SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_FLAGS);
-  } catch (e) {
-    // koffi 调用出错时不影响后续逻辑
-  }
+    // 检测隐藏并立即显示
+    if (!_IsWindowVisible(hwnd)) {
+      _ShowWindow(hwnd, SW_SHOWNA);
+    }
+  } catch (e) {}
 }
 
 function enterDesktopWallpaperMode() {
   if (desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
   desktopWallpaperActive = true;
+  ensureUser32();
 
   // 保存主窗口状态
   desktopWallpaperPrevState = {
@@ -1183,50 +1220,41 @@ function enterDesktopWallpaperMode() {
     isFullScreen: mainWindow.isFullScreen(),
   };
 
-  // 不出现在任务栏 + 禁止最小化（抵抗 Win+D 的 MinimizeAll）
+  // 不出现在任务栏
   mainWindow.setSkipTaskbar(true);
-  mainWindow.setMinimizable(false);
   if (mainWindow.isMaximized()) mainWindow.unmaximize();
   if (mainWindow.isFullScreen()) mainWindow.setFullScreen(false);
 
-  // 全屏覆盖主显示器
+  // 用逻辑像素设置窗口尺寸（Electron 的 setBounds 用逻辑像素，不是物理像素）
+  // 物理分辨率 1920x1080 + DPI 125% → 逻辑分辨率 1536x864
   const bounds = screen.getPrimaryDisplay().bounds;
   mainWindow.setBounds(bounds, false);
 
   // 默认点击穿透（forward 保证 mousemove 仍转发给渲染层）
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
 
-  // 钉到普通窗口最底（高于桌面图标，低于其他应用窗口）
-  pinMainWindowToBottom();
-
   // 通知渲染层激活壁纸模式 CSS + mousemove 动态穿透监听
   mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: true });
+  console.log('[wallpaper] entered wallpaper mode, logical size:', bounds.width, 'x', bounds.height);
 
-  // 50ms 高频定时：钉底 + 强制恢复最小化/隐藏（Win+D 批量最小化后需要快速恢复）
+  // 16ms 高频检测：Win+D 后立即恢复窗口
+  // 16ms ≈ 60fps，用户按 Win+D 后最多看到一帧的最小化状态
   desktopWallpaperPinTimer = setInterval(() => {
     if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
-    pinMainWindowToBottom();
-  }, 50);
+    pinMainWindowToDesktop();
+  }, 16);
 
-  // Win+D 抵抗：minimize/hide 事件立即恢复（双保险，定时器兜底）
+  // minimize/hide 事件兜底：Electron 事件触发后立即恢复
   desktopWallpaperMinimizeHandler = () => {
     if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
     setImmediate(() => {
       if (!desktopWallpaperActive || !mainWindow || mainWindow.isDestroyed()) return;
       if (mainWindow.isMinimized()) mainWindow.restore();
-      if (!mainWindow.isVisible()) mainWindow.show();
-      pinMainWindowToBottom();
+      if (!mainWindow.isVisible()) mainWindow.showInactive();
     });
   };
   mainWindow.on('minimize', desktopWallpaperMinimizeHandler);
   mainWindow.on('hide', desktopWallpaperMinimizeHandler);
-
-  // 点击按钮获得焦点后立即重新钉底，避免浮到其他应用之上
-  desktopWallpaperFocusHandler = () => {
-    if (!desktopWallpaperActive) return;
-    setImmediate(pinMainWindowToBottom);
-  };
-  mainWindow.on('focus', desktopWallpaperFocusHandler);
 
   // 1000ms 定时检查前台窗口：其他应用在前台时通知渲染层暂停粒子渲染
   desktopWallpaperForegroundTimer = setInterval(checkForegroundWindowForWallpaper, 1000);
@@ -1236,7 +1264,7 @@ function exitDesktopWallpaperMode() {
   if (!desktopWallpaperActive) return;
   desktopWallpaperActive = false;
 
-  // 停止钉底定时器
+  // 停止高频检测定时器
   if (desktopWallpaperPinTimer) {
     clearInterval(desktopWallpaperPinTimer);
     desktopWallpaperPinTimer = null;
@@ -1264,22 +1292,6 @@ function exitDesktopWallpaperMode() {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.setIgnoreMouseEvents(false);
     mainWindow.setSkipTaskbar(false);
-    mainWindow.setMinimizable(true);
-    // 用 koffi 恢复 WS_MINIMIZEBOX + 移除 WS_EX_TOOLWINDOW
-    ensureUser32();
-    if (user32) {
-      const hwndBuf = mainWindow.getNativeWindowHandle();
-      const hwnd = hwndBuf.readBigUInt64LE();
-      try {
-        const style = _GetWindowLong(hwnd, GWL_STYLE);
-        if (!(style & WS_MINIMIZEBOX)) _SetWindowLong(hwnd, GWL_STYLE, style | WS_MINIMIZEBOX);
-        const exStyle = _GetWindowLong(hwnd, GWL_EXSTYLE);
-        if (exStyle & WS_EX_TOOLWINDOW) {
-          _SetWindowLong(hwnd, GWL_EXSTYLE, exStyle ^ WS_EX_TOOLWINDOW);
-          _SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
-        }
-      } catch (e) {}
-    }
     mainWindow.webContents.send('mineradio-desktop-wallpaper-mode', { active: false });
 
     if (desktopWallpaperPrevState) {
@@ -1292,6 +1304,7 @@ function exitDesktopWallpaperMode() {
       }
     }
     mainWindow.focus();
+    console.log('[wallpaper] exited wallpaper mode');
   }
   desktopWallpaperPrevState = null;
 }
@@ -1595,7 +1608,8 @@ ipcMain.handle('mineradio-desktop-wallpaper-toggle', async () => {
 ipcMain.handle('mineradio-desktop-wallpaper-capture', async (_event, capture) => {
   try {
     if (!mainWindow || mainWindow.isDestroyed() || !desktopWallpaperActive) return { ok: false };
-    // capture=true → 窗口捕获点击（不穿透）; capture=false → 点击穿透 + mousemove 转发
+    // capture=true → 窗口捕获点击（鼠标在交互元素上，不穿透）
+    // capture=false → 点击穿透 + mousemove 转发（鼠标在透明区域，穿透到桌面图标）
     mainWindow.setIgnoreMouseEvents(!capture, { forward: !capture });
     return { ok: true };
   } catch (e) {
