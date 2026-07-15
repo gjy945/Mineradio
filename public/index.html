@@ -1588,7 +1588,7 @@ html.control-glass-svg-ok #top-right .icon-btn{
   -webkit-backdrop-filter:var(--saved-button-glass-svg-filter)!important;
 }
 #search-results,.search-mode-tabs,#playlist-panel,#fx-panel{
-  background:rgba(0,0,0,.90)!important;
+  background:rgba(0,0,0,.28)!important;
   border:1px solid rgba(255,255,255,.095)!important;
   box-shadow:0 22px 70px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10)!important;
   backdrop-filter:blur(22px) saturate(1.16)!important;
@@ -3909,6 +3909,16 @@ document.addEventListener('mousemove', function(e) {
     '.desktop-wallpaper-mode #search-box{background:rgba(12,12,20,.35)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:20px!important}',
     '.desktop-wallpaper-mode #search-input{background:transparent!important;color:rgba(255,255,255,.9)!important}',
     '.desktop-wallpaper-mode #search-input::placeholder{color:rgba(255,255,255,.5)!important}',
+    // 搜索下拉面板+模式tabs：透明磨砂，融入壁纸
+    '.desktop-wallpaper-mode #search-results{background:rgba(12,12,20,.32)!important;backdrop-filter:blur(22px) saturate(1.16)!important;-webkit-backdrop-filter:blur(22px) saturate(1.16)!important;border:1px solid rgba(255,255,255,.095)!important}',
+    '.desktop-wallpaper-mode .search-mode-tabs{background:rgba(12,12,20,.22)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;border:1px solid rgba(255,255,255,.08)!important}',
+    '.desktop-wallpaper-mode .search-mode-tabs button{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}',
+    '.desktop-wallpaper-mode .search-mode-tabs button.active{background:rgba(0,245,212,.14)!important;box-shadow:inset 0 0 0 1px rgba(0,245,212,.22)!important}',
+    '.desktop-wallpaper-mode .search-history-chip{background:rgba(12,12,20,.28)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important}',
+    '.desktop-wallpaper-mode .search-hot-section{background:transparent!important}',
+    '.desktop-wallpaper-mode .search-hot-item{background:transparent!important}',
+    '.desktop-wallpaper-mode .search-hot-item:hover{background:rgba(255,255,255,.05)!important}',
+    '.desktop-wallpaper-mode .search-history-section{background:transparent!important;border-color:rgba(255,255,255,.05)!important}',
     // 卡片文字更清晰
     '.desktop-wallpaper-mode .home-card .card-title,.desktop-wallpaper-mode .home-tile .tile-title{color:rgba(255,255,255,.95)!important;text-shadow:0 1px 3px rgba(0,0,0,.5)}',
     '.desktop-wallpaper-exit-btn{display:none;position:fixed;top:12px;right:12px;z-index:9999;width:36px;height:36px;border-radius:50%;background:rgba(12,12,20,.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.8);font-size:18px;line-height:1;cursor:pointer;-webkit-app-region:no-drag;align-items:center;justify-content:center}',
