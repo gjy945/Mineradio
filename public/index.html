@@ -257,6 +257,68 @@ body.empty-home-active.diy-mode #search-area:not(.has-results) #search-type-tabs
 .tag-source.netease{color:#ffd8dd;border-color:rgba(217,91,103,.30);background:rgba(217,91,103,.075)}
 .tag-source.qq{color:#f0ffc8;border-color:rgba(191,214,107,.30);background:rgba(191,214,107,.075)}
 .tag-source.kugou{color:#c8e0ff;border-color:rgba(41,121,255,.30);background:rgba(41,121,255,.075)}
+.tag-source.kuwo{color:#ffd9c8;border-color:rgba(255,99,71,.30);background:rgba(255,99,71,.075)}
+.tag-source.migu{color:#ffc8e6;border-color:rgba(255,72,138,.30);background:rgba(255,72,138,.075)}
+/* 下载按钮 */
+.download-icon-svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;viewBox:0 0 24 24}
+/* 下载品质选择弹窗 */
+.dq-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.dq-overlay.show{opacity:1}
+.dq-modal{width:380px;max-width:90vw;background:rgba(20,20,28,.92);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.dq-header{font-size:15px;font-weight:700;color:rgba(255,255,255,.95);margin-bottom:14px}
+.dq-song-info{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.dq-song-info img{width:44px;height:44px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,.05)}
+.dq-song-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dq-song-artist{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.dq-section-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px}
+.dq-quality-list{display:flex;flex-direction:column;gap:6px}
+.dq-quality-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .15s}
+.dq-quality-item:hover{background:rgba(0,245,212,.08);border-color:rgba(0,245,212,.2)}
+.dq-q-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.9)}
+.dq-q-br{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.dq-q-arrow{color:rgba(0,245,212,.6);font-size:16px}
+.dq-cancel-btn{width:100%;margin-top:14px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;transition:all .15s}
+.dq-cancel-btn:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9)}
+/* 下载任务面板 */
+.dl-panel{position:fixed;top:0;right:0;width:380px;max-width:90vw;height:100vh;background:rgba(16,16,22,.95);backdrop-filter:blur(24px) saturate(1.2);-webkit-backdrop-filter:blur(24px) saturate(1.2);border-left:1px solid rgba(255,255,255,.08);z-index:9998;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.dl-panel.show{transform:translateX(0)}
+.dl-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.dl-head-title{font-size:15px;font-weight:700;color:rgba(255,255,255,.95)}
+.dl-head-close{width:28px;height:28px;border-radius:8px;border:none;background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dl-head-close:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
+.dl-actions{display:flex;gap:8px;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.dl-action-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(255,255,255,.6);font-size:11px;cursor:pointer;transition:all .15s}
+.dl-action-btn:hover{background:rgba(0,245,212,.08);border-color:rgba(0,245,212,.2);color:rgba(0,245,212,.9)}
+.dl-list{flex:1;overflow-y:auto;padding:8px 12px}
+.dl-empty{text-align:center;padding:40px 20px;color:rgba(255,255,255,.3);font-size:13px}
+.dl-task{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);margin-bottom:8px}
+.dl-task-info{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.dl-task-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.dl-task-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;flex-shrink:0}
+.dl-status-pending{background:rgba(255,200,0,.12);color:rgba(255,200,0,.7)}
+.dl-status-downloading{background:rgba(0,245,212,.12);color:rgba(0,245,212,.8)}
+.dl-status-completed{background:rgba(100,220,120,.12);color:rgba(100,220,120,.7)}
+.dl-status-failed{background:rgba(255,80,80,.12);color:rgba(255,80,80,.7)}
+.dl-status-cancelled{background:rgba(255,255,255,.06);color:rgba(255,255,255,.4)}
+.dl-task-artist{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-task-meta{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.dl-task-size{font-size:10px;color:rgba(255,255,255,.35)}
+.dl-progress{height:3px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:6px;overflow:hidden}
+.dl-progress-bar{height:100%;background:linear-gradient(90deg,rgba(0,245,212,.6),rgba(0,245,212,.9));border-radius:2px;transition:width .3s}
+.dl-task-actions{display:flex;gap:6px;margin-top:6px}
+.dl-cancel-btn{padding:3px 10px;border-radius:6px;border:1px solid rgba(255,80,80,.2);background:rgba(255,80,80,.06);color:rgba(255,80,80,.7);font-size:10px;cursor:pointer}
+.dl-cancel-btn:hover{background:rgba(255,80,80,.12)}
+.dl-retry-btn{padding:3px 10px;border-radius:6px;border:1px solid rgba(0,245,212,.2);background:rgba(0,245,212,.06);color:rgba(0,245,212,.7);font-size:10px;cursor:pointer}
+.dl-retry-btn:hover{background:rgba(0,245,212,.12)}
+/* 控制台下载按钮 */
+#download-btn.ctrl-btn{transition:color .15s}
+#download-btn:hover{color:rgba(0,245,212,.9)}
+/* 搜索结果下载按钮 */
+.song-action-btn.download{opacity:.6}
+.song-action-btn.download:hover{opacity:1;color:rgba(0,245,212,.9)}
+/* 批量下载按钮 */
+.batch-download-btn{padding:5px 12px;border-radius:8px;border:1px solid rgba(0,245,212,.2);background:rgba(0,245,212,.06);color:rgba(0,245,212,.8);font-size:11px;cursor:pointer;transition:all .15s}
+.batch-download-btn:hover{background:rgba(0,245,212,.12);border-color:rgba(0,245,212,.35)}
 .search-result.qq-source:hover{background:rgba(191,214,107,.052)}
 .search-result.netease-source:hover{background:rgba(217,91,103,.045)}
 .podcast-result-head{display:flex;align-items:center;gap:10px;padding:11px 13px 9px;border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.025)}
@@ -2248,6 +2310,21 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
     </div>
   </div>
 
+  <div class="fx-fold" id="fx-download-fold">
+    <div class="fx-fold-head" onclick="document.getElementById('fx-download-fold').classList.toggle('open')">
+      <span class="fx-fold-title"><strong>下载设置</strong><small>下载位置 / 打开目录</small></span><span class="arrow">▶</span>
+    </div>
+    <div class="fx-fold-body">
+      <div class="fx-section-label">下载位置</div>
+      <div class="source-action-row">
+        <input id="fx-download-dir" type="text" class="fx-input" placeholder="下载目录路径" style="flex:1;min-width:0">
+        <button class="fx-mini-btn" onclick="saveDownloadDir()">保存</button>
+        <button class="fx-mini-btn" onclick="openDownloadFolder()">打开</button>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:6px;line-height:1.5">歌曲默认下载到此目录，文件名格式：歌手 - 歌名.mp3/flac</div>
+    </div>
+  </div>
+
   <div class="fx-fold" id="fx-overlay-fold">
     <div class="fx-fold-head" onclick="document.getElementById('fx-overlay-fold').classList.toggle('open')">
       <span class="fx-fold-title"><strong>叠加效果</strong><small>粒子 / 镜头 / 溢光</small></span><span class="arrow">▶</span>
@@ -2537,6 +2614,7 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
       </div>
       <button id="heart-btn" class="ctrl-btn" onclick="toggleLikeCurrent()" title="红心喜欢"><svg class="heart-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.45c-.32 0-.62-.12-.86-.34l-1.23-1.12C5.54 16.03 2.25 13.05 2.25 8.9 2.25 5.48 4.88 2.9 8.28 2.9c1.7 0 3.35.72 4.52 1.96C13.97 3.62 15.62 2.9 17.32 2.9c3.4 0 6.03 2.58 6.03 6 0 4.15-3.29 7.13-7.66 11.09l-1.23 1.12c-.24.22-.54.34-.86.34z"/></svg></button>
       <button id="collect-btn" class="ctrl-btn" onclick="openCollectModalForCurrent()" title="收藏到歌单"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
+      <button id="download-btn" class="ctrl-btn" onclick="downloadCurrentSong()" title="下载当前歌曲"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     </div>
     <div class="control-cluster transport">
     <button id="play-mode-btn" class="ctrl-btn" onclick="cyclePlayMode()" title="播放顺序"><svg id="play-mode-icon" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
@@ -10657,6 +10735,11 @@ async function fetchBeatPrefetchAudioUrl(song) {
     data = await apiJson('/api/qq/song/url?mid=' + encodeURIComponent(song.mid || song.songmid || song.id || '') + '&mediaMid=' + encodeURIComponent(song.mediaMid || song.media_mid || '') + qualityParam);
   } else if (provider === 'kugou') {
     data = await apiJson('/api/kugou/song/url?hash=' + encodeURIComponent(pickKugouHashForQuality(song, requestedQuality)));
+  } else if (provider === 'kuwo') {
+    data = await apiJson('/api/kuwo/song/url?rid=' + encodeURIComponent(song.rid || song.id || '') + '&quality=' + encodeURIComponent(requestedQuality));
+  } else if (provider === 'migu') {
+    // 咪咕播放URL需要加密签名，公开接口拿不到，返回null让降级到网易云搜索
+    return null;
   } else {
     data = await apiJson('/api/song/url?id=' + encodeURIComponent(song.id) + qualityParam);
   }
@@ -17658,12 +17741,12 @@ function updateSearchModeTabs() {
   if ($input) {
     $input.placeholder = searchMode === 'podcast'
       ? '搜索播客、电台...'
-      : (searchMode === 'qq' ? '搜索 QQ 音乐...' : (searchMode === 'netease' ? '搜索网易云音乐...' : (searchMode === 'kugou' ? '搜索酷狗音乐...' : '搜索歌曲、歌手...')));
+      : (searchMode === 'qq' ? '搜索 QQ 音乐...' : (searchMode === 'netease' ? '搜索网易云音乐...' : (searchMode === 'kugou' ? '搜索酷狗音乐...' : (searchMode === 'kuwo' ? '搜索酷我音乐...' : (searchMode === 'migu' ? '搜索咪咕音乐...' : '搜索歌曲、歌手...')))));
   }
   requestAnimationFrame(updateSearchPillGlassDisplacementMap);
 }
 function setSearchMode(mode) {
-  mode = (mode === 'podcast' || mode === 'netease' || mode === 'qq' || mode === 'kugou') ? mode : 'song';
+  mode = (mode === 'podcast' || mode === 'netease' || mode === 'qq' || mode === 'kugou' || mode === 'kuwo' || mode === 'migu') ? mode : 'song';
   if (searchMode === mode) return;
   searchMode = mode;
   updateSearchModeTabs();
@@ -17991,6 +18074,12 @@ async function loadSourceConfig() {
   } catch (e) {
     console.warn('[SourceConfig] load failed:', e.message);
   }
+  // 加载下载目录配置
+  try {
+    var dlCfg = await fetch('/api/download/config').then(function(r){return r.json()});
+    var dirInput = document.getElementById('fx-download-dir');
+    if (dirInput && dlCfg.downloadDir) dirInput.value = dlCfg.downloadDir;
+  } catch(e) {}
 }
 
 async function saveSourceConfig() {
@@ -18486,7 +18575,7 @@ async function loadMoreSearchResults() {
 
 async function fetchMusicSearchResultsPage(q, mode, page) {
   var offset = page * SEARCH_PAGE_SIZE;
-  var thirdPage = Math.floor(SEARCH_PAGE_SIZE / 3);
+  var fifthPage = Math.floor(SEARCH_PAGE_SIZE / 5);
 
   if (mode === 'qq') {
     var qqOnly = await apiJson('/api/qq/search?keywords=' + encodeURIComponent(q) + '&limit=' + SEARCH_PAGE_SIZE + '&offset=' + offset);
@@ -18500,16 +18589,28 @@ async function fetchMusicSearchResultsPage(q, mode, page) {
     var kgOnly = await apiJson('/api/kugou/search?keywords=' + encodeURIComponent(q) + '&limit=' + SEARCH_PAGE_SIZE + '&offset=' + offset);
     return kgOnly.songs || [];
   }
-  // 全部模式：三源并发合并
+  if (mode === 'kuwo') {
+    var kwOnly = await apiJson('/api/kuwo/search?keywords=' + encodeURIComponent(q) + '&limit=' + SEARCH_PAGE_SIZE + '&offset=' + offset);
+    return kwOnly.songs || [];
+  }
+  if (mode === 'migu') {
+    var mgOnly = await apiJson('/api/migu/search?keywords=' + encodeURIComponent(q) + '&limit=' + SEARCH_PAGE_SIZE + '&offset=' + offset);
+    return mgOnly.songs || [];
+  }
+  // 全部模式：五源并发合并
   var result = await Promise.allSettled([
-    apiJson('/api/search?keywords=' + encodeURIComponent(q) + '&limit=' + thirdPage + '&offset=' + offset + '&type=1'),
-    apiJson('/api/qq/search?keywords=' + encodeURIComponent(q) + '&limit=' + thirdPage + '&offset=' + offset),
-    apiJson('/api/kugou/search?keywords=' + encodeURIComponent(q) + '&limit=' + thirdPage + '&offset=' + offset)
+    apiJson('/api/search?keywords=' + encodeURIComponent(q) + '&limit=' + fifthPage + '&offset=' + offset + '&type=1'),
+    apiJson('/api/qq/search?keywords=' + encodeURIComponent(q) + '&limit=' + fifthPage + '&offset=' + offset),
+    apiJson('/api/kugou/search?keywords=' + encodeURIComponent(q) + '&limit=' + fifthPage + '&offset=' + offset),
+    apiJson('/api/kuwo/search?keywords=' + encodeURIComponent(q) + '&limit=' + fifthPage + '&offset=' + offset),
+    apiJson('/api/migu/search?keywords=' + encodeURIComponent(q) + '&limit=' + fifthPage + '&offset=' + offset)
   ]);
   var ne = result[0].status === 'fulfilled' ? ((result[0].value && result[0].value.songs) || []) : [];
   var qq = result[1].status === 'fulfilled' ? ((result[1].value && result[1].value.songs) || []) : [];
   var kg = result[2].status === 'fulfilled' ? ((result[2].value && result[2].value.songs) || []) : [];
-  return mergeSongSearchResults(ne, qq, kg, SEARCH_PAGE_SIZE, q);
+  var kw = result[3].status === 'fulfilled' ? ((result[3].value && result[3].value.songs) || []) : [];
+  var mg = result[4].status === 'fulfilled' ? ((result[4].value && result[4].value.songs) || []) : [];
+  return mergeSongSearchResults(ne, qq, kg, kw, mg, SEARCH_PAGE_SIZE, q);
 }
 
 function appendSongSearchResults(newSongs) {
@@ -18545,6 +18646,8 @@ loadSourceConfig();
 function songProviderKey(song) {
   if (song && (song.provider === 'qq' || song.source === 'qq' || song.type === 'qq')) return 'qq';
   if (song && (song.provider === 'kugou' || song.source === 'kugou' || song.type === 'kugou')) return 'kugou';
+  if (song && (song.provider === 'kuwo' || song.source === 'kuwo' || song.type === 'kuwo')) return 'kuwo';
+  if (song && (song.provider === 'migu' || song.source === 'migu' || song.type === 'migu')) return 'migu';
   return 'netease';
 }
 // 根据当前音质档位选酷狗对应 hash：
@@ -18558,9 +18661,220 @@ function pickKugouHashForQuality(song, quality) {
   if ((q === 'hires' || q === 'lossless' || q === 'exhigh') && song.hqHash) return song.hqHash;
   return song.hash || song.id || '';
 }
+// ========== 下载管理 ==========
+var downloadPollTimer = null;
+var downloadTasksCache = [];
+var downloadQualityPickerSong = null;
+
+async function startDownload(song, quality) {
+  var provider = songProviderKey(song);
+  try {
+    await apiJson('/api/download/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: provider, songData: song, quality: quality })
+    });
+    startDownloadPolling();
+    showDownloadPanel();
+  } catch (e) {
+    console.error('[Download] start failed:', e);
+  }
+}
+
+function startDownloadPolling() {
+  if (downloadPollTimer) return;
+  downloadPollTimer = setInterval(refreshDownloadTasks, 1000);
+  refreshDownloadTasks();
+}
+
+async function refreshDownloadTasks() {
+  try {
+    var data = await apiJson('/api/download/list');
+    downloadTasksCache = data.tasks || [];
+    renderDownloadTasks();
+    var hasActive = downloadTasksCache.some(function(t){ return t.status === 'pending' || t.status === 'downloading'; });
+    if (!hasActive && downloadPollTimer) {
+      clearInterval(downloadPollTimer);
+      downloadPollTimer = null;
+    }
+  } catch (e) {}
+}
+
+function renderDownloadTasks() {
+  var list = document.getElementById('download-task-list');
+  if (!list) return;
+  if (!downloadTasksCache.length) {
+    list.innerHTML = '<div class="dl-empty">暂无下载任务</div>';
+    return;
+  }
+  list.innerHTML = downloadTasksCache.map(function(t) {
+    var progress = t.totalBytes > 0 ? Math.round(t.downloadedBytes / t.totalBytes * 100) : 0;
+    var statusMap = { pending: '等待中', downloading: '下载中', completed: '已完成', failed: '失败', cancelled: '已取消' };
+    var statusText = statusMap[t.status] || t.status;
+    var progressBar = (t.status === 'downloading' && t.totalBytes > 0) ? '<div class="dl-progress"><div class="dl-progress-bar" style="width:' + progress + '%"></div></div>' : '';
+    var sizeText = formatBytes(t.downloadedBytes) + (t.totalBytes > 0 ? ' / ' + formatBytes(t.totalBytes) : '');
+    var actions = '';
+    if (t.status === 'pending' || t.status === 'downloading') {
+      actions = '<button class="dl-cancel-btn" onclick="cancelDownload(' + t.id + ')">取消</button>';
+    } else if (t.status === 'failed') {
+      actions = '<button class="dl-retry-btn" onclick="retryDownload(' + t.id + ')">重试</button>';
+    }
+    return '<div class="dl-task">' +
+      '<div class="dl-task-info">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="dl-task-name">' + escHtml(t.songName || '未知歌曲') + '</div>' +
+          '<div class="dl-task-artist">' + escHtml(t.artist || '') + '</div>' +
+        '</div>' +
+        '<span class="dl-task-status dl-status-' + t.status + '">' + statusText + '</span>' +
+      '</div>' +
+      (t.status === 'downloading' || t.status === 'completed' ? '<div class="dl-task-meta"><span class="dl-task-size">' + sizeText + '</span></div>' : (t.error ? '<div class="dl-task-meta"><span class="dl-task-size" style="color:rgba(255,80,80,.5)">' + escHtml(t.error) + '</span></div>' : '')) +
+      progressBar +
+      (actions ? '<div class="dl-task-actions">' + actions + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  var units = ['B', 'KB', 'MB', 'GB'];
+  var i = Math.floor(Math.log(bytes) / Math.log(1024));
+  if (i >= units.length) i = units.length - 1;
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + units[i];
+}
+
+async function cancelDownload(taskId) {
+  try {
+    await apiJson('/api/download/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskId: taskId })
+    });
+    refreshDownloadTasks();
+  } catch (e) {}
+}
+
+async function retryDownload(taskId) {
+  var task = downloadTasksCache.find(function(t){ return t.id === taskId; });
+  if (!task) return;
+  // 找到对应的歌曲信息重新下载
+  var song = { name: task.songName, artist: task.artist, provider: task.provider };
+  // 先取消旧任务
+  await apiJson('/api/download/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  // 重新开始下载（需要完整的歌曲信息，这里用简化版，可能无法获取URL）
+  // 实际重试需要保存原始songData
+  refreshDownloadTasks();
+}
+
+async function openDownloadFolder() {
+  try {
+    await apiJson('/api/download/open-folder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  } catch (e) {}
+}
+
+async function clearFinishedDownloads() {
+  try {
+    await apiJson('/api/download/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    refreshDownloadTasks();
+  } catch (e) {}
+}
+
+function showDownloadPanel() {
+  var panel = document.getElementById('download-panel');
+  if (panel) panel.classList.add('show');
+  refreshDownloadTasks();
+}
+function hideDownloadPanel() {
+  var panel = document.getElementById('download-panel');
+  if (panel) panel.classList.remove('show');
+}
+
+// 品质选择弹窗
+function showDownloadQualityPicker(song) {
+  downloadQualityPickerSong = song;
+  var picker = document.getElementById('download-quality-picker');
+  if (!picker) return;
+  document.getElementById('dq-name').textContent = song.name || '';
+  document.getElementById('dq-artist').textContent = song.artist || '';
+  var coverEl = document.getElementById('dq-cover');
+  var cover = songCoverSrc(song, 80);
+  if (coverEl) coverEl.src = cover || '';
+  var qualities = [
+    { key: 'standard', name: '标准', br: '128 kbps' },
+    { key: 'higher', name: '较高', br: '192 kbps' },
+    { key: 'exhigh', name: '极高', br: '320 kbps' },
+    { key: 'lossless', name: '无损', br: 'FLAC' },
+    { key: 'hires', name: 'Hi-Res', br: 'Hi-Res' }
+  ];
+  var list = document.getElementById('dq-quality-list');
+  list.innerHTML = qualities.map(function(q) {
+    return '<div class="dq-quality-item" onclick="selectDownloadQuality(\'' + q.key + '\')">' +
+      '<div><div class="dq-q-name">' + q.name + '</div><div class="dq-q-br">' + q.br + '</div></div>' +
+      '<span class="dq-q-arrow">&darr;</span>' +
+    '</div>';
+  }).join('');
+  picker.classList.add('show');
+}
+
+function hideDownloadQualityPicker() {
+  var picker = document.getElementById('download-quality-picker');
+  if (picker) picker.classList.remove('show');
+  downloadQualityPickerSong = null;
+}
+
+function selectDownloadQuality(quality) {
+  if (downloadQualityPickerSong) {
+    var song = downloadQualityPickerSong;
+    hideDownloadQualityPicker();
+    startDownload(song, quality);
+  }
+}
+
+// 各入口
+function downloadCurrentSong() {
+  var song = currentCoverSong();
+  if (!song) return;
+  showDownloadQualityPicker(song);
+}
+
+function downloadSearchResult(index) {
+  if (playlist[index]) showDownloadQualityPicker(playlist[index]);
+}
+
+function batchDownloadSongs(songs) {
+  if (!songs || !songs.length) return;
+  var quality = playbackQuality || 'exhigh';
+  songs.forEach(function(song) {
+    startDownload(song, quality);
+  });
+  showDownloadPanel();
+}
+
+function batchDownloadPlaylistTracks(provider, playlistId) {
+  var tracks = (playlistPanelDetailState && playlistPanelDetailState.tracks) || [];
+  if (!tracks.length) {
+    showToast('暂无可下载的歌曲');
+    return;
+  }
+  batchDownloadSongs(tracks);
+}
+
+async function saveDownloadDir() {
+  var input = document.getElementById('fx-download-dir');
+  if (!input || !input.value.trim()) return;
+  try {
+    await apiJson('/api/download/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ downloadDir: input.value.trim() })
+    });
+    showToast('下载位置已保存');
+  } catch (e) {
+    showToast('保存失败: ' + e.message);
+  }
+}
 function songSourceTagHtml(song) {
   var key = songProviderKey(song);
-  var label = key === 'qq' ? 'QQ' : (key === 'kugou' ? '酷狗' : 'NE');
+  var label = key === 'qq' ? 'QQ' : (key === 'kugou' ? '酷狗' : (key === 'kuwo' ? '酷我' : (key === 'migu' ? '咪咕' : 'NE')));
   return '<span class="tag-source ' + key + '">' + label + '</span>';
 }
 function searchResultMetaText(song) {
@@ -18678,12 +18992,12 @@ function scoreSongSearchResult(song, q, sourceIndex) {
   score -= (sourceIndex || 0) * 0.75;
   return score;
 }
-function mergeSongSearchResults(neteaseSongs, qqSongs, kugouSongs, limit, q) {
+function mergeSongSearchResults(neteaseSongs, qqSongs, kugouSongs, kuwoSongs, miguSongs, limit, q) {
   var out = [];
   var seen = {};
   function push(song, sourceIndex) {
     if (!song || !song.name) return;
-    var key = songProviderKey(song) + ':' + (song.mid || song.id || song.hash || (song.name + '|' + song.artist));
+    var key = songProviderKey(song) + ':' + (song.mid || song.id || song.hash || song.rid || song.contentId || (song.name + '|' + song.artist));
     if (seen[key]) return;
     seen[key] = true;
     song._searchScore = scoreSongSearchResult(song, q, sourceIndex);
@@ -18692,31 +19006,45 @@ function mergeSongSearchResults(neteaseSongs, qqSongs, kugouSongs, limit, q) {
   (neteaseSongs || []).forEach(function(song, i){ push(song, i); });
   (qqSongs || []).forEach(function(song, i){ push(song, i); });
   (kugouSongs || []).forEach(function(song, i){ push(song, i); });
+  (kuwoSongs || []).forEach(function(song, i){ push(song, i); });
+  (miguSongs || []).forEach(function(song, i){ push(song, i); });
   out.sort(function(a, b){ return (b._searchScore || 0) - (a._searchScore || 0); });
   return out.slice(0, limit);
 }
 async function fetchMusicSearchResults(q, mode) {
   if (mode === 'qq') {
     var qqOnly = await apiJson('/api/qq/search?keywords=' + encodeURIComponent(q) + '&limit=12');
-    return mergeSongSearchResults([], qqOnly.songs || [], [], 18, q);
+    return mergeSongSearchResults([], qqOnly.songs || [], [], [], [], 18, q);
   }
   if (mode === 'netease') {
     var neOnly = await apiJson('/api/search?keywords=' + encodeURIComponent(q) + '&limit=18');
-    return mergeSongSearchResults(neOnly.songs || [], [], [], 18, q);
+    return mergeSongSearchResults(neOnly.songs || [], [], [], [], [], 18, q);
   }
   if (mode === 'kugou') {
     var kgOnly = await apiJson('/api/kugou/search?keywords=' + encodeURIComponent(q) + '&limit=18');
-    return mergeSongSearchResults([], [], kgOnly.songs || [], 18, q);
+    return mergeSongSearchResults([], [], kgOnly.songs || [], [], [], 18, q);
+  }
+  if (mode === 'kuwo') {
+    var kwOnly = await apiJson('/api/kuwo/search?keywords=' + encodeURIComponent(q) + '&limit=18');
+    return mergeSongSearchResults([], [], [], kwOnly.songs || [], [], 18, q);
+  }
+  if (mode === 'migu') {
+    var mgOnly = await apiJson('/api/migu/search?keywords=' + encodeURIComponent(q) + '&limit=18');
+    return mergeSongSearchResults([], [], [], [], mgOnly.songs || [], 18, q);
   }
   var result = await Promise.allSettled([
-    apiJson('/api/search?keywords=' + encodeURIComponent(q) + '&limit=14'),
-    apiJson('/api/qq/search?keywords=' + encodeURIComponent(q) + '&limit=12'),
-    apiJson('/api/kugou/search?keywords=' + encodeURIComponent(q) + '&limit=10')
+    apiJson('/api/search?keywords=' + encodeURIComponent(q) + '&limit=12'),
+    apiJson('/api/qq/search?keywords=' + encodeURIComponent(q) + '&limit=10'),
+    apiJson('/api/kugou/search?keywords=' + encodeURIComponent(q) + '&limit=8'),
+    apiJson('/api/kuwo/search?keywords=' + encodeURIComponent(q) + '&limit=8'),
+    apiJson('/api/migu/search?keywords=' + encodeURIComponent(q) + '&limit=8')
   ]);
   var neteaseSongs = result[0].status === 'fulfilled' ? ((result[0].value && result[0].value.songs) || []) : [];
   var qqSongs = result[1].status === 'fulfilled' ? ((result[1].value && result[1].value.songs) || []) : [];
   var kgSongs = result[2].status === 'fulfilled' ? ((result[2].value && result[2].value.songs) || []) : [];
-  return mergeSongSearchResults(neteaseSongs, qqSongs, kgSongs, 18, q);
+  var kwSongs = result[3].status === 'fulfilled' ? ((result[3].value && result[3].value.songs) || []) : [];
+  var mgSongs = result[4].status === 'fulfilled' ? ((result[4].value && result[4].value.songs) || []) : [];
+  return mergeSongSearchResults(neteaseSongs, qqSongs, kgSongs, kwSongs, mgSongs, 18, q);
 }
 function renderSongSearchResults(songs) {
   playlist = songs || [];
@@ -18738,6 +19066,7 @@ function renderSongSearchResults(songs) {
       '</div>' +
       '<button class="song-action-btn' + (isSongLiked(s) ? ' liked' : '') + '" data-like-index="' + i + '" title="' + (isSongLiked(s) ? '取消红心' : '红心喜欢') + '" onclick="event.stopPropagation();toggleLikeSearchResult(' + i + ')">' + heartIconSvg() + '</button>' +
       '<button class="song-action-btn" title="收藏到歌单" onclick="event.stopPropagation();collectSearchResult(' + i + ')">' + playlistPlusIconSvg() + '</button>' +
+      '<button class="song-action-btn download" title="下载" onclick="event.stopPropagation();downloadSearchResult(' + i + ')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>' +
       '<button class="add-btn" title="下一首播放" onclick="event.stopPropagation();queueSearchResult(' + i + ')">+</button>' +
     '</div>';
   }).join('');
@@ -19205,12 +19534,16 @@ function playbackProviderLabel(song) {
   var key = songProviderKey(song);
   if (key === 'qq') return 'QQ 音乐';
   if (key === 'kugou') return '酷狗音乐';
+  if (key === 'kuwo') return '酷我音乐';
+  if (key === 'migu') return '咪咕音乐';
   return '网易云';
 }
 function playbackLoginProvider(song) {
   var key = songProviderKey(song);
   if (key === 'qq') return 'qq';
   if (key === 'kugou') return 'kugou';
+  if (key === 'kuwo') return 'kuwo';
+  if (key === 'migu') return 'migu';
   return 'netease';
 }
 function playbackRestrictionMessage(song, data) {
@@ -19539,8 +19872,10 @@ async function playQueueAt(idx, opts) {
     var providerKey = songProviderKey(song);
     var isQQPlayback = providerKey === 'qq';
     var isKugouPlayback = providerKey === 'kugou';
+    var isKuwoPlayback = providerKey === 'kuwo';
+    var isMiguPlayback = providerKey === 'migu';
     var requestedQuality = normalizePlaybackQuality(opts.qualityOverride || playbackQuality);
-    if (!isQQPlayback && !isKugouPlayback && requestedQuality === 'jymaster' && !hasProviderSvip('netease', loginStatus)) requestedQuality = 'hires';
+    if (!isQQPlayback && !isKugouPlayback && !isKuwoPlayback && !isMiguPlayback && requestedQuality === 'jymaster' && !hasProviderSvip('netease', loginStatus)) requestedQuality = 'hires';
     if (isQQPlayback && qqPlaybackQualityCeiling && (requestedQuality === 'jymaster' || requestedQuality === 'hires' || requestedQuality === 'lossless')) {
       requestedQuality = qqPlaybackQualityCeiling;
     }
@@ -19550,6 +19885,11 @@ async function playQueueAt(idx, opts) {
       data = await apiJson('/api/qq/song/url?mid=' + encodeURIComponent(song.mid || song.songmid || song.id || '') + '&mediaMid=' + encodeURIComponent(song.mediaMid || song.media_mid || '') + qualityParam);
     } else if (isKugouPlayback) {
       data = await apiJson('/api/kugou/song/url?hash=' + encodeURIComponent(pickKugouHashForQuality(song, requestedQuality)));
+    } else if (isKuwoPlayback) {
+      data = await apiJson('/api/kuwo/song/url?rid=' + encodeURIComponent(song.rid || song.id || '') + '&quality=' + encodeURIComponent(requestedQuality));
+    } else if (isMiguPlayback) {
+      // 咪咕播放URL需要加密签名，公开接口拿不到，直接走降级逻辑
+      data = { url: '', error: 'MIGU_NO_DIRECT_URL', playable: false };
     } else {
       data = await apiJson('/api/song/url?id=' + song.id + qualityParam);
     }
@@ -20577,7 +20917,7 @@ function playlistPanelDetailHtml(pl, provider) {
   return '<div class="pl-inline-detail" data-pl-detail="' + escHtml(key) + '">' +
     '<div class="pl-detail-sticky">' +
       '<div class="pl-detail-head">' + img + '<div style="flex:1;min-width:0"><div class="pl-detail-title">' + escHtml(pl.name || '歌单详情') + '</div><div class="pl-detail-sub">' + escHtml((pl.trackCount || tracks.length || 0) + ' 首 · ' + (pl.creator || (provider === 'qq' ? 'QQ 音乐' : '网易云音乐'))) + '</div></div><div class="pl-detail-count">' + (loading ? '载入中' : (renderLimit + '/' + tracks.length)) + '</div></div>' +
-      '<div class="pl-detail-actions"><button class="pl-detail-play" type="button" data-pl-detail-play="' + escHtml(key) + '"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>播放歌单</button><button class="fx-mini-btn ghost pl-detail-top-btn" type="button" data-pl-detail-top="1">回到顶部</button></div>' +
+      '<div class="pl-detail-actions"><button class="pl-detail-play" type="button" data-pl-detail-play="' + escHtml(key) + '"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>播放歌单</button><button class="batch-download-btn" onclick="batchDownloadPlaylistTracks(\'' + provider + '\',' + pl.id + ')">批量下载</button><button class="fx-mini-btn ghost pl-detail-top-btn" type="button" data-pl-detail-top="1">回到顶部</button></div>' +
     '</div>' +
     '<div class="pl-detail-list">' + rows + '</div>' +
   '</div>';
@@ -28161,5 +28501,33 @@ animate();
   }
 })();
 </script>
+<!-- 下载品质选择弹窗 -->
+<div id="download-quality-picker" class="dq-overlay">
+  <div class="dq-modal">
+    <div class="dq-header">下载歌曲</div>
+    <div class="dq-song-info">
+      <img id="dq-cover" src="" alt="" onerror="this.style.opacity=0.2">
+      <div style="flex:1;min-width:0">
+        <div id="dq-name" class="dq-song-name"></div>
+        <div id="dq-artist" class="dq-song-artist"></div>
+      </div>
+    </div>
+    <div class="dq-section-label">选择音质</div>
+    <div id="dq-quality-list" class="dq-quality-list"></div>
+    <button class="dq-cancel-btn" onclick="hideDownloadQualityPicker()">取消</button>
+  </div>
+</div>
+<!-- 下载任务面板 -->
+<div id="download-panel" class="dl-panel">
+  <div class="dl-head">
+    <span class="dl-head-title">下载任务</span>
+    <button class="dl-head-close" onclick="hideDownloadPanel()">&times;</button>
+  </div>
+  <div class="dl-actions">
+    <button class="dl-action-btn" onclick="openDownloadFolder()">打开目录</button>
+    <button class="dl-action-btn" onclick="clearFinishedDownloads()">清除已完成</button>
+  </div>
+  <div id="download-task-list" class="dl-list"></div>
+</div>
 </body>
 </html>

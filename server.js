@@ -94,7 +94,9 @@ function getDefaultSourceConfig() {
     searchSources: [
       { id: 'netease', name: '网易云', enabled: true },
       { id: 'qq', name: 'QQ音乐', enabled: true },
-      { id: 'kugou', name: '酷狗音乐', enabled: true }
+      { id: 'kugou', name: '酷狗音乐', enabled: true },
+      { id: 'kuwo', name: '酷我音乐', enabled: true },
+      { id: 'migu', name: '咪咕音乐', enabled: true }
     ],
     audioConfig: {
       enableMusicUnblock: true,          // 音源解锁总开关
@@ -105,7 +107,8 @@ function getDefaultSourceConfig() {
       lxMusicScripts: [],                // 洛雪音源脚本列表
       activeLxMusicApiId: null           // 当前激活的洛雪脚本ID
     },
-    defaultSearchMode: 'all'
+    defaultSearchMode: 'all',
+    downloadDir: path.join(__dirname, 'downloads')
   };
 }
 
@@ -120,6 +123,7 @@ function loadMusicSourceConfig() {
     // 兼容补全
     if (!Array.isArray(parsed.audioConfig.enabledMusicSources)) parsed.audioConfig.enabledMusicSources = [];
     if (!Array.isArray(parsed.audioConfig.lxMusicScripts)) parsed.audioConfig.lxMusicScripts = [];
+    if (typeof parsed.downloadDir !== 'string') parsed.downloadDir = path.join(__dirname, 'downloads');
     musicSourceConfig = parsed;
     const enabledSearch = parsed.searchSources.filter(s => s.enabled).length;
     const enabledAudio = parsed.audioConfig.enabledMusicSources.length;
@@ -3374,6 +3378,308 @@ async function handleKugouSongUrl(hash) {
   }
 }
 
+// ========== 酷我音乐搜索 ==========
+// 使用 search.kuwo.cn/r.s 旧接口（无需 csrf token，返回单引号 JSON）
+async function handleKuwoSearch(keywords, limit, offset) {
+  const kw = String(keywords || '').trim();
+  if (!kw) return [];
+  const pn = Math.floor((offset || 0) / 20);
+  const rn = Math.min(30, limit || 20);
+  console.log('[KuwoSearch]', kw, 'pn:', pn, 'rn:', rn);
+  try {
+    const apiUrl = `http://search.kuwo.cn/r.s?all=${encodeURIComponent(kw)}&ft=music&itemset=web_2013&client=kt&pn=${pn}&rn=${rn}&rformat=json&encoding=utf8`;
+    const resp = await fetch(apiUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Referer': 'http://www.kuwo.cn/' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) { console.warn('[KuwoSearch] HTTP', resp.status); return []; }
+    // 旧接口返回单引号 JSON，需转双引号
+    const txt = await resp.text();
+    const safe = txt.replace(/'/g, '"').replace(/&nbsp;/g, ' ');
+    let json;
+    try { json = JSON.parse(safe); } catch (e) { console.warn('[KuwoSearch] JSON parse failed'); return []; }
+    const list = (json && Array.isArray(json.abslist)) ? json.abslist : [];
+    const seen = new Set();
+    return list.filter(item => {
+      const rid = item.DC_TARGETID || item.MUSICID;
+      return rid && !seen.has(rid) && (seen.add(rid), true);
+    }).map(item => {
+      const rid = item.DC_TARGETID || item.MUSICID;
+      const webName = (item.SONGNAME || item.NAME || '').replace(/&nbsp;/g, ' ').trim();
+      const artist = (item.ARTIST || '').replace(/&nbsp;/g, ' ').trim();
+      return {
+        provider: 'kuwo',
+        source: 'kuwo',
+        type: 'song',
+        id: rid,
+        rid: rid,
+        name: webName,
+        artist: artist || '未知歌手',
+        album: (item.ALBUM || '').replace(/&nbsp;/g, ' ').trim(),
+        cover: '', // 旧接口无封面
+        duration: parseInt(item.DURATION) || 0,
+        // FORMATS: 'AAC48|MP3128|MP3320|FLAC|...' 有FLAC为无损
+        formats: item.FORMATS || '',
+        fee: 0,
+        playable: true,
+      };
+    });
+  } catch (err) {
+    console.error('[KuwoSearch] error:', err.message);
+    return [];
+  }
+}
+
+// 酷我播放URL：antiserver.kuwo.cn 旧接口直接返回 mp3 URL
+async function handleKuwoSongUrl(rid, quality) {
+  const r = String(rid || '').trim();
+  if (!r) return { provider: 'kuwo', url: '', error: 'MISSING_RID', playable: false };
+  console.log('[KuwoSongUrl] rid:', r, 'quality:', quality || 'exhigh');
+  try {
+    // 根据音质档位选 br
+    // 320kmp3 = 极高，128kmp3 = 标准，lossless = flac
+    let br = '320kmp3';
+    if (quality === 'standard') br = '128kmp3';
+    else if (quality === 'lossless' || quality === 'hires') br = 'flac';
+    const apiUrl = `http://antiserver.kuwo.cn/anti.s?type=convert_url&format=mp3&response=url&rid=${r}&br=${br}`;
+    const resp = await fetch(apiUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'http://www.kuwo.cn/' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return { provider: 'kuwo', url: '', error: 'HTTP_' + resp.status, playable: false };
+    const url = (await resp.text()).trim();
+    if (url && url.startsWith('http')) {
+      const level = br === 'flac' ? 'lossless' : (br === '128kmp3' ? 'standard' : 'exhigh');
+      const brNum = br === 'flac' ? 940000 : (br === '128kmp3' ? 128000 : 320000);
+      return {
+        provider: 'kuwo',
+        url,
+        playable: true,
+        trial: false,
+        level,
+        br: brNum,
+        platform: 'kuwo',
+      };
+    }
+    return { provider: 'kuwo', url: '', error: 'NO_URL', playable: false };
+  } catch (err) {
+    console.error('[KuwoSongUrl] error:', err.message);
+    return { provider: 'kuwo', url: '', error: err.message, playable: false };
+  }
+}
+
+// ========== 咪咕音乐搜索 ==========
+// 使用 pd.musicapp.migu.cn 移动端接口（无需鉴权）
+// 注意：咪咕的播放URL接口需要加密签名，公开拿不到，所以咪咕源只做搜索展示
+async function handleMiguSearch(keywords, limit, offset) {
+  const kw = String(keywords || '').trim();
+  if (!kw) return [];
+  const pageNo = Math.floor((offset || 0) / 20) + 1;
+  const pageSize = Math.min(30, limit || 20);
+  console.log('[MiguSearch]', kw, 'page:', pageNo, 'pagesize:', pageSize);
+  try {
+    const apiUrl = `https://pd.musicapp.migu.cn/MIGUM2.0/v1.0/content/search_all.do?ua=Android_migu&version=5.0.1&text=${encodeURIComponent(kw)}&pageNo=${pageNo}&pageSize=${pageSize}&searchSwitch=${encodeURIComponent('{"song":1}')}`;
+    const resp = await fetch(apiUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36', 'Referer': 'https://m.music.migu.cn/' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) { console.warn('[MiguSearch] HTTP', resp.status); return []; }
+    const json = await resp.json();
+    const list = (json && json.songResultData && Array.isArray(json.songResultData.result)) ? json.songResultData.result : [];
+    const seen = new Set();
+    return list.filter(item => item && item.contentId && !seen.has(item.contentId) && (seen.add(item.contentId), true)).map(item => {
+      const singers = Array.isArray(item.singers) ? item.singers.map(s => s.name || '').filter(Boolean) : [];
+      const albums = Array.isArray(item.albums) ? item.albums : [];
+      const imgItems = Array.isArray(item.imgItems) ? item.imgItems : [];
+      // 找最大的封面图
+      const cover = imgItems.length ? (imgItems[imgItems.length - 1].url || '') : '';
+      return {
+        provider: 'migu',
+        source: 'migu',
+        type: 'song',
+        id: item.contentId,
+        contentId: item.contentId,
+        copyrightId: item.copyrightId || '',
+        name: String(item.name || '').replace(/<\/?em>/g, ''),
+        artist: singers.join(' / ') || '未知歌手',
+        album: (albums[0] && albums[0].name) || '',
+        cover: cover,
+        duration: 0, // 接口无 duration
+        fee: item.vipType === '1' ? 1 : 0,
+        vipType: item.vipType || '',
+        playable: true,
+        // 咪咕播放URL需要加密签名，标记为降级播放
+        playbackNote: 'migu_no_direct_url',
+      };
+    });
+  } catch (err) {
+    console.error('[MiguSearch] error:', err.message);
+    return [];
+  }
+}
+
+// ========== 音乐下载 ==========
+const DEFAULT_DOWNLOAD_DIR = path.join(__dirname, 'downloads');
+const downloadTasks = new Map();
+let downloadTaskIdCounter = 1;
+
+function getDownloadDir() {
+  if (!musicSourceConfig) loadMusicSourceConfig();
+  const dir = (musicSourceConfig && musicSourceConfig.downloadDir) || DEFAULT_DOWNLOAD_DIR;
+  return dir;
+}
+
+function ensureDownloadDir() {
+  const dir = getDownloadDir();
+  try { fs.mkdirSync(dir, { recursive: true }); } catch (e) {}
+  return dir;
+}
+
+// 清理文件名中的非法字符
+function sanitizeFileName(name) {
+  return String(name || '').replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim().slice(0, 200);
+}
+
+// 根据音质/格式确定扩展名
+function extForQuality(level, br) {
+  if (level === 'lossless' || level === 'hires' || level === 'jymaster') return 'flac';
+  if (br && br >= 740000) return 'flac';
+  return 'mp3';
+}
+
+// 生成不冲突的文件路径
+function resolveUniqueFilePath(dir, baseName, ext) {
+  let filePath = path.join(dir, baseName + '.' + ext);
+  let i = 1;
+  while (fs.existsSync(filePath)) {
+    filePath = path.join(dir, baseName + ' (' + i + ').' + ext);
+    i++;
+  }
+  return filePath;
+}
+
+// 获取下载用音频URL（复用现有的播放URL获取逻辑）
+async function getDownloadAudioUrl(provider, songData, quality) {
+  if (provider === 'qq') {
+    return await handleQQSongUrl(songData.mid || songData.songmid || songData.id, songData.mediaMid, quality);
+  }
+  if (provider === 'kugou') {
+    // 根据音质选hash
+    let hash = songData.hash || songData.id || '';
+    if (quality === 'lossless' || quality === 'hires') {
+      hash = songData.sqHash || songData.hqHash || hash;
+    } else if (quality === 'exhigh') {
+      hash = songData.hqHash || hash;
+    }
+    return await handleKugouSongUrl(hash);
+  }
+  if (provider === 'kuwo') {
+    return await handleKuwoSongUrl(songData.rid || songData.id, quality);
+  }
+  if (provider === 'migu') {
+    return { url: '', error: 'MIGU_NO_DIRECT_URL', playable: false };
+  }
+  // netease
+  return await handleSongUrl(songData.id, null, quality);
+}
+
+// 开始下载任务
+async function startDownloadTask(taskId, songData, quality, provider) {
+  const task = downloadTasks.get(taskId);
+  if (!task) return;
+  task.status = 'downloading';
+  task.startedAt = Date.now();
+
+  try {
+    // 1. 获取音频URL
+    const audioData = await getDownloadAudioUrl(provider, songData, quality);
+    if (!audioData || !audioData.url) {
+      task.status = 'failed';
+      task.error = (audioData && audioData.error) ? audioData.error : 'NO_URL';
+      console.log('[Download] 失败(无URL):', task.songName, task.error);
+      return;
+    }
+    task.url = audioData.url;
+    task.level = audioData.level || quality;
+    task.br = audioData.br || 0;
+
+    // 2. 确定文件路径
+    const dir = ensureDownloadDir();
+    const baseName = sanitizeFileName((songData.artist || '未知歌手') + ' - ' + (songData.name || '未知歌曲'));
+    const ext = extForQuality(audioData.level, audioData.br);
+    task.filePath = resolveUniqueFilePath(dir, baseName, ext);
+    task.ext = ext;
+
+    // 3. 流式下载
+    const controller = new AbortController();
+    task.controller = controller;
+
+    const resp = await fetch(audioData.url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': UA },
+    });
+
+    if (!resp.ok) {
+      task.status = 'failed';
+      task.error = 'HTTP_' + resp.status;
+      console.log('[Download] 失败(HTTP):', task.songName, task.error);
+      return;
+    }
+
+    task.totalBytes = parseInt(resp.headers.get('content-length') || '0', 10);
+
+    const fileStream = fs.createWriteStream(task.filePath);
+    const reader = resp.body.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (task.status === 'cancelled') {
+        fileStream.destroy();
+        try { fs.unlinkSync(task.filePath); } catch (e) {}
+        return;
+      }
+      fileStream.write(Buffer.from(value));
+      task.downloadedBytes += value.length;
+    }
+
+    fileStream.end();
+    await new Promise(function(resolve) { fileStream.on('finish', resolve); });
+
+    task.status = 'completed';
+    task.completedAt = Date.now();
+    console.log('[Download] 完成:', task.songName, '->', task.filePath);
+  } catch (err) {
+    if (err.name === 'AbortError' || task.status === 'cancelled') {
+      try { if (task.filePath) fs.unlinkSync(task.filePath); } catch (e) {}
+      return;
+    }
+    task.status = 'failed';
+    task.error = err.message;
+    console.error('[Download] 失败:', task.songName, err.message);
+  }
+}
+
+function serializeDownloadTask(task) {
+  return {
+    id: task.id,
+    status: task.status,
+    songName: task.songName,
+    artist: task.artist,
+    provider: task.provider,
+    quality: task.quality,
+    level: task.level,
+    br: task.br,
+    totalBytes: task.totalBytes,
+    downloadedBytes: task.downloadedBytes,
+    filePath: task.filePath,
+    error: task.error,
+    createdAt: task.createdAt,
+    completedAt: task.completedAt,
+    ext: task.ext,
+  };
+}
+
 async function handleQQSongUrl(mid, mediaMid, qualityPreference) {
   const songmid = String(mid || '').trim();
   if (!songmid) return { provider: 'qq', url: '', error: 'MISSING_MID', message: 'Missing QQ song mid' };
@@ -4384,6 +4690,163 @@ const server = http.createServer(async (req, res) => {
       console.error('[KugouSongUrl]', err);
       sendJSON(res, { provider: 'kugou', url: '', error: err.message, playable: false }, 500);
     }
+    return;
+  }
+
+  if (pn === '/api/kuwo/search') {
+    try {
+      const kw = url.searchParams.get('keywords') || '';
+      const limit = Math.max(4, Math.min(30, parseInt(url.searchParams.get('limit') || '20', 10) || 20));
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+      const songs = await handleKuwoSearch(kw, limit, offset);
+      sendJSON(res, { provider: 'kuwo', songs });
+    } catch (err) {
+      console.error('[KuwoSearch]', err);
+      sendJSON(res, { provider: 'kuwo', error: err.message, songs: [] }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/kuwo/song/url') {
+    try {
+      const rid = url.searchParams.get('rid') || url.searchParams.get('id') || '';
+      const quality = url.searchParams.get('quality') || '';
+      const info = await handleKuwoSongUrl(rid, quality);
+      sendJSON(res, info);
+    } catch (err) {
+      console.error('[KuwoSongUrl]', err);
+      sendJSON(res, { provider: 'kuwo', url: '', error: err.message, playable: false }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/migu/search') {
+    try {
+      const kw = url.searchParams.get('keywords') || '';
+      const limit = Math.max(4, Math.min(30, parseInt(url.searchParams.get('limit') || '20', 10) || 20));
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+      const songs = await handleMiguSearch(kw, limit, offset);
+      sendJSON(res, { provider: 'migu', songs });
+    } catch (err) {
+      console.error('[MiguSearch]', err);
+      sendJSON(res, { provider: 'migu', error: err.message, songs: [] }, 500);
+    }
+    return;
+  }
+
+  // ========== 下载路由 ==========
+  if (pn === '/api/download/start' && req.method === 'POST') {
+    let body = '';
+    req.on('data', function(chunk) { body += chunk; });
+    req.on('end', async function() {
+      try {
+        var parsed = JSON.parse(body);
+        var provider = parsed.provider || 'netease';
+        var songData = parsed.songData || {};
+        var quality = parsed.quality || 'exhigh';
+        var taskId = downloadTaskIdCounter++;
+        var task = {
+          id: taskId,
+          status: 'pending',
+          songName: songData.name || '',
+          artist: songData.artist || '',
+          provider: provider,
+          quality: quality,
+          songData: songData,
+          totalBytes: 0,
+          downloadedBytes: 0,
+          filePath: '',
+          error: null,
+          createdAt: Date.now(),
+        };
+        downloadTasks.set(taskId, task);
+        sendJSON(res, { ok: true, taskId: taskId });
+        // 异步开始下载
+        startDownloadTask(taskId, songData, quality, provider);
+      } catch (err) {
+        sendJSON(res, { ok: false, error: err.message }, 500);
+      }
+    });
+    return;
+  }
+
+  if (pn === '/api/download/list') {
+    var list = Array.from(downloadTasks.values()).map(serializeDownloadTask).sort(function(a, b) { return b.createdAt - a.createdAt; });
+    sendJSON(res, { tasks: list });
+    return;
+  }
+
+  if (pn === '/api/download/cancel' && req.method === 'POST') {
+    let body = '';
+    req.on('data', function(chunk) { body += chunk; });
+    req.on('end', function() {
+      try {
+        var parsed = JSON.parse(body);
+        var task = downloadTasks.get(parsed.taskId);
+        if (task) {
+          task.status = 'cancelled';
+          if (task.controller) task.controller.abort();
+          if (task.filePath) { try { fs.unlinkSync(task.filePath); } catch (e) {} }
+        }
+        sendJSON(res, { ok: true });
+      } catch (err) {
+        sendJSON(res, { ok: false, error: err.message }, 500);
+      }
+    });
+    return;
+  }
+
+  if (pn === '/api/download/clear' && req.method === 'POST') {
+    for (var entry of downloadTasks) {
+      if (['completed', 'failed', 'cancelled'].includes(entry[1].status)) {
+        downloadTasks.delete(entry[0]);
+      }
+    }
+    sendJSON(res, { ok: true });
+    return;
+  }
+
+  if (pn === '/api/download/open-folder' && req.method === 'POST') {
+    var dir = ensureDownloadDir();
+    try {
+      var childExec = require('child_process').exec;
+      if (process.platform === 'win32') {
+        childExec('explorer "' + dir + '"');
+      } else if (process.platform === 'darwin') {
+        childExec('open "' + dir + '"');
+      } else {
+        childExec('xdg-open "' + dir + '"');
+      }
+      sendJSON(res, { ok: true, dir: dir });
+    } catch (err) {
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/download/config') {
+    if (req.method === 'PUT') {
+      let body = '';
+      req.on('data', function(chunk) { body += chunk; });
+      req.on('end', function() {
+        try {
+          var parsed = JSON.parse(body);
+          var newDir = parsed.downloadDir;
+          if (newDir && typeof newDir === 'string') {
+            if (!musicSourceConfig) loadMusicSourceConfig();
+            musicSourceConfig.downloadDir = newDir;
+            saveMusicSourceConfig(musicSourceConfig);
+            sendJSON(res, { ok: true, downloadDir: newDir });
+          } else {
+            sendJSON(res, { ok: false, error: 'invalid downloadDir' }, 400);
+          }
+        } catch (err) {
+          sendJSON(res, { ok: false, error: err.message }, 500);
+        }
+      });
+      return;
+    }
+    sendJSON(res, { downloadDir: getDownloadDir() });
     return;
   }
 

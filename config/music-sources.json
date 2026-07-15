@@ -15,6 +15,16 @@
       "id": "kugou",
       "name": "酷狗音乐",
       "enabled": true
+    },
+    {
+      "id": "kuwo",
+      "name": "酷我音乐",
+      "enabled": true
+    },
+    {
+      "id": "migu",
+      "name": "咪咕音乐",
+      "enabled": true
     }
   ],
   "audioConfig": {
@@ -32,5 +42,6 @@
     "lxMusicScripts": [],
     "activeLxMusicApiId": null
   },
-  "defaultSearchMode": "all"
+  "defaultSearchMode": "all",
+  "downloadDir": "D:\\Dev-Projects\\personal\\project\\music\\Mineradio\\downloads"
 }

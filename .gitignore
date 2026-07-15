@@ -16,6 +16,7 @@ win-unpacked/
 *.asar
 
 # User data and private state
+downloads/
 .cookie
 .qq-cookie
 updates/
