@@ -1,0 +1,36 @@
+{
+  "version": 3,
+  "searchSources": [
+    {
+      "id": "netease",
+      "name": "网易云",
+      "enabled": true
+    },
+    {
+      "id": "qq",
+      "name": "QQ音乐",
+      "enabled": true
+    },
+    {
+      "id": "kugou",
+      "name": "酷狗音乐",
+      "enabled": true
+    }
+  ],
+  "audioConfig": {
+    "enableMusicUnblock": true,
+    "enabledMusicSources": [
+      "pyncmd",
+      "migu",
+      "kugou",
+      "kuwo",
+      "gdmusic"
+    ],
+    "musicQuality": "higher",
+    "customApiPlugin": null,
+    "customApiPluginName": "",
+    "lxMusicScripts": [],
+    "activeLxMusicApiId": null
+  },
+  "defaultSearchMode": "all"
+}

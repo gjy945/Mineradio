@@ -47,6 +47,9 @@ const {
   top_artists,
   top_song,
   personal_fm,
+  search_suggest,
+  search_hot_detail,
+  hot_search,
 } = require('NeteaseCloudMusicApi');
 const http = require('http');
 const https = require('https');
@@ -78,7 +81,115 @@ const FAILED_CACHE = new Map();
 const FAILED_CACHE_TTL = 60 * 1000; // 1分钟
 
 // 用户启用的音源配置（默认全部启用，不再支持运行时切换）
-function getMusicSourceConfig() { return [...ALL_UNBLOCK_PLATFORMS]; }
+// 改造：从 config/music-sources.json 读取，支持控制台增删改
+const MUSIC_SOURCE_CONFIG_PATH = path.join(__dirname, 'config', 'music-sources.json');
+let musicSourceConfig = null;
+let musicSourceConfigWatcher = null;
+
+// 兜底默认配置（配置文件丢失/损坏时使用）
+// 参照 AlgerMusicPlayer 的音源配置结构
+function getDefaultSourceConfig() {
+  return {
+    version: 3,
+    searchSources: [
+      { id: 'netease', name: '网易云', enabled: true },
+      { id: 'qq', name: 'QQ音乐', enabled: true },
+      { id: 'kugou', name: '酷狗音乐', enabled: true }
+    ],
+    audioConfig: {
+      enableMusicUnblock: true,          // 音源解锁总开关
+      enabledMusicSources: ['migu', 'kugou', 'pyncmd'],  // 启用的音源列表
+      musicQuality: 'higher',            // 音质: standard/higher/exhigh/lossless/hires
+      customApiPlugin: null,             // 自定义API插件 (JSON对象)
+      customApiPluginName: '',           // 自定义API名称
+      lxMusicScripts: [],                // 洛雪音源脚本列表
+      activeLxMusicApiId: null           // 当前激活的洛雪脚本ID
+    },
+    defaultSearchMode: 'all'
+  };
+}
+
+function loadMusicSourceConfig() {
+  try {
+    const raw = fs.readFileSync(MUSIC_SOURCE_CONFIG_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    // 基本字段校验：searchSources 数组 + audioConfig 对象
+    if (!parsed || !Array.isArray(parsed.searchSources) || !parsed.audioConfig || typeof parsed.audioConfig !== 'object') {
+      throw new Error('invalid config structure');
+    }
+    // 兼容补全
+    if (!Array.isArray(parsed.audioConfig.enabledMusicSources)) parsed.audioConfig.enabledMusicSources = [];
+    if (!Array.isArray(parsed.audioConfig.lxMusicScripts)) parsed.audioConfig.lxMusicScripts = [];
+    musicSourceConfig = parsed;
+    const enabledSearch = parsed.searchSources.filter(s => s.enabled).length;
+    const enabledAudio = parsed.audioConfig.enabledMusicSources.length;
+    console.log('[Config] music-sources.json loaded — search:', enabledSearch, 'audio:', enabledAudio);
+  } catch (e) {
+    console.warn('[Config] load failed, using defaults:', e.message);
+    musicSourceConfig = getDefaultSourceConfig();
+  }
+}
+
+function saveMusicSourceConfig(config) {
+  try {
+    if (!config || !Array.isArray(config.searchSources) || !config.audioConfig || typeof config.audioConfig !== 'object') {
+      return { ok: false, error: 'INVALID_CONFIG' };
+    }
+    fs.mkdirSync(path.dirname(MUSIC_SOURCE_CONFIG_PATH), { recursive: true });
+    fs.writeFileSync(MUSIC_SOURCE_CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
+    musicSourceConfig = config;
+    console.log('[Config] music-sources.json saved');
+    return { ok: true };
+  } catch (e) {
+    console.error('[Config] save failed:', e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+function getEnabledSearchSources() {
+  if (!musicSourceConfig) loadMusicSourceConfig();
+  return (musicSourceConfig.searchSources || []).filter(s => s.enabled);
+}
+
+// JSON 路径提取（如 "data.list" → obj.data.list）
+function getJsonPath(obj, path) {
+  if (!obj || !path) return null;
+  const parts = String(path).split('.');
+  let cur = obj;
+  for (const p of parts) {
+    if (cur == null) return null;
+    cur = cur[p];
+  }
+  return cur;
+}
+
+// 启动时加载配置
+loadMusicSourceConfig();
+
+// 文件监听（热重载，用户在外部编辑文件也能生效）
+try {
+  musicSourceConfigWatcher = fs.watch(MUSIC_SOURCE_CONFIG_PATH, { persistent: false }, () => {
+    console.log('[Config] file changed, reloading...');
+    loadMusicSourceConfig();
+  });
+} catch (e) { /* 文件可能还不存在，忽略 */ }
+
+// 从配置读取启用的 unblock 平台（参照 AlgerMusicPlayer 的 enabledMusicSources）
+function getMusicSourceConfig() {
+  if (!musicSourceConfig) loadMusicSourceConfig();
+  const ac = musicSourceConfig.audioConfig;
+  if (!ac || !ac.enableMusicUnblock) return [];
+  const enabled = Array.isArray(ac.enabledMusicSources) ? ac.enabledMusicSources : [];
+  // 只返回 unblock 类型的平台（过滤掉 gdmusic/lxMusic/custom）
+  const list = enabled.filter(p => ALL_UNBLOCK_PLATFORMS.includes(p));
+  return list.length ? list : [...ALL_UNBLOCK_PLATFORMS];
+}
+
+// 获取完整音源配置
+function getAudioConfig() {
+  if (!musicSourceConfig) loadMusicSourceConfig();
+  return musicSourceConfig.audioConfig || getDefaultSourceConfig().audioConfig;
+}
 
 /**
  * 检查是否在失败缓存期内
@@ -287,6 +398,179 @@ async function resolveGDMusic(id, songData) {
 
   addFailedCache(key);
   return null;
+}
+
+// ---------- 自定义API音源解析（参照 AlgerMusicPlayer CustomApiStrategy）----------
+// CustomApiPlugin schema: { name, apiUrl, method?, params, qualityMapping?, responseUrlPath }
+async function resolveCustomAudioSource(id, songData) {
+  const ac = getAudioConfig();
+  if (!ac.customApiPlugin || !ac.enabledMusicSources || !ac.enabledMusicSources.includes('custom')) return null;
+  const plugin = ac.customApiPlugin;
+  if (!plugin.apiUrl || !plugin.params) return null;
+
+  const key = `custom_${id}`;
+  if (isInFailedCache(key)) return null;
+
+  // 从 songData 提取歌曲信息
+  const name = songData && songData.name || '';
+  let artist = '';
+  if (songData && songData.artists && Array.isArray(songData.artists)) {
+    artist = songData.artists.map(a => a && a.name || '').filter(Boolean).join(' ');
+  } else if (songData && songData.ar && Array.isArray(songData.ar)) {
+    artist = songData.ar.map(a => a && a.name || '').filter(Boolean).join(' ');
+  }
+  const album = (songData && songData.album && songData.album.name) || (songData && songData.al && songData.al.name) || '';
+
+  try {
+    // 填充参数模板（支持 {songId} {songName} {artist} {album} {quality}）
+    const quality = ac.musicQuality || 'higher';
+    const qualityMapped = (plugin.qualityMapping && plugin.qualityMapping[quality]) || quality;
+    const params = {};
+    for (const [k, v] of Object.entries(plugin.params)) {
+      params[k] = String(v)
+        .replace('{songId}', id)
+        .replace('{songName}', name)
+        .replace('{artist}', artist)
+        .replace('{album}', album)
+        .replace('{quality}', qualityMapped);
+    }
+
+    const method = (plugin.method || 'GET').toUpperCase();
+    const headers = plugin.headers || { 'Content-Type': 'application/json' };
+    let apiUrl = plugin.apiUrl;
+    const opts = { method, headers, signal: AbortSignal.timeout(10000) };
+
+    if (method === 'GET') {
+      const qs = new URLSearchParams(params).toString();
+      apiUrl = apiUrl + (apiUrl.includes('?') ? '&' : '?') + qs;
+    } else {
+      opts.body = JSON.stringify(params);
+    }
+
+    const resp = await fetch(apiUrl, opts);
+    if (!resp.ok) { addFailedCache(key); return null; }
+    const data = await resp.json();
+    // 用 responseUrlPath 提取URL（支持点号路径如 "data.url"）
+    const audioUrl = getJsonPath(data, plugin.responseUrlPath || 'url') || '';
+    if (audioUrl) {
+      return {
+        url: audioUrl,
+        trial: false,
+        playable: true,
+        level: 'exhigh',
+        quality: 'custom',
+        br: 320000,
+        platform: 'custom',
+      };
+    }
+    addFailedCache(key);
+  } catch (err) {
+    console.log(`[CustomApi] failed for id=${id}:`, err.message);
+    addFailedCache(key);
+  }
+  return null;
+}
+
+// ---------- LX Music 音源解析（参照 AlgerMusicPlayer LxMusicStrategy）----------
+// 使用 Node.js vm 模块在沙箱中执行洛雪音源脚本
+const vm = require('vm');
+async function resolveLxMusic(id, songData) {
+  const ac = getAudioConfig();
+  if (!ac.lxMusicScripts || !ac.lxMusicScripts.length) return null;
+  if (!ac.enabledMusicSources || !ac.enabledMusicSources.includes('lxMusic')) return null;
+  if (!ac.activeLxMusicApiId) return null;
+
+  // 找到当前激活的脚本
+  const script = ac.lxMusicScripts.find(s => s.id === ac.activeLxMusicApiId && s.enabled);
+  if (!script || !script.script) return null;
+
+  const key = `lxmusic_${id}`;
+  if (isInFailedCache(key)) return null;
+
+  // 从 songData 提取歌曲信息
+  const name = songData && songData.name || '';
+  let artist = '';
+  if (songData && songData.artists && Array.isArray(songData.artists)) {
+    artist = songData.artists.map(a => a && a.name || '').filter(Boolean).join(' ');
+  } else if (songData && songData.ar && Array.isArray(songData.ar)) {
+    artist = songData.ar.map(a => a && a.name || '').filter(Boolean).join(' ');
+  }
+
+  // 洛雪音源子源优先级: wy → kw → mg → kg → tx
+  const lxSources = ['wy', 'kw', 'mg', 'kg', 'tx'];
+  // 音质映射
+  const qualityMap = { standard: '128k', higher: '320k', exhigh: '320k', lossless: 'flac', hires: 'flac24bit' };
+  const lxQuality = qualityMap[ac.musicQuality] || '320k';
+
+  for (const source of lxSources) {
+    if (script.sources && !script.sources.includes(source)) continue;
+    try {
+      const result = await runLxScript(script.script, source, { id, name, artist }, lxQuality);
+      if (result && result.url) {
+        return {
+          url: result.url,
+          trial: false,
+          playable: true,
+          level: 'exhigh',
+          quality: 'lxmusic',
+          br: 320000,
+          platform: 'lxMusic',
+        };
+      }
+    } catch (err) {
+      console.log(`[LxMusic] ${source} failed for id=${id}:`, err.message);
+    }
+  }
+  addFailedCache(key);
+  return null;
+}
+
+// 在 vm 沙箱中执行洛雪音源脚本
+function runLxScript(scriptText, source, songInfo, quality) {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const timeout = setTimeout(() => { if (!resolved) { resolved = true; resolve(null); } }, 8000);
+
+    try {
+      const sandbox = {
+        globalThis: {},
+        setTimeout, clearTimeout, console: { log: () => {}, error: () => {}, warn: () => {} },
+        fetch: (url, opts) => fetch(url, opts),  // 暴露fetch供脚本使用
+        URLSearchParams, URL, JSON, Object, Array, String, Number, Math, Date, RegExp, Promise,
+      };
+      // 模拟 lx 全局对象（洛雪音源脚本标准接口）
+      sandbox.lx = {
+        on: (event, handler) => {
+          if (event === 'request') {
+            // 脚本注册了请求处理器，模拟一次请求
+            try {
+              const reqParams = {
+                source,
+                info: { songmid: songInfo.id, songId: songInfo.id, name: songInfo.name, singer: songInfo.artist },
+                quality,
+              };
+              Promise.resolve(handler(reqParams)).then(result => {
+                if (!resolved) { resolved = true; clearTimeout(timeout); resolve(result); }
+              }).catch(() => {
+                if (!resolved) { resolved = true; clearTimeout(timeout); resolve(null); }
+              });
+            } catch (e) {
+              if (!resolved) { resolved = true; clearTimeout(timeout); resolve(null); }
+            }
+          }
+        },
+        send: (event, data) => { /* 同步发送事件 */ },
+        EVENT_NAMES: { request: 'request', inited: 'inited' },
+        currentScriptInfo: { name: 'lx-script', description: '', version: '1.0.0' },
+      };
+      sandbox.globalThis.lx = sandbox.lx;
+
+      const context = vm.createContext(sandbox);
+      vm.runInContext(scriptText, context, { timeout: 5000 });
+    } catch (err) {
+      if (!resolved) { resolved = true; clearTimeout(timeout); resolve(null); }
+    }
+  });
 }
 
 // ========== 多平台音源解锁结束 ==========
@@ -1872,32 +2156,85 @@ async function requireLogin(res) {
 // ---------- 业务: 搜索 ----------
 //   优先用 cloudsearch (新接口, 字段更全, picUrl 更稳定)
 //   对于仍然缺失封面的歌曲, 用 song_detail 批量补齐
-async function handleSearch(keywords, limit) {
-  console.log('[Search]', keywords, 'limit:', limit);
-  const result = await cloudsearch({ keywords, limit, cookie: userCookie });
-  const songs = result.body && result.body.result && result.body.result.songs ? result.body.result.songs : [];
+//   type: 1=单曲(默认), 10=专辑, 100=歌手, 1000=歌单, 1004=MV, 1009=电台
+//   offset: 分页偏移
+async function handleSearch(keywords, limit, type, offset) {
+  console.log('[Search]', keywords, 'limit:', limit, 'type:', type || 1, 'offset:', offset || 0);
+  const searchType = type || 1;
+  const searchOffset = offset || 0;
+  const result = await cloudsearch({ keywords, limit, type: searchType, offset: searchOffset, cookie: userCookie });
+  const body = (result.body && result.body.result) || {};
 
-  let mapped = songs.map(s => {
-    return mapSongRecord(s);
-  });
+  // 单曲类型走原有映射逻辑（含封面兜底）
+  if (searchType === 1) {
+    const songs = body.songs || [];
+    let mapped = songs.map(s => mapSongRecord(s));
 
-  // 兜底: 补齐缺失的封面
-  const missing = mapped.filter(s => !s.cover).map(s => s.id);
-  if (missing.length) {
-    try {
-      console.log('[Search] backfilling covers for', missing.length, 'songs');
-      const dd = await song_detail({ ids: missing.join(','), cookie: userCookie });
-      const songsArr = (dd.body && dd.body.songs) || [];
-      const idToPic = {};
-      songsArr.forEach(s => {
-        const pic = (s.al && s.al.picUrl) || (s.album && s.album.picUrl) || '';
-        if (pic) idToPic[s.id] = pic;
-      });
-      mapped = mapped.map(s => s.cover ? s : { ...s, cover: idToPic[s.id] || '' });
-    } catch (e) { console.warn('[Search] backfill failed:', e.message); }
+    // 兜底: 补齐缺失的封面
+    const missing = mapped.filter(s => !s.cover).map(s => s.id);
+    if (missing.length) {
+      try {
+        console.log('[Search] backfilling covers for', missing.length, 'songs');
+        const dd = await song_detail({ ids: missing.join(','), cookie: userCookie });
+        const songsArr = (dd.body && dd.body.songs) || [];
+        const idToPic = {};
+        songsArr.forEach(s => {
+          const pic = (s.al && s.al.picUrl) || (s.album && s.album.picUrl) || '';
+          if (pic) idToPic[s.id] = pic;
+        });
+        mapped = mapped.map(s => s.cover ? s : { ...s, cover: idToPic[s.id] || '' });
+      } catch (e) { console.warn('[Search] backfill failed:', e.message); }
+    }
+
+    return mapped;
   }
 
-  return mapped;
+  // 其他类型（专辑/歌单/MV/电台）按字段映射
+  if (searchType === 10) {
+    // 专辑
+    return (body.albums || []).map(a => ({
+      provider: 'netease', source: 'netease', type: 'album',
+      id: a.id, name: a.name,
+      artist: (a.artist && a.artist.name) || '',
+      cover: a.picUrl || (a.img1v1Url) || '',
+      publishTime: a.publishTime || 0,
+      size: a.size || 0,
+    }));
+  }
+  if (searchType === 1000) {
+    // 歌单
+    return (body.playlists || []).map(p => ({
+      provider: 'netease', source: 'netease', type: 'playlist',
+      id: p.id, name: p.name,
+      cover: p.coverImgUrl || p.picUrl || '',
+      creator: (p.creator && p.creator.nickname) || '',
+      trackCount: p.trackCount || 0,
+      playCount: p.playCount || 0,
+    }));
+  }
+  if (searchType === 1004) {
+    // MV
+    return (body.mvs || []).map(m => ({
+      provider: 'netease', source: 'netease', type: 'mv',
+      id: m.id, name: m.name,
+      artist: (m.artistName) || ((m.artists || []).map(a => a.name).join(' / ')),
+      cover: m.cover || m.picUrl || '',
+      duration: m.duration || 0,
+      playCount: m.playCount || 0,
+    }));
+  }
+  if (searchType === 1009) {
+    // 电台
+    return (body.djRadios || []).map(r => ({
+      provider: 'netease', source: 'netease', type: 'djradio',
+      id: r.id, name: r.name,
+      djName: (r.dj && r.dj.nickname) || '',
+      cover: r.picUrl || '',
+      programCount: r.programCount || 0,
+      subCount: r.subCount || 0,
+    }));
+  }
+  return [];
 }
 
 async function handleDiscoverHome() {
@@ -2955,6 +3292,88 @@ async function handleQQSearch(keywords, limit) {
   });
 }
 
+// ========== 酷狗音乐搜索 ==========
+// 使用 songsearch.kugou.com/song_search_v2 接口（mobilecdn 在国内 Node fetch 下不可用）
+async function handleKugouSearch(keywords, limit, offset) {
+  const kw = String(keywords || '').trim();
+  if (!kw) return [];
+  const page = Math.floor((offset || 0) / 20) + 1;
+  const pagesize = Math.min(30, limit || 20);
+  console.log('[KugouSearch]', kw, 'page:', page, 'pagesize:', pagesize);
+  try {
+    const apiUrl = `https://songsearch.kugou.com/song_search_v2?keyword=${encodeURIComponent(kw)}&page=${page}&pagesize=${pagesize}&platform=WebFilter&userid=-1&clientver=&iscorrection=1&privilege_filter=0&token=&srcappid=2919&clienttime=0&mid=0&uuid=0&dfid=0`;
+    const resp = await fetch(apiUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36', 'Referer': 'https://www.kugou.com/' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) { console.warn('[KugouSearch] HTTP', resp.status); return []; }
+    const json = await resp.json();
+    const list = (json && json.data && Array.isArray(json.data.lists)) ? json.data.lists : [];
+    const seen = new Set();
+    return list.filter(item => item && item.FileHash && !seen.has(item.FileHash) && (seen.add(item.FileHash), true)).map(item => ({
+      provider: 'kugou',
+      source: 'kugou',
+      type: 'song',
+      id: item.FileHash,
+      hash: item.FileHash,
+      // 多音质 hash：标准128k / 极高320k / 无损FLAC / 无损高码率
+      hqHash: item.HQFileHash || '',
+      sqHash: item.SQFileHash || '',
+      resHash: item.ResFileHash || '',
+      albumId: item.AlbumID || '',
+      name: String(item.SongName || item.FileName || '').replace(/<\/?em>/g, ''),
+      artist: String(item.SingerName || '').replace(/<\/?em>/g, '') || '未知歌手',
+      album: String(item.AlbumName || '').replace(/<\/?em>/g, ''),
+      cover: item.Image ? String(item.Image).replace('{size}', '240') : '',
+      duration: parseInt(item.Duration) || 0,
+      // PayType: 0=免费, 3=付费
+      fee: item.PayType === 3 ? 1 : 0,
+      payType: item.PayType,
+      playable: item.PayType !== 3,
+    }));
+  } catch (err) {
+    console.error('[KugouSearch] error:', err.message);
+    return [];
+  }
+}
+
+// 酷狗播放URL获取（通过 hash）
+// 不同音质 hash 不同：128k=FileHash, 320k=HQFileHash, FLAC=SQFileHash, Hi-Res=ResFileHash
+async function handleKugouSongUrl(hash) {
+  const h = String(hash || '').trim();
+  if (!h) return { provider: 'kugou', url: '', error: 'MISSING_HASH', playable: false };
+  console.log('[KugouSongUrl] hash:', h);
+  try {
+    const apiUrl = `https://m.kugou.com/app/i/getSongInfo.php?cmd=playInfo&hash=${h}`;
+    const resp = await fetch(apiUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36', 'Referer': 'http://m.kugou.com/' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return { provider: 'kugou', url: '', error: 'HTTP_' + resp.status, playable: false };
+    const json = await resp.json();
+    const url = json && json.url;
+    if (url) {
+      const br = parseInt(json.bitRate) || 128;
+      const level = br >= 640 ? 'lossless' : (br >= 320 ? 'exhigh' : (br >= 192 ? 'higher' : 'standard'));
+      return {
+        provider: 'kugou',
+        url,
+        playable: true,
+        trial: false,
+        level,
+        br: br * 1000,
+        platform: 'kugou',
+      };
+    }
+    // url 为空：通常是付费歌曲
+    const err = (json && json.error) ? json.error : 'NO_URL';
+    return { provider: 'kugou', url: '', error: err, playable: false };
+  } catch (err) {
+    console.error('[KugouSongUrl] error:', err.message);
+    return { provider: 'kugou', url: '', error: err.message, playable: false };
+  }
+}
+
 async function handleQQSongUrl(mid, mediaMid, qualityPreference) {
   const songmid = String(mid || '').trim();
   if (!songmid) return { provider: 'qq', url: '', error: 'MISSING_MID', message: 'Missing QQ song mid' };
@@ -3471,12 +3890,29 @@ async function handleSongUrl(id, loginInfo, qualityPreference) {
         return { ...unblockResult, requestedQuality };
       }
 
-      // Step 2: GD Music (Joox/Tidal)
+      // Step 2: LX Music（洛雪音源，priority=0 最高优先级）
+      const lxResult = await resolveLxMusic(id, songDetail || lastData);
+      if (lxResult) {
+        console.log('[SongUrl] ✅ LX Music 成功');
+        return { ...lxResult, requestedQuality };
+      }
+
+      // Step 3: Custom API（自定义API，priority=1）
+      const customResult = await resolveCustomAudioSource(id, songDetail || lastData);
+      if (customResult) {
+        console.log('[SongUrl] ✅ 自定义API成功');
+        return { ...customResult, requestedQuality };
+      }
+
+      // Step 4: GD Music (Joox/Tidal，priority=3)
       const gdResult = await resolveGDMusic(id, songDetail || lastData);
       if (gdResult) {
         console.log('[SongUrl] ✅ GD Music 成功');
         return { ...gdResult, requestedQuality };
       }
+
+      // Step 5: UnblockMusic (migu/kugou/kuwo/pyncmd，priority=4 兜底)
+      // 注意：getMusicSourceConfig 已经过滤掉非 unblock 平台
 
       console.log('[SongUrl] ❌ 所有音源均失败');
     }
@@ -3830,12 +4266,83 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ---------- 音源配置（搜索源启用/禁用 + 音源配置 增删改查）----------
+  if (pn === '/api/config/sources') {
+    if (req.method === 'GET') {
+      sendJSON(res, musicSourceConfig || getDefaultSourceConfig());
+      return;
+    }
+    if (req.method === 'PUT') {
+      try {
+        const body = await readRequestBody(req);
+        const result = saveMusicSourceConfig(body);
+        sendJSON(res, { ...result, config: musicSourceConfig });
+      } catch (err) {
+        console.error('[ConfigSave]', err);
+        sendJSON(res, { ok: false, error: err.message }, 500);
+      }
+      return;
+    }
+    sendJSON(res, { error: 'METHOD_NOT_ALLOWED' }, 405);
+    return;
+  }
+
+  // ---------- 搜索建议 ----------
+  if (pn === '/api/search/suggest') {
+    try {
+      const kw = String(url.searchParams.get('keywords') || '').trim();
+      if (!kw) { sendJSON(res, { suggestions: [] }); return; }
+      // 网易云搜索建议
+      let neSongs = [];
+      try {
+        const r = await search_suggest({ keywords: kw, cookie: userCookie });
+        neSongs = (r.body && r.body.result && r.body.result.songs) || [];
+      } catch (e) { console.warn('[Suggest] netease failed:', e.message); }
+      // 提取歌名作为建议词
+      const seen = new Set();
+      const suggestions = [];
+      neSongs.forEach(s => {
+        const name = s.name && s.name.trim();
+        if (name && !seen.has(name.toLowerCase())) {
+          seen.add(name.toLowerCase());
+          suggestions.push(name);
+        }
+      });
+      sendJSON(res, { suggestions: suggestions.slice(0, 8) });
+    } catch (err) {
+      console.error('[Suggest]', err);
+      sendJSON(res, { suggestions: [] }, 500);
+    }
+    return;
+  }
+
+  // ---------- 热搜榜 ----------
+  if (pn === '/api/search/hot') {
+    try {
+      const r = await search_hot_detail({ cookie: userCookie, timestamp: Date.now() });
+      const list = (r.body && r.body.data) || [];
+      const hot = list.map(item => ({
+        keyword: item.searchWord,
+        score: item.score || 0,
+        icon: item.iconUrl || '',
+        desc: item.content || ''
+      })).slice(0, 20);
+      sendJSON(res, { hot });
+    } catch (err) {
+      console.error('[HotSearch]', err);
+      sendJSON(res, { hot: [] }, 500);
+    }
+    return;
+  }
+
   // ---------- 搜索 ----------
   if (pn === '/api/search') {
     try {
       const kw    = url.searchParams.get('keywords') || '';
       const limit = parseInt(url.searchParams.get('limit') || '20');
-      const songs = await handleSearch(kw, limit);
+      const type  = parseInt(url.searchParams.get('type') || '1');
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+      const songs = await handleSearch(kw, limit, type, offset);
       sendJSON(res, { songs });
     } catch (err) { console.error('[Search]', err); sendJSON(res, { error: err.message, songs: [] }, 500); }
     return;
@@ -3850,6 +4357,32 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       console.error('[QQSearch]', err);
       sendJSON(res, { provider: 'qq', error: err.message, songs: [] }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/kugou/search') {
+    try {
+      const kw = url.searchParams.get('keywords') || '';
+      const limit = Math.max(4, Math.min(30, parseInt(url.searchParams.get('limit') || '20', 10) || 20));
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+      const songs = await handleKugouSearch(kw, limit, offset);
+      sendJSON(res, { provider: 'kugou', songs });
+    } catch (err) {
+      console.error('[KugouSearch]', err);
+      sendJSON(res, { provider: 'kugou', error: err.message, songs: [] }, 500);
+    }
+    return;
+  }
+
+  if (pn === '/api/kugou/song/url') {
+    try {
+      const hash = url.searchParams.get('hash') || url.searchParams.get('id') || '';
+      const info = await handleKugouSongUrl(hash);
+      sendJSON(res, info);
+    } catch (err) {
+      console.error('[KugouSongUrl]', err);
+      sendJSON(res, { provider: 'kugou', url: '', error: err.message, playable: false }, 500);
     }
     return;
   }
