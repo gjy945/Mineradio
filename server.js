@@ -3559,6 +3559,7 @@ function resolveUniqueFilePath(dir, baseName, ext) {
 }
 
 // 获取下载用音频URL（复用现有的播放URL获取逻辑）
+// 关键：下载时拒绝试听片段（freeTrialInfo），只有完整版才允许下载
 async function getDownloadAudioUrl(provider, songData, quality) {
   if (provider === 'qq') {
     return await handleQQSongUrl(songData.mid || songData.songmid || songData.id, songData.mediaMid, quality);
@@ -3579,8 +3580,16 @@ async function getDownloadAudioUrl(provider, songData, quality) {
   if (provider === 'migu') {
     return { url: '', error: 'MIGU_NO_DIRECT_URL', playable: false };
   }
-  // netease
-  return await handleSongUrl(songData.id, null, quality);
+  // netease: handleSongUrl 内部已尝试官方+多平台unblock音源
+  // 下载场景下拒绝试听版（避免下载到二三十秒的片段）
+  // 关键：必须传登录态，否则未登录时官方接口会返回试听版
+  const loginInfo = await getLoginInfo();
+  const result = await handleSongUrl(songData.id, loginInfo, quality);
+  if (result && result.trial) {
+    console.log('[Download] 拒绝试听片段:', songData.name, '- 所有音源均无法获取完整版');
+    return { url: '', error: '仅为试听片段，无法下载', playable: false };
+  }
+  return result;
 }
 
 // 开始下载任务
@@ -3650,13 +3659,15 @@ async function startDownloadTask(taskId, songData, quality, provider) {
     task.completedAt = Date.now();
     console.log('[Download] 完成:', task.songName, '->', task.filePath);
   } catch (err) {
-    if (err.name === 'AbortError' || task.status === 'cancelled') {
+    if (err.name === 'AbortError' || task.status === 'cancelled' || task.status === 'paused') {
       try { if (task.filePath) fs.unlinkSync(task.filePath); } catch (e) {}
       return;
     }
     task.status = 'failed';
     task.error = err.message;
     console.error('[Download] 失败:', task.songName, err.message);
+  } finally {
+    persistDownloadTasksDebounced();
   }
 }
 
@@ -3677,8 +3688,70 @@ function serializeDownloadTask(task) {
     createdAt: task.createdAt,
     completedAt: task.completedAt,
     ext: task.ext,
+    songData: task.songData || null,
   };
 }
+
+// ========== 下载任务持久化（重启后保留进度和记录） ==========
+const DOWNLOAD_TASKS_FILE = path.join(__dirname, 'config', 'download-tasks.json');
+let downloadTasksPersistTimer = null;
+
+function persistDownloadTasksDebounced() {
+  if (downloadTasksPersistTimer) clearTimeout(downloadTasksPersistTimer);
+  downloadTasksPersistTimer = setTimeout(persistDownloadTasks, 800);
+}
+
+function persistDownloadTasks() {
+  try {
+    const arr = Array.from(downloadTasks.values()).map(serializeDownloadTask);
+    fs.mkdirSync(path.dirname(DOWNLOAD_TASKS_FILE), { recursive: true });
+    fs.writeFileSync(DOWNLOAD_TASKS_FILE, JSON.stringify({ tasks: arr, nextId: downloadTaskIdCounter }, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('[Download] persist failed:', e.message);
+  }
+}
+
+// 启动时加载持久化的任务：下载中/等待中的转为已暂停（文件可能不完整，重置进度）
+function loadPersistedDownloadTasks() {
+  try {
+    if (!fs.existsSync(DOWNLOAD_TASKS_FILE)) return;
+    const raw = fs.readFileSync(DOWNLOAD_TASKS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.tasks)) return;
+    parsed.tasks.forEach(function(t) {
+      if (t.status === 'downloading' || t.status === 'pending') {
+        t.status = 'paused';
+        t.downloadedBytes = 0;
+      }
+      const task = {
+        id: t.id,
+        status: t.status,
+        songName: t.songName || '',
+        artist: t.artist || '',
+        provider: t.provider || 'netease',
+        quality: t.quality || 'exhigh',
+        songData: t.songData || null,
+        totalBytes: t.totalBytes || 0,
+        downloadedBytes: t.downloadedBytes || 0,
+        filePath: t.filePath || '',
+        error: t.error || null,
+        createdAt: t.createdAt || Date.now(),
+        completedAt: t.completedAt || 0,
+        level: t.level,
+        br: t.br,
+        ext: t.ext,
+        controller: null,
+        startedAt: 0,
+      };
+      if (task.id >= downloadTaskIdCounter) downloadTaskIdCounter = task.id + 1;
+      downloadTasks.set(task.id, task);
+    });
+    console.log('[Download] restored', downloadTasks.size, 'tasks from disk');
+  } catch (e) {
+    console.warn('[Download] load persisted failed:', e.message);
+  }
+}
+loadPersistedDownloadTasks();
 
 async function handleQQSongUrl(mid, mediaMid, qualityPreference) {
   const songmid = String(mid || '').trim();
@@ -4760,6 +4833,7 @@ const server = http.createServer(async (req, res) => {
           createdAt: Date.now(),
         };
         downloadTasks.set(taskId, task);
+        persistDownloadTasksDebounced();
         sendJSON(res, { ok: true, taskId: taskId });
         // 异步开始下载
         startDownloadTask(taskId, songData, quality, provider);
@@ -4787,6 +4861,7 @@ const server = http.createServer(async (req, res) => {
           task.status = 'cancelled';
           if (task.controller) task.controller.abort();
           if (task.filePath) { try { fs.unlinkSync(task.filePath); } catch (e) {} }
+          persistDownloadTasksDebounced();
         }
         sendJSON(res, { ok: true });
       } catch (err) {
@@ -4802,6 +4877,81 @@ const server = http.createServer(async (req, res) => {
         downloadTasks.delete(entry[0]);
       }
     }
+    persistDownloadTasksDebounced();
+    sendJSON(res, { ok: true });
+    return;
+  }
+
+  // 暂停单个任务
+  if (pn === '/api/download/pause' && req.method === 'POST') {
+    let body = '';
+    req.on('data', function(chunk) { body += chunk; });
+    req.on('end', function() {
+      try {
+        var parsed = JSON.parse(body);
+        var task = downloadTasks.get(parsed.taskId);
+        if (task && (task.status === 'pending' || task.status === 'downloading')) {
+          task.status = 'paused';
+          if (task.controller) { try { task.controller.abort(); } catch (e) {} task.controller = null; }
+          persistDownloadTasksDebounced();
+        }
+        sendJSON(res, { ok: true });
+      } catch (err) {
+        sendJSON(res, { ok: false, error: err.message }, 500);
+      }
+    });
+    return;
+  }
+
+  // 继续单个任务（重新下载）
+  if (pn === '/api/download/resume' && req.method === 'POST') {
+    let body = '';
+    req.on('data', function(chunk) { body += chunk; });
+    req.on('end', function() {
+      try {
+        var parsed = JSON.parse(body);
+        var task = downloadTasks.get(parsed.taskId);
+        if (task && task.status === 'paused' && task.songData) {
+          task.status = 'pending';
+          task.downloadedBytes = 0;
+          task.totalBytes = 0;
+          task.error = null;
+          persistDownloadTasksDebounced();
+          startDownloadTask(task.id, task.songData, task.quality, task.provider);
+        }
+        sendJSON(res, { ok: true });
+      } catch (err) {
+        sendJSON(res, { ok: false, error: err.message }, 500);
+      }
+    });
+    return;
+  }
+
+  // 暂停全部下载中任务
+  if (pn === '/api/download/pause-all' && req.method === 'POST') {
+    downloadTasks.forEach(function(task) {
+      if (task.status === 'pending' || task.status === 'downloading') {
+        task.status = 'paused';
+        if (task.controller) { try { task.controller.abort(); } catch (e) {} task.controller = null; }
+      }
+    });
+    persistDownloadTasksDebounced();
+    sendJSON(res, { ok: true });
+    return;
+  }
+
+  // 继续全部已暂停任务
+  if (pn === '/api/download/resume-all' && req.method === 'POST') {
+    downloadTasks.forEach(function(task) {
+      if (task.status === 'paused' && task.songData) {
+        task.status = 'pending';
+        task.downloadedBytes = 0;
+        task.totalBytes = 0;
+        task.error = null;
+        startDownloadTask(task.id, task.songData, task.quality, task.provider);
+      }
+    });
+    persistDownloadTasksDebounced();
     sendJSON(res, { ok: true });
     return;
   }

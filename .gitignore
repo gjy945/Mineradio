@@ -17,6 +17,7 @@ win-unpacked/
 
 # User data and private state
 downloads/
+config/download-tasks.json
 .cookie
 .qq-cookie
 updates/

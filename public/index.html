@@ -264,7 +264,7 @@ body.empty-home-active.diy-mode #search-area:not(.has-results) #search-type-tabs
 /* 下载品质选择弹窗 */
 .dq-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;pointer-events:none}
 .dq-overlay.show{opacity:1;pointer-events:auto}
-.dq-modal{width:380px;max-width:90vw;background:rgba(20,20,28,.92);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.dq-modal{width:380px;max-width:90vw;background:rgba(20,20,28,.55);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .dq-header{font-size:15px;font-weight:700;color:rgba(255,255,255,.95);margin-bottom:14px}
 .dq-song-info{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)}
 .dq-song-info img{width:44px;height:44px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,.05)}
@@ -280,7 +280,7 @@ body.empty-home-active.diy-mode #search-area:not(.has-results) #search-type-tabs
 .dq-cancel-btn{width:100%;margin-top:14px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;transition:all .15s}
 .dq-cancel-btn:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9)}
 /* 下载任务面板 */
-.dl-panel{position:fixed;top:0;right:0;width:380px;max-width:90vw;height:100vh;background:rgba(16,16,22,.95);backdrop-filter:blur(24px) saturate(1.2);-webkit-backdrop-filter:blur(24px) saturate(1.2);border-left:1px solid rgba(255,255,255,.08);z-index:9998;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;pointer-events:none}
+.dl-panel{position:fixed;top:0;right:0;width:380px;max-width:90vw;height:100vh;background:rgba(16,16,22,.55);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);border-left:1px solid rgba(255,255,255,.1);z-index:9998;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;pointer-events:none}
 .dl-panel.show{transform:translateX(0);pointer-events:auto}
 .dl-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.06)}
 .dl-head-title{font-size:15px;font-weight:700;color:rgba(255,255,255,.95)}
@@ -310,6 +310,33 @@ body.empty-home-active.diy-mode #search-area:not(.has-results) #search-type-tabs
 .dl-cancel-btn:hover{background:rgba(255,80,80,.12)}
 .dl-retry-btn{padding:3px 10px;border-radius:6px;border:1px solid rgba(0,245,212,.2);background:rgba(0,245,212,.06);color:rgba(0,245,212,.7);font-size:10px;cursor:pointer}
 .dl-retry-btn:hover{background:rgba(0,245,212,.12)}
+.dl-status-paused{background:rgba(255,200,0,.12);color:rgba(255,200,0,.7)}
+.dl-action-mini{padding:3px 10px;border-radius:6px;border:1px solid rgba(255,200,0,.2);background:rgba(255,200,0,.06);color:rgba(255,200,0,.7);font-size:10px;cursor:pointer}
+.dl-action-mini:hover{background:rgba(255,200,0,.12)}
+.dl-tabs{display:flex;gap:4px;padding:10px 12px 0;overflow-x:auto;scrollbar-width:none}
+.dl-tabs::-webkit-scrollbar{display:none}
+.dl-tab{padding:5px 11px;border-radius:8px;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.5);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:inherit}
+.dl-tab:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.04)}
+.dl-tab.active{color:rgba(0,245,212,.95);background:rgba(0,245,212,.1);border-color:rgba(0,245,212,.2)}
+/* 批量下载选择弹窗 */
+.bd-modal{width:460px;max-width:90vw;max-height:80vh;background:rgba(20,20,28,.55);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.bd-info{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:10px}
+.bd-actions-top{display:flex;gap:8px;margin-bottom:10px}
+.bd-link-btn{padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.bd-link-btn:hover{background:rgba(0,245,212,.08);color:rgba(0,245,212,.9);border-color:rgba(0,245,212,.25)}
+.bd-song-list{flex:1;overflow-y:auto;max-height:50vh;padding-right:4px}
+.bd-song-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);margin-bottom:6px;cursor:pointer;transition:all .15s}
+.bd-song-item:hover{background:rgba(255,255,255,.06)}
+.bd-song-item.selected{background:rgba(0,245,212,.12);border-color:rgba(0,245,212,.4)}
+.bd-song-index{font-size:10px;color:rgba(255,255,255,.3);width:22px;text-align:center;flex-shrink:0}
+.bd-song-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.9);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bd-song-artist{font-size:11px;color:rgba(255,255,255,.4);flex-shrink:0;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bd-song-check{width:18px;height:18px;color:rgba(255,255,255,.15);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:color .15s}
+.bd-song-item.selected .bd-song-check{color:rgba(0,245,212,.95)}
+.bd-footer{display:flex;gap:8px;margin-top:14px}
+.bd-confirm-btn{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(0,245,212,.3);background:rgba(0,245,212,.12);color:rgba(0,245,212,.95);font-size:13px;cursor:pointer;transition:all .15s;font-family:inherit}
+.bd-confirm-btn:hover:not(:disabled){background:rgba(0,245,212,.2)}
+.bd-confirm-btn:disabled{opacity:.35;cursor:not-allowed}
 /* 控制台下载按钮 */
 #download-btn.ctrl-btn{transition:color .15s}
 #download-btn:hover{color:rgba(0,245,212,.9)}
@@ -15732,6 +15759,23 @@ function hydrateCustomCover(song) {
   if (custom) song.customCover = custom;
   return song;
 }
+// 全局图片加载失败兜底：显示默认音乐符号封面
+var DEFAULT_COVER_SVG = 'data:image/svg+xml,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">' +
+  '<rect width="80" height="80" rx="8" fill="rgba(255,255,255,0.06)"/>' +
+  '<path d="M32 56V28l24-6v22" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+  '<circle cx="28" cy="56" r="5" fill="rgba(255,255,255,0.25)"/>' +
+  '<circle cx="52" cy="44" r="5" fill="rgba(255,255,255,0.25)"/>' +
+  '</svg>'
+);
+function onImageError(img) {
+  if (img && img.src !== DEFAULT_COVER_SVG) {
+    img.src = DEFAULT_COVER_SVG;
+    img.style.opacity = '1';
+    img.onerror = null; // 防止兜底图也失败时死循环
+  }
+}
+
 function songCoverSrc(song, size) {
   var custom = getCustomCoverForSong(song);
   if (custom) return custom;
@@ -16859,7 +16903,7 @@ function renderArtistSongList(songs) {
   if (!detailArtistSongs.length) return '<div class="detail-empty">暂无热门歌曲</div>';
   return '<div class="detail-scroll">' + detailArtistSongs.map(function(s, i){
     var cover = songCoverSrc(s, 80);
-    var coverHtml = cover ? '<img class="artist-song-cover" src="' + escHtml(cover) + '" alt="" onerror="this.style.opacity=0.18">' : '<div class="artist-song-cover"></div>';
+    var coverHtml = cover ? '<img class="artist-song-cover" src="' + escHtml(cover) + '" alt="" onerror="onImageError(this)">' : '<div class="artist-song-cover"></div>';
     var actionsHtml = '<div class="artist-song-actions">' +
       '<button class="artist-song-action collect" type="button" title="收藏到歌单" aria-label="收藏到歌单" onclick="event.stopPropagation();collectArtistDetailSong(' + i + ')">' + artistCollectTrayIconSvg() + '</button>' +
       '<button class="artist-song-action next" type="button" title="下一首播放" aria-label="下一首播放" onclick="event.stopPropagation();queueArtistDetailSongNext(' + i + ')">' + artistNextPlusIconSvg() + '</button>' +
@@ -17804,7 +17848,7 @@ function programMetaText(item) {
 }
 function searchThumbHtml(src) {
   return src
-    ? '<img src="' + coverUrlWithSize(src, 80) + '" alt="" loading="lazy" onerror="this.style.opacity=0.2">'
+    ? '<img src="' + coverUrlWithSize(src, 80) + '" alt="" loading="lazy" onerror="onImageError(this)">'
     : '<div style="width:40px;height:40px;border-radius:6px;background:rgba(255,255,255,0.06);flex-shrink:0"></div>';
 }
 function renderPodcastRadios(items, label) {
@@ -18629,7 +18673,7 @@ function appendSongSearchResults(newSongs) {
     var sourceClass = songProviderKey(s) + '-source';
     var thumb = songCoverSrc(s, 80);
     var imgTag = thumb
-      ? '<img src="' + thumb + '" alt="" loading="lazy" onerror="this.style.opacity=0.2">'
+      ? '<img src="' + thumb + '" alt="" loading="lazy" onerror="onImageError(this)">'
       : '<div style="width:40px;height:40px;border-radius:6px;background:rgba(255,255,255,0.06);flex-shrink:0"></div>';
     return '<div class="search-result ' + sourceClass + '">' +
       '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0" onclick="playSearchResult(' + realIdx + ')">' +
@@ -18718,24 +18762,46 @@ async function refreshDownloadTasks() {
   } catch (e) {}
 }
 
+var downloadTab = 'all';
+function switchDownloadTab(tab) {
+  downloadTab = tab;
+  document.querySelectorAll('.dl-tab').forEach(function(el) {
+    el.classList.toggle('active', el.getAttribute('data-dl-tab') === tab);
+  });
+  renderDownloadTasks();
+}
+
 function renderDownloadTasks() {
   var list = document.getElementById('download-task-list');
   if (!list) return;
-  if (!downloadTasksCache.length) {
-    list.innerHTML = '<div class="dl-empty">暂无下载任务</div>';
+  var filtered = downloadTasksCache;
+  if (downloadTab === 'downloading') {
+    filtered = filtered.filter(function(t){ return t.status === 'pending' || t.status === 'downloading'; });
+  } else if (downloadTab === 'paused') {
+    filtered = filtered.filter(function(t){ return t.status === 'paused'; });
+  } else if (downloadTab === 'completed') {
+    filtered = filtered.filter(function(t){ return t.status === 'completed'; });
+  } else if (downloadTab === 'failed') {
+    filtered = filtered.filter(function(t){ return t.status === 'failed' || t.status === 'cancelled'; });
+  }
+  if (!filtered.length) {
+    list.innerHTML = '<div class="dl-empty">暂无任务</div>';
     return;
   }
-  list.innerHTML = downloadTasksCache.map(function(t) {
+  list.innerHTML = filtered.map(function(t) {
     var progress = t.totalBytes > 0 ? Math.round(t.downloadedBytes / t.totalBytes * 100) : 0;
-    var statusMap = { pending: '等待中', downloading: '下载中', completed: '已完成', failed: '失败', cancelled: '已取消' };
+    var statusMap = { pending: '等待中', downloading: '下载中', completed: '已完成', failed: '失败', cancelled: '已取消', paused: '已暂停' };
     var statusText = statusMap[t.status] || t.status;
     var progressBar = (t.status === 'downloading' && t.totalBytes > 0) ? '<div class="dl-progress"><div class="dl-progress-bar" style="width:' + progress + '%"></div></div>' : '';
     var sizeText = formatBytes(t.downloadedBytes) + (t.totalBytes > 0 ? ' / ' + formatBytes(t.totalBytes) : '');
+    var qualityLabel = t.level ? playbackQualityShortLabel(t.level) : (t.quality ? playbackQualityShortLabel(t.quality) : '');
     var actions = '';
     if (t.status === 'pending' || t.status === 'downloading') {
-      actions = '<button class="dl-cancel-btn" onclick="cancelDownload(' + t.id + ')">取消</button>';
+      actions = '<button class="dl-action-mini" onclick="pauseDownload(' + t.id + ')">暂停</button><button class="dl-cancel-btn" onclick="cancelDownload(' + t.id + ')">取消</button>';
+    } else if (t.status === 'paused') {
+      actions = '<button class="dl-retry-btn" onclick="resumeDownload(' + t.id + ')">继续</button><button class="dl-cancel-btn" onclick="cancelDownload(' + t.id + ')">取消</button>';
     } else if (t.status === 'failed') {
-      actions = '<button class="dl-retry-btn" onclick="retryDownload(' + t.id + ')">重试</button>';
+      actions = '<button class="dl-retry-btn" onclick="resumeDownload(' + t.id + ')">重试</button>';
     }
     return '<div class="dl-task">' +
       '<div class="dl-task-info">' +
@@ -18745,7 +18811,7 @@ function renderDownloadTasks() {
         '</div>' +
         '<span class="dl-task-status dl-status-' + t.status + '">' + statusText + '</span>' +
       '</div>' +
-      (t.status === 'downloading' || t.status === 'completed' ? '<div class="dl-task-meta"><span class="dl-task-size">' + sizeText + '</span></div>' : (t.error ? '<div class="dl-task-meta"><span class="dl-task-size" style="color:rgba(255,80,80,.5)">' + escHtml(t.error) + '</span></div>' : '')) +
+      (t.status === 'downloading' || t.status === 'completed' ? '<div class="dl-task-meta"><span class="dl-task-size">' + sizeText + (qualityLabel ? ' · ' + qualityLabel : '') + '</span></div>' : (t.error ? '<div class="dl-task-meta"><span class="dl-task-size" style="color:rgba(255,80,80,.5)">' + escHtml(t.error) + '</span></div>' : '')) +
       progressBar +
       (actions ? '<div class="dl-task-actions">' + actions + '</div>' : '') +
     '</div>';
@@ -18771,16 +18837,48 @@ async function cancelDownload(taskId) {
   } catch (e) {}
 }
 
-async function retryDownload(taskId) {
-  var task = downloadTasksCache.find(function(t){ return t.id === taskId; });
-  if (!task) return;
-  // 找到对应的歌曲信息重新下载
-  var song = { name: task.songName, artist: task.artist, provider: task.provider };
-  // 先取消旧任务
-  await apiJson('/api/download/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
-  // 重新开始下载（需要完整的歌曲信息，这里用简化版，可能无法获取URL）
-  // 实际重试需要保存原始songData
-  refreshDownloadTasks();
+async function pauseDownload(taskId) {
+  try {
+    await apiJson('/api/download/pause', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskId: taskId })
+    });
+    refreshDownloadTasks();
+  } catch (e) {}
+}
+
+async function resumeDownload(taskId) {
+  try {
+    await apiJson('/api/download/resume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskId: taskId })
+    });
+    startDownloadPolling();
+  } catch (e) {}
+}
+
+async function pauseAllDownloads() {
+  try {
+    await apiJson('/api/download/pause-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    refreshDownloadTasks();
+  } catch (e) {}
+}
+
+async function resumeAllDownloads() {
+  try {
+    await apiJson('/api/download/resume-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    startDownloadPolling();
+  } catch (e) {}
 }
 
 async function openDownloadFolder() {
@@ -18825,17 +18923,19 @@ function showDownloadQualityPicker(song) {
   var coverEl = document.getElementById('dq-cover');
   var cover = songCoverSrc(song, 80);
   if (coverEl) coverEl.src = cover || '';
+  var durationSec = Math.round((song.duration || 0) / 1000);
   var qualities = [
-    { key: 'standard', name: '标准', br: '128 kbps' },
-    { key: 'higher', name: '较高', br: '192 kbps' },
-    { key: 'exhigh', name: '极高', br: '320 kbps' },
-    { key: 'lossless', name: '无损', br: 'FLAC' },
-    { key: 'hires', name: 'Hi-Res', br: 'Hi-Res' }
+    { key: 'standard', name: '标准', br: '128 kbps', brVal: 128 },
+    { key: 'higher', name: '较高', br: '192 kbps', brVal: 192 },
+    { key: 'exhigh', name: '极高', br: '320 kbps', brVal: 320 },
+    { key: 'lossless', name: '无损', br: 'FLAC', brVal: 900 },
+    { key: 'hires', name: 'Hi-Res', br: 'Hi-Res', brVal: 1500 }
   ];
   var list = document.getElementById('dq-quality-list');
   list.innerHTML = qualities.map(function(q) {
+    var estSize = durationSec > 0 ? formatBytes(q.brVal * 1000 / 8 * durationSec) : '';
     return '<div class="dq-quality-item" onclick="selectDownloadQuality(\'' + q.key + '\')">' +
-      '<div><div class="dq-q-name">' + q.name + '</div><div class="dq-q-br">' + q.br + '</div></div>' +
+      '<div><div class="dq-q-name">' + q.name + '</div><div class="dq-q-br">' + q.br + (estSize ? ' · 约 ' + estSize : '') + '</div></div>' +
       '<span class="dq-q-arrow">&darr;</span>' +
     '</div>';
   }).join('');
@@ -18867,11 +18967,11 @@ function downloadSearchResult(index) {
   if (playlist[index]) showDownloadQualityPicker(playlist[index]);
 }
 
-function batchDownloadSongs(songs) {
+function batchDownloadSongs(songs, quality) {
   if (!songs || !songs.length) return;
-  var quality = playbackQuality || 'exhigh';
+  var q = quality || playbackQuality || 'exhigh';
   songs.forEach(function(song) {
-    startDownload(song, quality);
+    startDownload(song, q);
   });
   showDownloadPanel();
 }
@@ -18882,7 +18982,127 @@ function batchDownloadPlaylistTracks(provider, playlistId) {
     showToast('暂无可下载的歌曲');
     return;
   }
-  batchDownloadSongs(tracks);
+  showBatchDownloadPicker(tracks);
+}
+
+// 批量下载选择弹窗
+var batchDownloadSelectedSet = new Set();
+var batchDownloadSongsList = [];
+
+function showBatchDownloadPicker(songs) {
+  if (!songs || !songs.length) {
+    showToast('暂无可下载的歌曲');
+    return;
+  }
+  batchDownloadSongsList = songs;
+  batchDownloadSelectedSet = new Set();
+  var listEl = document.getElementById('bd-song-list');
+  if (listEl) {
+    listEl.innerHTML = songs.map(function(song, idx) {
+      var name = escHtml(song.name || '未知歌曲');
+      var artist = escHtml(song.artist || '');
+      return '<div class="bd-song-item" data-bd-idx="' + idx + '" onclick="toggleBatchDownloadItem(' + idx + ')">' +
+        '<span class="bd-song-index">' + (idx + 1) + '</span>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="bd-song-name">' + name + '</div>' +
+          '<div class="bd-song-artist">' + artist + '</div>' +
+        '</div>' +
+        '<span class="bd-song-check"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' +
+      '</div>';
+    }).join('');
+  }
+  updateBatchDownloadInfo();
+  var picker = document.getElementById('batch-download-picker');
+  if (picker) picker.classList.add('show');
+}
+
+function hideBatchDownloadPicker() {
+  var picker = document.getElementById('batch-download-picker');
+  if (picker) picker.classList.remove('show');
+}
+
+function toggleBatchDownloadItem(idx) {
+  if (batchDownloadSelectedSet.has(idx)) {
+    batchDownloadSelectedSet.delete(idx);
+  } else {
+    batchDownloadSelectedSet.add(idx);
+  }
+  var item = document.querySelector('.bd-song-item[data-bd-idx="' + idx + '"]');
+  if (item) item.classList.toggle('selected', batchDownloadSelectedSet.has(idx));
+  updateBatchDownloadInfo();
+}
+
+function batchDownloadSelectAll(select) {
+  if (select) {
+    batchDownloadSelectedSet = new Set(batchDownloadSongsList.map(function(_, idx){ return idx; }));
+  } else {
+    batchDownloadSelectedSet = new Set();
+  }
+  document.querySelectorAll('.bd-song-item').forEach(function(el) {
+    var idx = parseInt(el.getAttribute('data-bd-idx'), 10);
+    el.classList.toggle('selected', batchDownloadSelectedSet.has(idx));
+  });
+  updateBatchDownloadInfo();
+}
+
+function updateBatchDownloadInfo() {
+  var info = document.getElementById('bd-info');
+  if (info) info.textContent = '已选择 ' + batchDownloadSelectedSet.size + ' / ' + batchDownloadSongsList.length + ' 首';
+  var confirmBtn = document.getElementById('bd-confirm');
+  if (confirmBtn) confirmBtn.disabled = batchDownloadSelectedSet.size === 0;
+}
+
+function confirmBatchDownload() {
+  if (batchDownloadSelectedSet.size === 0) return;
+  var songs = [];
+  batchDownloadSelectedSet.forEach(function(idx) {
+    if (batchDownloadSongsList[idx]) songs.push(batchDownloadSongsList[idx]);
+  });
+  hideBatchDownloadPicker();
+  // 弹出品质选择，选完再批量下载
+  showBatchDownloadQualityPicker(songs);
+}
+
+// 批量下载品质选择（复用单个品质弹窗，但下载时批量发起）
+var batchDownloadQualitySongs = null;
+function showBatchDownloadQualityPicker(songs) {
+  batchDownloadQualitySongs = songs;
+  downloadQualityPickerSong = { name: '批量下载 ' + songs.length + ' 首', artist: '' };
+  var picker = document.getElementById('download-quality-picker');
+  if (!picker) return;
+  document.getElementById('dq-name').textContent = '批量下载 ' + songs.length + ' 首歌曲';
+  document.getElementById('dq-artist').textContent = '将使用统一音质下载';
+  var coverEl = document.getElementById('dq-cover');
+  if (coverEl) {
+    var firstCover = songs.length ? songCoverSrc(songs[0], 80) : '';
+    coverEl.src = firstCover || DEFAULT_COVER_SVG;
+    coverEl.style.opacity = '1';
+  }
+  var qualities = [
+    { key: 'standard', name: '标准', br: '128 kbps' },
+    { key: 'higher', name: '较高', br: '192 kbps' },
+    { key: 'exhigh', name: '极高', br: '320 kbps' },
+    { key: 'lossless', name: '无损', br: 'FLAC' },
+    { key: 'hires', name: 'Hi-Res', br: 'Hi-Res' }
+  ];
+  var list = document.getElementById('dq-quality-list');
+  list.innerHTML = qualities.map(function(q) {
+    return '<div class="dq-quality-item" onclick="selectBatchDownloadQuality(\'' + q.key + '\')">' +
+      '<div><div class="dq-q-name">' + q.name + '</div><div class="dq-q-br">' + q.br + '</div></div>' +
+      '<span class="dq-q-arrow">&darr;</span>' +
+    '</div>';
+  }).join('');
+  picker.classList.add('show');
+}
+
+function selectBatchDownloadQuality(quality) {
+  if (batchDownloadQualitySongs) {
+    var songs = batchDownloadQualitySongs;
+    batchDownloadQualitySongs = null;
+    downloadQualityPickerSong = null;
+    hideDownloadQualityPicker();
+    batchDownloadSongs(songs, quality);
+  }
 }
 
 async function selectDownloadFolder() {
@@ -19089,7 +19309,7 @@ function renderSongSearchResults(songs) {
     var sourceClass = songProviderKey(s) + '-source';
     var thumb = songCoverSrc(s, 80);
     var imgTag = thumb
-      ? '<img src="' + thumb + '" alt="" loading="lazy" onerror="this.style.opacity=0.2">'
+      ? '<img src="' + thumb + '" alt="" loading="lazy" onerror="onImageError(this)">'
       : '<div style="width:40px;height:40px;border-radius:6px;background:rgba(255,255,255,0.06);flex-shrink:0"></div>';
     return '<div class="search-result ' + sourceClass + '">' +
       '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0" onclick="playSearchResult(' + i + ')">' +
@@ -19460,6 +19680,13 @@ function bindVolumeControls() {
   }
   if (btn) {
     btn.addEventListener('dblclick', function(e){ e.stopPropagation(); toggleMute(); });
+    btn.addEventListener('wheel', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var delta = e.deltaY > 0 ? -0.05 : 0.05;
+      setVolume(clampRange(targetVolume + delta, 0, 1), false);
+      showToast('音量 ' + Math.round(targetVolume * 100) + '%');
+    }, { passive: false });
   }
   document.addEventListener('click', function(e){
     if (!wrap) return;
@@ -20825,7 +21052,7 @@ function renderMiniQueuePanel(opts) {
   }
   $list.innerHTML = playQueue.map(function(song, i){
     var thumb = songCoverSrc(song, 60);
-    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div class="mini-queue-cover"></div>';
+    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="onImageError(this)">' : '<div class="mini-queue-cover"></div>';
     return '<div class="mini-queue-item' + (i === currentIdx ? ' now' : '') + '" onclick="playQueueAt(' + i + ')">' +
       imgTag +
       '<div class="mini-queue-info"><div class="mini-queue-name">' + escHtml(song.name) + '</div><div class="mini-queue-sub">' + escHtml(song.artist || '') + '</div></div>' +
@@ -20859,7 +21086,7 @@ function renderQueuePanel(opts) {
   }
   $ql.innerHTML = playQueue.map(function(song, i){
     var thumb = songCoverSrc(song, 60);
-    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:38px;height:38px;border-radius:6px;background:rgba(255,255,255,.06);flex-shrink:0"></div>';
+    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="onImageError(this)">' : '<div style="width:38px;height:38px;border-radius:6px;background:rgba(255,255,255,.06);flex-shrink:0"></div>';
     return '<div class="queue-item' + (i === currentIdx ? ' now' : '') + '" onclick="playQueueAt(' + i + ')">' +
       imgTag +
       '<div class="qi-info"><div class="qi-name">' + escHtml(song.name) + '</div><div class="qi-sub"><button class="queue-artist-link" type="button" onclick="event.stopPropagation();openQueueArtist(' + i + ')">' + escHtml(song.artist || '未知歌手') + '</button></div></div>' +
@@ -20928,7 +21155,7 @@ function playlistPanelDetailHtml(pl, provider) {
   var tracks = playlistPanelDetailState.tracks || [];
   var loading = playlistPanelDetailState.loading;
   var cover = pl && pl.cover ? (provider === 'qq' ? pl.cover : (pl.cover + '?param=96y96')) : '';
-  var img = cover ? '<img class="pl-detail-cover" src="' + escHtml(cover) + '" alt="" decoding="async" onerror="this.style.opacity=0.2">' : '<div class="pl-detail-cover"></div>';
+  var img = cover ? '<img class="pl-detail-cover" src="' + escHtml(cover) + '" alt="" decoding="async" onerror="onImageError(this)">' : '<div class="pl-detail-cover"></div>';
   var renderLimit = loading ? 0 : Math.max(PLAYLIST_DETAIL_INITIAL_RENDER, playlistPanelDetailState.renderLimit || PLAYLIST_DETAIL_INITIAL_RENDER);
   renderLimit = Math.min(tracks.length, renderLimit);
   var visibleTracks = loading ? [] : tracks.slice(0, renderLimit);
@@ -20936,7 +21163,7 @@ function playlistPanelDetailHtml(pl, provider) {
     ? '<div class="pl-detail-row"><div style="width:34px;height:34px;border-radius:7px;background:rgba(255,255,255,.06)"></div><div style="flex:1;min-width:0"><div class="pl-detail-row-title">正在载入歌单</div><div class="pl-detail-row-artist">请稍候</div></div></div>'
     : visibleTracks.map(function(song, i){
         var thumb = songCoverSrc(song, 60);
-        var imgTag = thumb ? '<img src="' + escHtml(thumb) + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:34px;height:34px;border-radius:7px;background:rgba(255,255,255,.06);flex:0 0 auto"></div>';
+        var imgTag = thumb ? '<img src="' + escHtml(thumb) + '" alt="" loading="lazy" decoding="async" onerror="onImageError(this)">' : '<div style="width:34px;height:34px;border-radius:7px;background:rgba(255,255,255,.06);flex:0 0 auto"></div>';
         return '<div class="pl-detail-row" data-pl-detail-row="' + i + '">' +
           imgTag +
           '<div style="flex:1;min-width:0"><div class="pl-detail-row-title">' + escHtml(song.name || '') + '</div>' +
@@ -21098,7 +21325,7 @@ function renderUserPlaylistsList(opts) {
     var provider = pl.provider === 'qq' ? 'qq' : 'netease';
     var providerLabel = provider === 'qq' ? 'QQ' : 'NE';
     var thumb = pl.cover ? (provider === 'qq' ? pl.cover : (pl.cover + '?param=88y88')) : '';
-    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.06);flex-shrink:0"></div>';
+    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="onImageError(this)">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.06);flex-shrink:0"></div>';
     var key = playlistPanelKey(provider, pl.id);
     var expanded = playlistPanelDetailState.key === key ? ' expanded' : '';
     return '<div class="pl-card' + expanded + '" data-playlist-provider="' + provider + '" data-playlist-id="' + escHtml(String(pl.id || '')) + '" data-playlist-title="' + escHtml(pl.name || '') + '">' +
@@ -21145,7 +21372,7 @@ function renderMyPodcastCollections(opts) {
   }
   $pod.innerHTML = items.map(function(pc){
     var thumb = pc.cover ? coverUrlWithSize(pc.cover, 88) : '';
-    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(0,245,212,.07);flex-shrink:0"></div>';
+    var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="onImageError(this)">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(0,245,212,.07);flex-shrink:0"></div>';
     return '<div class="pl-card podcast-card" data-podcast-key="' + escHtml(pc.key || '') + '" data-podcast-title="' + escHtml(pc.title || '') + '">' +
       imgTag +
       '<div style="flex:1;min-width:0"><div class="pl-name">' + escHtml(pc.title || '') + '</div><div class="pl-sub">' + (pc.count || 0) + ' 项 · ' + escHtml(pc.sub || '') + '</div></div>' +
@@ -21230,7 +21457,7 @@ function renderMyPodcastRadioItems(key, title, items) {
   $pod.innerHTML = '<div class="podcast-inline-head"><div class="pl-section-label">' + escHtml(title || '我的播客') + '</div><button class="fx-mini-btn ghost" data-podcast-back="1" style="height:24px;padding:0 9px;font-size:10.5px">返回</button></div>' +
     items.map(function(r){
       var thumb = r.cover ? coverUrlWithSize(r.cover, 88) : '';
-      var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(0,245,212,.07);flex-shrink:0"></div>';
+      var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="onImageError(this)">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(0,245,212,.07);flex-shrink:0"></div>';
       return '<div class="pl-card podcast-card podcast-child" data-podcast-radio-id="' + escHtml(String(r.id || r.radioId || '')) + '" data-podcast-title="' + escHtml(r.name || '') + '">' +
         imgTag +
         '<div style="flex:1;min-width:0"><div class="pl-name">' + escHtml(r.name || '') + '</div><div class="pl-sub">' + escHtml((r.djName || r.artist || 'Podcast') + (r.programCount ? (' · ' + r.programCount + ' 集') : '')) + '</div></div>' +
@@ -28541,7 +28768,7 @@ animate();
   <div class="dq-modal">
     <div class="dq-header">下载歌曲</div>
     <div class="dq-song-info">
-      <img id="dq-cover" src="" alt="" onerror="this.style.opacity=0.2">
+      <img id="dq-cover" src="" alt="" onerror="onImageError(this)">
       <div style="flex:1;min-width:0">
         <div id="dq-name" class="dq-song-name"></div>
         <div id="dq-artist" class="dq-song-artist"></div>
@@ -28558,11 +28785,36 @@ animate();
     <span class="dl-head-title">下载任务</span>
     <button class="dl-head-close" onclick="hideDownloadPanel()">&times;</button>
   </div>
+  <div class="dl-tabs">
+    <button class="dl-tab active" data-dl-tab="all" onclick="switchDownloadTab('all')">全部</button>
+    <button class="dl-tab" data-dl-tab="downloading" onclick="switchDownloadTab('downloading')">下载中</button>
+    <button class="dl-tab" data-dl-tab="paused" onclick="switchDownloadTab('paused')">已暂停</button>
+    <button class="dl-tab" data-dl-tab="completed" onclick="switchDownloadTab('completed')">已完成</button>
+    <button class="dl-tab" data-dl-tab="failed" onclick="switchDownloadTab('failed')">失败</button>
+  </div>
   <div class="dl-actions">
+    <button class="dl-action-btn" onclick="pauseAllDownloads()">全部暂停</button>
+    <button class="dl-action-btn" onclick="resumeAllDownloads()">全部继续</button>
     <button class="dl-action-btn" onclick="openDownloadFolder()">打开目录</button>
-    <button class="dl-action-btn" onclick="clearFinishedDownloads()">清除已完成</button>
+    <button class="dl-action-btn" onclick="clearFinishedDownloads()">清除已结束</button>
   </div>
   <div id="download-task-list" class="dl-list"></div>
+</div>
+<!-- 批量下载选择弹窗 -->
+<div id="batch-download-picker" class="dq-overlay">
+  <div class="bd-modal">
+    <div class="dq-header">批量下载</div>
+    <div class="bd-info" id="bd-info">已选择 0 / 0 首</div>
+    <div class="bd-actions-top">
+      <button class="bd-link-btn" onclick="batchDownloadSelectAll(true)">全选</button>
+      <button class="bd-link-btn" onclick="batchDownloadSelectAll(false)">取消全选</button>
+    </div>
+    <div id="bd-song-list" class="bd-song-list"></div>
+    <div class="bd-footer">
+      <button class="dq-cancel-btn" style="width:auto;flex:1;margin-top:0" onclick="hideBatchDownloadPicker()">取消</button>
+      <button class="bd-confirm-btn" id="bd-confirm" onclick="confirmBatchDownload()" disabled>下载选中</button>
+    </div>
+  </div>
 </div>
 </body>
 </html>
