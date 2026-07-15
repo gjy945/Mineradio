@@ -1435,6 +1435,20 @@ ipcMain.handle('mineradio-import-json-file', async (event) => {
   }
 });
 
+ipcMain.handle('mineradio-select-download-folder', async (event) => {
+  try {
+    const owner = getSenderWindow(event);
+    const result = await dialog.showOpenDialog(owner, {
+      title: '选择下载目录',
+      properties: ['openDirectory', 'createDirectory'],
+    });
+    if (result.canceled || !result.filePaths || !result.filePaths[0]) return { ok: false, canceled: true };
+    return { ok: true, path: result.filePaths[0] };
+  } catch (e) {
+    return { ok: false, error: e.message || 'SELECT_FOLDER_FAILED' };
+  }
+});
+
 ipcMain.handle('netease-music-open-login', async (event) => {
   return openNeteaseMusicLoginWindow(getSenderWindow(event));
 });

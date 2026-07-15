@@ -1191,6 +1191,12 @@ body.desktop-shell.diy-mode #bottom-bar.stage-mode{left:50%;width:min(1080px,cal
 .fx-section-label::after{content:'';height:1px;flex:1;background:linear-gradient(90deg,rgba(0,245,212,.16),transparent)}
 .fx-section-label:first-of-type{margin-top:0}
 
+/* --- 折叠面板输入框 --- */
+.fx-input{width:100%;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);font-size:12px;outline:none;transition:border-color .15s}
+.fx-input:focus{border-color:rgba(0,245,212,.3)}
+.fx-input::placeholder{color:rgba(255,255,255,.3)}
+.fx-input[readonly]{cursor:default;opacity:.8}
+
 /* --- 预设卡片网格 --- */
 .preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}
 .preset-card{position:relative;min-height:94px;border-radius:11px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;overflow:hidden;transition:all .25s;display:flex;flex-direction:column;justify-content:flex-end;padding:10px}
@@ -2317,8 +2323,8 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
     <div class="fx-fold-body">
       <div class="fx-section-label">下载位置</div>
       <div class="source-action-row">
-        <input id="fx-download-dir" type="text" class="fx-input" placeholder="下载目录路径" style="flex:1;min-width:0">
-        <button class="fx-mini-btn" onclick="saveDownloadDir()">保存</button>
+        <input id="fx-download-dir" type="text" class="fx-input" placeholder="下载目录路径" readonly style="flex:1;min-width:0;cursor:default;color:rgba(255,255,255,.75)">
+        <button class="fx-mini-btn" onclick="selectDownloadFolder()">选择文件夹</button>
         <button class="fx-mini-btn" onclick="openDownloadFolder()">打开</button>
       </div>
       <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:6px;line-height:1.5">歌曲默认下载到此目录，文件名格式：歌手 - 歌名.mp3/flac</div>
@@ -18858,18 +18864,26 @@ function batchDownloadPlaylistTracks(provider, playlistId) {
   batchDownloadSongs(tracks);
 }
 
-async function saveDownloadDir() {
-  var input = document.getElementById('fx-download-dir');
-  if (!input || !input.value.trim()) return;
+async function selectDownloadFolder() {
   try {
+    var result;
+    if (window.desktopWindow && window.desktopWindow.selectDownloadFolder) {
+      result = await window.desktopWindow.selectDownloadFolder();
+    } else {
+      showToast('请在桌面客户端中使用此功能');
+      return;
+    }
+    if (!result || !result.ok || !result.path) return;
+    var input = document.getElementById('fx-download-dir');
+    if (input) input.value = result.path;
     await apiJson('/api/download/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ downloadDir: input.value.trim() })
+      body: JSON.stringify({ downloadDir: result.path })
     });
     showToast('下载位置已保存');
   } catch (e) {
-    showToast('保存失败: ' + e.message);
+    showToast('设置失败: ' + e.message);
   }
 }
 function songSourceTagHtml(song) {

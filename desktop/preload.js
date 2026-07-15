@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('desktopWindow', {
   configureGlobalHotkeys: (bindings) => ipcRenderer.invoke('mineradio-hotkeys-configure-global', bindings || []),
   exportJsonFile: (payload) => ipcRenderer.invoke('mineradio-export-json-file', payload || {}),
   importJsonFile: () => ipcRenderer.invoke('mineradio-import-json-file'),
+  selectDownloadFolder: () => ipcRenderer.invoke('mineradio-select-download-folder'),
   onGlobalHotkey: (callback) => {
     if (typeof callback !== 'function') return () => {};
     const listener = (_event, payload) => callback(payload || {});
