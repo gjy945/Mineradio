@@ -3562,7 +3562,38 @@ function resolveUniqueFilePath(dir, baseName, ext) {
 // 关键：下载时拒绝试听片段（freeTrialInfo），只有完整版才允许下载
 async function getDownloadAudioUrl(provider, songData, quality) {
   if (provider === 'qq') {
-    return await handleQQSongUrl(songData.mid || songData.songmid || songData.id, songData.mediaMid, quality);
+    const qqResult = await handleQQSongUrl(songData.mid || songData.songmid || songData.id, songData.mediaMid, quality);
+    if (qqResult && qqResult.url) return qqResult;
+    // QQ直连+内部降级都失败，用歌名+歌手搜索网易云走unblock音源
+    try {
+      const artistName = (songData.artists || songData.ar || []).map(a => a.name || '').filter(Boolean).join(' ');
+      const searchKw = ((songData.name || '') + ' ' + artistName).trim();
+      if (searchKw) {
+        const searchResult = await cloudsearch({ keywords: searchKw, limit: 5, cookie: userCookie });
+        const songs = searchResult.body && searchResult.body.result && searchResult.body.result.songs;
+        const matched = songs && songs.find(s => {
+          const sName = (s.name || '').toLowerCase();
+          const qName = (songData.name || '').toLowerCase();
+          return sName.includes(qName) || qName.includes(sName);
+        });
+        if (matched && matched.id) {
+          const platforms = getMusicSourceConfig();
+          const unblockResult = await resolveUnblockMusic(matched.id, {
+            id: matched.id, name: matched.name || '', alias: matched.alias || [],
+            duration: matched.dt || matched.duration || 0,
+            artists: (matched.artists || matched.ar || []).map(a => ({ id: a.id, name: a.name || '' })),
+            album: { id: (matched.album || matched.al || {}).id, name: (matched.album || matched.al || {}).name || '' }
+          }, platforms);
+          if (unblockResult) {
+            console.log('[Download] QQ降级失败，网易云搜索+unblock成功:', songData.name);
+            return { provider: 'qq', ...unblockResult };
+          }
+        }
+      }
+    } catch (e) {
+      console.log('[Download] QQ降级兜底失败:', e.message);
+    }
+    return qqResult;
   }
   if (provider === 'kugou') {
     // 根据音质选hash

@@ -3979,6 +3979,7 @@ document.addEventListener('mousemove', function(e) {
   // 默认只有明确 UI 控件捕获点击；3D 锁定模式下 canvas 也捕获
   var selectors = 'button, a, input, textarea, select, [role="button"], ' +
     '#bottom-bar, #search-area, #playlist-panel, #fx-panel, ' +
+    '#download-quality-picker, #batch-download-picker, #download-panel, ' +
     '.home-card, .home-tile, .home-rail, .home-hero, [data-interactive]';
   if (desktopWallpaper3dLocked) selectors += ', canvas';
   var interactive = e.target.closest(selectors);
