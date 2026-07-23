@@ -1,0 +1,1145 @@
+{
+  "mineradio-playback-quality-v1": "hires",
+  "mineradio-playback-session-v1": {
+    "queue": [
+      {
+        "id": 1410647903,
+        "name": "带我去找夜生活",
+        "artist": "告五人",
+        "artists": [
+          {
+            "id": 12676697,
+            "name": "告五人"
+          }
+        ],
+        "cover": "http://p4.music.126.net/lmCtt6-3fOPSdA1uwGCY5Q==/109951164567402626.jpg",
+        "duration": 299704,
+        "fee": 1,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      },
+      {
+        "id": 438462713,
+        "name": "My Jinji",
+        "artist": "落日飞车",
+        "artists": [
+          {
+            "id": 11074,
+            "name": "落日飞车"
+          }
+        ],
+        "cover": "http://p4.music.126.net/UWWcyf4Q-7F-4cIUh5NE1w==/18825838091725130.jpg",
+        "duration": 400560,
+        "fee": 8,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      },
+      {
+        "id": 1362128139,
+        "name": "Vanilla",
+        "artist": "落日飞车",
+        "artists": [
+          {
+            "id": 11074,
+            "name": "落日飞车"
+          }
+        ],
+        "cover": "http://p4.music.126.net/opeIdm-psbC67txwE7rNfg==/109951164036087415.jpg",
+        "duration": 151282,
+        "fee": 8,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      },
+      {
+        "id": 1368754688,
+        "name": "爱人错过",
+        "artist": "告五人",
+        "artists": [
+          {
+            "id": 12676697,
+            "name": "告五人"
+          }
+        ],
+        "cover": "http://p3.music.126.net/awJUvRnQYOjyoUJbzfL-Ig==/109951172190059964.jpg",
+        "duration": 292074,
+        "fee": 1,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      },
+      {
+        "id": 209228,
+        "name": "旅行的意义",
+        "artist": "陈绮贞",
+        "artists": [
+          {
+            "id": 7217,
+            "name": "陈绮贞"
+          }
+        ],
+        "cover": "http://p3.music.126.net/NbGB1_vTJ6jX4B2r_I-EvA==/109951172349668373.jpg",
+        "duration": 257973,
+        "fee": 1,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      },
+      {
+        "id": 1413863166,
+        "name": "想去海边",
+        "artist": "夏日入侵企画",
+        "artists": [
+          {
+            "id": 12383009,
+            "name": "夏日入侵企画"
+          }
+        ],
+        "cover": "http://p3.music.126.net/sLWN-iePq4ESOMPER0IWgQ==/109951164602081973.jpg",
+        "duration": 267032,
+        "fee": 8,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      },
+      {
+        "id": 570340213,
+        "name": "极恶都市",
+        "artist": "夏日入侵企画",
+        "artists": [
+          {
+            "id": 12383009,
+            "name": "夏日入侵企画"
+          }
+        ],
+        "cover": "http://p4.music.126.net/ZqJp0p4eDzCUCboH-WZJYA==/109951163326946996.jpg",
+        "duration": 268192,
+        "fee": 8,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      },
+      {
+        "id": 1967753523,
+        "name": "Jellyfish (feat. Michael Seyer)",
+        "artist": "落日飞车 / Michael Seyer",
+        "artists": [
+          {
+            "id": 11074,
+            "name": "落日飞车"
+          },
+          {
+            "id": 12474423,
+            "name": "Michael Seyer"
+          }
+        ],
+        "cover": "http://p4.music.126.net/X5bB24BULllhLjb2j73Ikw==/109951167724857072.jpg",
+        "duration": 221374,
+        "fee": 8,
+        "source": "netease",
+        "provider": "netease",
+        "type": "song",
+        "radioContext": {
+          "type": "weather-radio",
+          "provider": "open-meteo",
+          "title": "闷热夜听",
+          "location": "上海",
+          "weather": "晴",
+          "temperature": 29,
+          "mood": "humid-night"
+        }
+      }
+    ],
+    "currentIdx": 0,
+    "currentTime": 2.909333,
+    "playMode": "loop",
+    "savedAt": 1784820988398
+  },
+  "apex-player-volume": 0.39999999999999963,
+  "mineradio-sleep-timer-v1": {
+    "fadeDuration": 30,
+    "endAction": "pause",
+    "lastPreset": 30,
+    "remember": true
+  },
+  "mineradio-listen-stats-v1": {
+    "history": [
+      {
+        "key": "song:327721",
+        "id": 327721,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "读心术",
+        "artist": "卓文萱",
+        "cover": "https://p3.music.126.net/QJJRK7Zqx231yshpLhJCyw==/109951171907028802.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784806933460,
+        "listenMs": 129506,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:273114",
+        "id": 273114,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "失眠",
+        "artist": "Suki刘舒妤",
+        "cover": "https://p4.music.126.net/-ruDNWFD1mMTGMNmNPzUIg==/109951173355316164.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784722587291,
+        "listenMs": 26580,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "qq:002Ta0xk2NcLIj",
+        "id": "002Ta0xk2NcLIj",
+        "mid": "002Ta0xk2NcLIj",
+        "mediaMid": "002CDoqT0kzOny",
+        "type": "qq",
+        "sourceKey": "qq",
+        "name": "Under Water",
+        "artist": "Joakim Lundell / Dotter",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000000b8NRA1YvHI3.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "playedAt": 1784126969834,
+        "listenMs": 188107,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "qq:000CoDFs1B7rvh",
+        "id": "000CoDFs1B7rvh",
+        "mid": "000CoDFs1B7rvh",
+        "mediaMid": "002ddqK9472jzL",
+        "type": "qq",
+        "sourceKey": "qq",
+        "name": "白色桔梗花",
+        "artist": "李哈哈",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000002MrZyw4Jaayc.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "playedAt": 1784126770726,
+        "listenMs": 143832,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:2032201541",
+        "id": 2032201541,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "该怎么办",
+        "artist": "TC",
+        "cover": "https://p4.music.126.net/AVLrwo5N1R-mUMQe3sDsAg==/109951168658782936.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784126198772,
+        "listenMs": 199916,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:421423806",
+        "id": 421423806,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "小半",
+        "artist": "陈粒",
+        "cover": "https://p3.music.126.net/HQxTggMCB7AHUXN-ZFEtmA==/1371091013186741.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784122614991,
+        "listenMs": 295289,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:1352002513",
+        "id": 1352002513,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "空山新雨后",
+        "artist": "音阙诗听 / 锦零",
+        "cover": "https://p3.music.126.net/J41DBagRJED1YHcBCMsk3A==/109951169246693269.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784122313566,
+        "listenMs": 172495,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:210049",
+        "id": 210049,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "布拉格广场",
+        "artist": "蔡依林 / 周杰伦",
+        "cover": "https://p4.music.126.net/8D2Pd7EuvGboMyE2xWc47A==/109951172453712025.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784122135846,
+        "listenMs": 19215,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "qq:001fTFGe0LqzdT",
+        "id": "001fTFGe0LqzdT",
+        "mid": "001fTFGe0LqzdT",
+        "mediaMid": "0007VNd52q6aSX",
+        "type": "qq",
+        "sourceKey": "qq",
+        "name": "无人之岛",
+        "artist": "任然",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000002lMPc30c4rOO.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "playedAt": 1784121640628,
+        "listenMs": 204717,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "qq:004c19Gc0SZLfz",
+        "id": "004c19Gc0SZLfz",
+        "mid": "004c19Gc0SZLfz",
+        "mediaMid": "004RkFv51lpJYM",
+        "type": "qq",
+        "sourceKey": "qq",
+        "name": "亲爱的",
+        "artist": "付昊喆",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000004ZpL8Z2GcouB.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "playedAt": 1784120099566,
+        "listenMs": 205740,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:227012",
+        "id": 227012,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "雪",
+        "artist": "杜婧荧 / 王艺翔",
+        "cover": "http://p4.music.126.net/TrVIdBKZ-WZZrZPbhnnz1w==/109951165073155396.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784119447558,
+        "listenMs": 224500,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:287719",
+        "id": 287719,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "开始懂了",
+        "artist": "孙燕姿",
+        "cover": "https://p4.music.126.net/1HJILQwc62AfvcXkGgVJHQ==/109951165549820772.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1784041050431,
+        "listenMs": 269830,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:502043537",
+        "id": 502043537,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "第三人称",
+        "artist": "冯沁苑(买辣椒也用券)",
+        "cover": "https://p3.music.126.net/nOVxBaX0IG1PsV4WfSoodA==/109951164379891919.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783873484504,
+        "listenMs": 267852,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:26082345",
+        "id": 26082345,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "带我走",
+        "artist": "杨丞琳",
+        "cover": "http://p4.music.126.net/xgqaL3g1WV3r-y7SDGuDZA==/109951170708260156.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783872655803,
+        "listenMs": 12742,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:215382",
+        "id": 215382,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "雨过后的风景",
+        "artist": "Dizzy Dizzo (蔡诗芸)",
+        "cover": "http://p4.music.126.net/6Y7tdO1ltV0khSYWLFHODQ==/109951173146696212.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783872436345,
+        "listenMs": 241987,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:32019002",
+        "id": 32019002,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "Beautiful Now",
+        "artist": "Zedd / Jon Bellion",
+        "cover": "https://p4.music.126.net/ze_ggtReuHBLF2o-wUolFw==/109951163221161145.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783784275631,
+        "listenMs": 13511,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:3344401527",
+        "id": 3344401527,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "一次性胶卷",
+        "artist": "极品贵公子 / TOYOKI",
+        "cover": "https://p4.music.126.net/3QJXQAv0YI5UCRUTdkyS3A==/109951172660508213.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783773437423,
+        "listenMs": 166024,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:3392959216",
+        "id": 3392959216,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "Sea Mistt Beat",
+        "artist": "Jasr / Master666",
+        "cover": "https://p4.music.126.net/BBxSItG872dzWsaFVnU2vw==/109951173350553742.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783773268424,
+        "listenMs": 89187,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:306877",
+        "id": 306877,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "遗失的心跳",
+        "artist": "萧亚轩",
+        "cover": "http://p3.music.126.net/oCSjB-Px9kRk5Zv1ct-ktQ==/109951171361923475.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783773176316,
+        "listenMs": 3903,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:169185",
+        "id": 169185,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "认真的雪",
+        "artist": "薛之谦",
+        "cover": "http://p4.music.126.net/fqiX7ZmISM4fHm7v4GrV2Q==/109951171269232420.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783772970355,
+        "listenMs": 11368,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:2005492223",
+        "id": 2005492223,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "命运",
+        "artist": "家家",
+        "cover": "http://p4.music.126.net/sf5h4QpYty8fKiLrpwJKqw==/109951168144061436.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783757283989,
+        "listenMs": 225926,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:3397873333",
+        "id": 3397873333,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "艾比还是哭了（Acoustic）",
+        "artist": "ABH！",
+        "cover": "https://p4.music.126.net/H487khrwzcT_CSoGE5XJ6A==/109951173248904873.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783756208220,
+        "listenMs": 133223,
+        "completed": true,
+        "context": null
+      },
+      {
+        "key": "song:465921195",
+        "id": 465921195,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "还是分开",
+        "artist": "张叶蕾",
+        "cover": "https://p3.music.126.net/tH5FdakJX47uy8mlM0GMWQ==/19218363741925314.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783756072804,
+        "listenMs": 89775,
+        "completed": false,
+        "context": null
+      },
+      {
+        "key": "song:420401511",
+        "id": 420401511,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "和你",
+        "artist": "余佳运",
+        "cover": "http://p4.music.126.net/O6d7GYY3gp2uy8zehvcOjQ==/17699938184267410.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783706551991,
+        "listenMs": 45132,
+        "completed": false,
+        "context": null
+      },
+      {
+        "key": "song:167799",
+        "id": 167799,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "怎么说我不爱你",
+        "artist": "萧敬腾",
+        "cover": "https://p3.music.126.net/0rAYErNfEn0CLdXZjHlRaQ==/109951171928047247.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783703298942,
+        "listenMs": 5660,
+        "completed": false,
+        "context": null
+      },
+      {
+        "key": "song:3339230677",
+        "id": 3339230677,
+        "mid": "",
+        "mediaMid": "",
+        "type": "song",
+        "sourceKey": "netease",
+        "name": "晴天",
+        "artist": "周杰伦- / A-LNK",
+        "cover": "http://p4.music.126.net/rM6PP_YrU0HjFes4jggIOw==/109951172445882513.jpg?param=220y220",
+        "source": "网易云音乐",
+        "playedAt": 1783699209894,
+        "listenMs": 84307,
+        "completed": false,
+        "context": null
+      }
+    ],
+    "songs": {
+      "song:3339230677": {
+        "key": "song:3339230677",
+        "name": "晴天",
+        "artist": "周杰伦- / A-LNK",
+        "cover": "http://p4.music.126.net/rM6PP_YrU0HjFes4jggIOw==/109951172445882513.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 2,
+        "listenMs": 95563,
+        "completed": 0,
+        "lastPlayedAt": 1783699209894
+      },
+      "song:167799": {
+        "key": "song:167799",
+        "name": "怎么说我不爱你",
+        "artist": "萧敬腾",
+        "cover": "https://p3.music.126.net/0rAYErNfEn0CLdXZjHlRaQ==/109951171928047247.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 2,
+        "listenMs": 17032,
+        "completed": 1,
+        "lastPlayedAt": 1783703298942
+      },
+      "song:420401511": {
+        "key": "song:420401511",
+        "name": "和你",
+        "artist": "余佳运",
+        "cover": "http://p4.music.126.net/O6d7GYY3gp2uy8zehvcOjQ==/17699938184267410.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 45132,
+        "completed": 0,
+        "lastPlayedAt": 1783706551991
+      },
+      "song:465921195": {
+        "key": "song:465921195",
+        "name": "还是分开",
+        "artist": "张叶蕾",
+        "cover": "https://p3.music.126.net/tH5FdakJX47uy8mlM0GMWQ==/19218363741925314.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 89775,
+        "completed": 0,
+        "lastPlayedAt": 1783756072804
+      },
+      "song:3397873333": {
+        "key": "song:3397873333",
+        "name": "艾比还是哭了（Acoustic）",
+        "artist": "ABH！",
+        "cover": "https://p4.music.126.net/H487khrwzcT_CSoGE5XJ6A==/109951173248904873.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 133223,
+        "completed": 1,
+        "lastPlayedAt": 1783756208220
+      },
+      "song:2005492223": {
+        "key": "song:2005492223",
+        "name": "命运",
+        "artist": "家家",
+        "cover": "http://p4.music.126.net/sf5h4QpYty8fKiLrpwJKqw==/109951168144061436.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 225926,
+        "completed": 1,
+        "lastPlayedAt": 1783757283989
+      },
+      "song:169185": {
+        "key": "song:169185",
+        "name": "认真的雪",
+        "artist": "薛之谦",
+        "cover": "http://p4.music.126.net/fqiX7ZmISM4fHm7v4GrV2Q==/109951171269232420.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 11368,
+        "completed": 1,
+        "lastPlayedAt": 1783772970355
+      },
+      "song:306877": {
+        "key": "song:306877",
+        "name": "遗失的心跳",
+        "artist": "萧亚轩",
+        "cover": "http://p3.music.126.net/oCSjB-Px9kRk5Zv1ct-ktQ==/109951171361923475.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 3903,
+        "completed": 1,
+        "lastPlayedAt": 1783773176316
+      },
+      "song:3392959216": {
+        "key": "song:3392959216",
+        "name": "Sea Mistt Beat",
+        "artist": "Jasr / Master666",
+        "cover": "https://p4.music.126.net/BBxSItG872dzWsaFVnU2vw==/109951173350553742.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 89187,
+        "completed": 1,
+        "lastPlayedAt": 1783773268424
+      },
+      "song:3344401527": {
+        "key": "song:3344401527",
+        "name": "一次性胶卷",
+        "artist": "极品贵公子 / TOYOKI",
+        "cover": "https://p4.music.126.net/3QJXQAv0YI5UCRUTdkyS3A==/109951172660508213.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 166024,
+        "completed": 1,
+        "lastPlayedAt": 1783773437423
+      },
+      "qq:000CoDFs1B7rvh": {
+        "key": "qq:000CoDFs1B7rvh",
+        "name": "白色桔梗花",
+        "artist": "李哈哈",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000002MrZyw4Jaayc.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "plays": 2,
+        "listenMs": 252744,
+        "completed": 2,
+        "lastPlayedAt": 1784126770726
+      },
+      "song:2032201541": {
+        "key": "song:2032201541",
+        "name": "该怎么办",
+        "artist": "TC",
+        "cover": "https://p4.music.126.net/AVLrwo5N1R-mUMQe3sDsAg==/109951168658782936.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 12,
+        "listenMs": 2394067,
+        "completed": 12,
+        "lastPlayedAt": 1784126198772
+      },
+      "song:210049": {
+        "key": "song:210049",
+        "name": "布拉格广场",
+        "artist": "蔡依林 / 周杰伦",
+        "cover": "https://p4.music.126.net/8D2Pd7EuvGboMyE2xWc47A==/109951172453712025.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 5,
+        "listenMs": 901224,
+        "completed": 5,
+        "lastPlayedAt": 1784122135846
+      },
+      "song:32019002": {
+        "key": "song:32019002",
+        "name": "Beautiful Now",
+        "artist": "Zedd / Jon Bellion",
+        "cover": "https://p4.music.126.net/ze_ggtReuHBLF2o-wUolFw==/109951163221161145.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 13511,
+        "completed": 1,
+        "lastPlayedAt": 1783784275631
+      },
+      "song:1352002513": {
+        "key": "song:1352002513",
+        "name": "空山新雨后",
+        "artist": "音阙诗听 / 锦零",
+        "cover": "https://p3.music.126.net/J41DBagRJED1YHcBCMsk3A==/109951169246693269.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 2,
+        "listenMs": 345097,
+        "completed": 2,
+        "lastPlayedAt": 1784122313566
+      },
+      "song:421423806": {
+        "key": "song:421423806",
+        "name": "小半",
+        "artist": "陈粒",
+        "cover": "https://p3.music.126.net/HQxTggMCB7AHUXN-ZFEtmA==/1371091013186741.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 2,
+        "listenMs": 590637,
+        "completed": 2,
+        "lastPlayedAt": 1784122614991
+      },
+      "song:215382": {
+        "key": "song:215382",
+        "name": "雨过后的风景",
+        "artist": "Dizzy Dizzo (蔡诗芸)",
+        "cover": "http://p4.music.126.net/6Y7tdO1ltV0khSYWLFHODQ==/109951173146696212.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 241987,
+        "completed": 1,
+        "lastPlayedAt": 1783872436345
+      },
+      "song:26082345": {
+        "key": "song:26082345",
+        "name": "带我走",
+        "artist": "杨丞琳",
+        "cover": "http://p4.music.126.net/xgqaL3g1WV3r-y7SDGuDZA==/109951170708260156.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 12742,
+        "completed": 1,
+        "lastPlayedAt": 1783872655803
+      },
+      "song:502043537": {
+        "key": "song:502043537",
+        "name": "第三人称",
+        "artist": "冯沁苑(买辣椒也用券)",
+        "cover": "https://p3.music.126.net/nOVxBaX0IG1PsV4WfSoodA==/109951164379891919.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 267852,
+        "completed": 1,
+        "lastPlayedAt": 1783873484504
+      },
+      "song:287719": {
+        "key": "song:287719",
+        "name": "开始懂了",
+        "artist": "孙燕姿",
+        "cover": "https://p4.music.126.net/1HJILQwc62AfvcXkGgVJHQ==/109951165549820772.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 269830,
+        "completed": 1,
+        "lastPlayedAt": 1784041050431
+      },
+      "song:327721": {
+        "key": "song:327721",
+        "name": "读心术",
+        "artist": "卓文萱",
+        "cover": "https://p3.music.126.net/QJJRK7Zqx231yshpLhJCyw==/109951171907028802.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 4,
+        "listenMs": 680714,
+        "completed": 4,
+        "lastPlayedAt": 1784806933460
+      },
+      "song:227012": {
+        "key": "song:227012",
+        "name": "雪",
+        "artist": "杜婧荧 / 王艺翔",
+        "cover": "http://p4.music.126.net/TrVIdBKZ-WZZrZPbhnnz1w==/109951165073155396.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 224500,
+        "completed": 1,
+        "lastPlayedAt": 1784119447558
+      },
+      "qq:004c19Gc0SZLfz": {
+        "key": "qq:004c19Gc0SZLfz",
+        "name": "亲爱的",
+        "artist": "付昊喆",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000004ZpL8Z2GcouB.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "plays": 2,
+        "listenMs": 257370,
+        "completed": 1,
+        "lastPlayedAt": 1784120099566
+      },
+      "qq:001fTFGe0LqzdT": {
+        "key": "qq:001fTFGe0LqzdT",
+        "name": "无人之岛",
+        "artist": "任然",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000002lMPc30c4rOO.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "plays": 2,
+        "listenMs": 409134,
+        "completed": 2,
+        "lastPlayedAt": 1784121640628
+      },
+      "qq:002Ta0xk2NcLIj": {
+        "key": "qq:002Ta0xk2NcLIj",
+        "name": "Under Water",
+        "artist": "Joakim Lundell / Dotter",
+        "cover": "https://y.qq.com/music/photo_new/T002R300x300M000000b8NRA1YvHI3.jpg?max_age=2592000&param=220y220",
+        "source": "QQ 音乐",
+        "plays": 1,
+        "listenMs": 188107,
+        "completed": 1,
+        "lastPlayedAt": 1784126969834
+      },
+      "song:273114": {
+        "key": "song:273114",
+        "name": "失眠",
+        "artist": "Suki刘舒妤",
+        "cover": "https://p4.music.126.net/-ruDNWFD1mMTGMNmNPzUIg==/109951173355316164.jpg?param=220y220",
+        "source": "网易云音乐",
+        "plays": 1,
+        "listenMs": 26580,
+        "completed": 1,
+        "lastPlayedAt": 1784722587291
+      }
+    },
+    "artists": {
+      "周杰伦-": {
+        "name": "周杰伦-",
+        "plays": 2,
+        "listenMs": 95563,
+        "lastPlayedAt": 1783699209894
+      },
+      "A-LNK": {
+        "name": "A-LNK",
+        "plays": 2,
+        "listenMs": 95563,
+        "lastPlayedAt": 1783699209894
+      },
+      "萧敬腾": {
+        "name": "萧敬腾",
+        "plays": 2,
+        "listenMs": 17032,
+        "lastPlayedAt": 1783703298942
+      },
+      "余佳运": {
+        "name": "余佳运",
+        "plays": 1,
+        "listenMs": 45132,
+        "lastPlayedAt": 1783706551991
+      },
+      "张叶蕾": {
+        "name": "张叶蕾",
+        "plays": 1,
+        "listenMs": 89775,
+        "lastPlayedAt": 1783756072804
+      },
+      "ABH！": {
+        "name": "ABH！",
+        "plays": 1,
+        "listenMs": 133223,
+        "lastPlayedAt": 1783756208220
+      },
+      "家家": {
+        "name": "家家",
+        "plays": 1,
+        "listenMs": 225926,
+        "lastPlayedAt": 1783757283989
+      },
+      "薛之谦": {
+        "name": "薛之谦",
+        "plays": 1,
+        "listenMs": 11368,
+        "lastPlayedAt": 1783772970355
+      },
+      "萧亚轩": {
+        "name": "萧亚轩",
+        "plays": 1,
+        "listenMs": 3903,
+        "lastPlayedAt": 1783773176316
+      },
+      "Jasr": {
+        "name": "Jasr",
+        "plays": 1,
+        "listenMs": 89187,
+        "lastPlayedAt": 1783773268424
+      },
+      "Master666": {
+        "name": "Master666",
+        "plays": 1,
+        "listenMs": 89187,
+        "lastPlayedAt": 1783773268424
+      },
+      "极品贵公子": {
+        "name": "极品贵公子",
+        "plays": 1,
+        "listenMs": 166024,
+        "lastPlayedAt": 1783773437423
+      },
+      "TOYOKI": {
+        "name": "TOYOKI",
+        "plays": 1,
+        "listenMs": 166024,
+        "lastPlayedAt": 1783773437423
+      },
+      "李哈哈": {
+        "name": "李哈哈",
+        "plays": 2,
+        "listenMs": 252744,
+        "lastPlayedAt": 1784126770726
+      },
+      "TC": {
+        "name": "TC",
+        "plays": 12,
+        "listenMs": 2394067,
+        "lastPlayedAt": 1784126198772
+      },
+      "蔡依林": {
+        "name": "蔡依林",
+        "plays": 5,
+        "listenMs": 901224,
+        "lastPlayedAt": 1784122135846
+      },
+      "周杰伦": {
+        "name": "周杰伦",
+        "plays": 5,
+        "listenMs": 901224,
+        "lastPlayedAt": 1784122135846
+      },
+      "Zedd": {
+        "name": "Zedd",
+        "plays": 1,
+        "listenMs": 13511,
+        "lastPlayedAt": 1783784275631
+      },
+      "Jon Bellion": {
+        "name": "Jon Bellion",
+        "plays": 1,
+        "listenMs": 13511,
+        "lastPlayedAt": 1783784275631
+      },
+      "音阙诗听": {
+        "name": "音阙诗听",
+        "plays": 2,
+        "listenMs": 345097,
+        "lastPlayedAt": 1784122313566
+      },
+      "锦零": {
+        "name": "锦零",
+        "plays": 2,
+        "listenMs": 345097,
+        "lastPlayedAt": 1784122313566
+      },
+      "陈粒": {
+        "name": "陈粒",
+        "plays": 2,
+        "listenMs": 590637,
+        "lastPlayedAt": 1784122614991
+      },
+      "Dizzy Dizzo (蔡诗芸)": {
+        "name": "Dizzy Dizzo (蔡诗芸)",
+        "plays": 1,
+        "listenMs": 241987,
+        "lastPlayedAt": 1783872436345
+      },
+      "杨丞琳": {
+        "name": "杨丞琳",
+        "plays": 1,
+        "listenMs": 12742,
+        "lastPlayedAt": 1783872655803
+      },
+      "冯沁苑(买辣椒也用券)": {
+        "name": "冯沁苑(买辣椒也用券)",
+        "plays": 1,
+        "listenMs": 267852,
+        "lastPlayedAt": 1783873484504
+      },
+      "孙燕姿": {
+        "name": "孙燕姿",
+        "plays": 1,
+        "listenMs": 269830,
+        "lastPlayedAt": 1784041050431
+      },
+      "卓文萱": {
+        "name": "卓文萱",
+        "plays": 4,
+        "listenMs": 680714,
+        "lastPlayedAt": 1784806933460
+      },
+      "杜婧荧": {
+        "name": "杜婧荧",
+        "plays": 1,
+        "listenMs": 224500,
+        "lastPlayedAt": 1784119447558
+      },
+      "王艺翔": {
+        "name": "王艺翔",
+        "plays": 1,
+        "listenMs": 224500,
+        "lastPlayedAt": 1784119447558
+      },
+      "付昊喆": {
+        "name": "付昊喆",
+        "plays": 2,
+        "listenMs": 257370,
+        "lastPlayedAt": 1784120099566
+      },
+      "任然": {
+        "name": "任然",
+        "plays": 2,
+        "listenMs": 409134,
+        "lastPlayedAt": 1784121640628
+      },
+      "Joakim Lundell": {
+        "name": "Joakim Lundell",
+        "plays": 1,
+        "listenMs": 188107,
+        "lastPlayedAt": 1784126969834
+      },
+      "Dotter": {
+        "name": "Dotter",
+        "plays": 1,
+        "listenMs": 188107,
+        "lastPlayedAt": 1784126969834
+      },
+      "Suki刘舒妤": {
+        "name": "Suki刘舒妤",
+        "plays": 1,
+        "listenMs": 26580,
+        "lastPlayedAt": 1784722587291
+      }
+    },
+    "updatedAt": 1784806933460
+  }
+}

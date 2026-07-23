@@ -60,6 +60,7 @@ const tls = require('tls');
 const { once } = require('events');
 const { fileURLToPath } = require('url');
 const { analyzePodcastDjStream, analyzePodcastDjIntro } = require('./dj-analyzer');
+const AdmZip = require('adm-zip');
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -177,6 +178,94 @@ try {
     loadMusicSourceConfig();
   });
 } catch (e) { /* 文件可能还不存在，忽略 */ }
+
+// ========== 应用配置文件管理（替代 localStorage 的服务端配置）==========
+// 应用配置文件目录
+const APP_CONFIG_DIR = path.join(__dirname, 'config');
+// 应用配置元数据（前后端共享：每个分类一个 JSON 文件，文件内是 lsKey -> value 映射）
+const APP_CONFIG_META = [
+  { key: 'visual', file: 'visual.json', label: '视觉布局', desc: '粒子效果、歌词样式、背景颜色、3D相机、壁纸、FX预设', lsKeys: ['mineradio-lyric-layout-v1', 'mineradio-free-camera-v1', 'mineradio-hero-wallpaper-v1', 'mineradio-user-fx-archives-v1'] },
+  { key: 'playback', file: 'playback.json', label: '播放设置', desc: '音质、音量、续播会话、睡眠定时器、听歌统计', lsKeys: ['mineradio-playback-quality-v1', 'apex-player-volume', 'mineradio-playback-session-v1', 'mineradio-sleep-timer-v1', 'mineradio-listen-stats-v1'] },
+  { key: 'lyrics', file: 'lyrics.json', label: '歌词与封面', desc: '自定义歌词、歌词偏好、自定义封面映射', lsKeys: ['mineradio-custom-lyrics-v1', 'mineradio-custom-lyric-prefs-v1', 'mineradio-custom-covers'] },
+  { key: 'search', file: 'search.json', label: '搜索', desc: '搜索历史记录', lsKeys: ['mineradio-search-history'] },
+  { key: 'hotkeys', file: 'hotkeys.json', label: '快捷键', desc: '键盘快捷键设置', lsKeys: ['mineradio-hotkey-settings-v1'] },
+  { key: 'beatmaps', file: 'beatmaps.json', label: '节拍', desc: '本地节拍数据与偏好', lsKeys: ['mineradio-local-beatmaps-v1', 'mineradio-local-beatmap-prefs-v1'] },
+  { key: 'ui', file: 'ui.json', label: '界面偏好', desc: 'DIY模式、面板钉住、自动隐藏、天气城市、引导提示等', lsKeys: ['mineradio-diy-player-mode-v1', 'mineradio-playlist-panel-pinned-v1', 'mineradio-user-capsule-auto-hide-v1', 'mineradio-fx-fab-auto-hide-v1', 'mineradio-controls-auto-hide-v1', 'mineradio-visual-guide-seen-v2', 'mineradio-upload-tip-seen', 'mineradio-weather-city'] },
+];
+// 构建 lsKey -> configKey 的反向映射
+const LS_KEY_TO_CONFIG = {};
+APP_CONFIG_META.forEach(function(meta) {
+  meta.lsKeys.forEach(function(lsKey) {
+    LS_KEY_TO_CONFIG[lsKey] = meta.key;
+  });
+});
+
+// 读取单个配置分类文件（文件不存在或解析失败返回 null）
+function readAppConfigFile(configKey) {
+  var meta = APP_CONFIG_META.find(function(m) { return m.key === configKey; });
+  if (!meta) return null;
+  var filePath = path.join(APP_CONFIG_DIR, meta.file);
+  try {
+    var raw = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+// 写入单个配置分类文件
+function writeAppConfigFile(configKey, data) {
+  var meta = APP_CONFIG_META.find(function(m) { return m.key === configKey; });
+  if (!meta) return false;
+  try {
+    fs.mkdirSync(APP_CONFIG_DIR, { recursive: true });
+    fs.writeFileSync(path.join(APP_CONFIG_DIR, meta.file), JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (e) {
+    console.error('[AppConfig] write failed:', configKey, e.message);
+    return false;
+  }
+}
+
+// 读取所有配置（返回 { configKey: { lsKey: value, ... }, ... }）
+function readAllAppConfigs() {
+  var result = {};
+  APP_CONFIG_META.forEach(function(meta) {
+    var data = readAppConfigFile(meta.key);
+    result[meta.key] = data || {};
+  });
+  return result;
+}
+
+// 根据 lsKey 写入配置（前端 PUT /api/app-config/item 时调用）
+function setAppConfigItem(lsKey, value) {
+  var configKey = LS_KEY_TO_CONFIG[lsKey];
+  if (!configKey) return false;
+  var meta = APP_CONFIG_META.find(function(m) { return m.key === configKey; });
+  if (!meta) return false;
+  // 读取当前文件内容
+  var data = readAppConfigFile(configKey) || {};
+  // 写入/更新该 lsKey
+  data[lsKey] = value;
+  return writeAppConfigFile(configKey, data);
+}
+
+// 读取原始请求体为 Buffer（用于二进制数据，如 zip 上传）
+function readRequestBodyAsBuffer(req) {
+  return new Promise(resolve => {
+    var chunks = [];
+    var total = 0;
+    req.on('data', function(chunk) {
+      chunks.push(chunk);
+      total += chunk.length;
+      if (total > 16 * 1024 * 1024) req.destroy();
+    });
+    req.on('end', function() {
+      resolve(Buffer.concat(chunks));
+    });
+    req.on('error', function() { resolve(Buffer.alloc(0)); });
+  });
+}
 
 // 从配置读取启用的 unblock 平台（参照 AlgerMusicPlayer 的 enabledMusicSources）
 function getMusicSourceConfig() {
@@ -3784,6 +3873,164 @@ function loadPersistedDownloadTasks() {
 }
 loadPersistedDownloadTasks();
 
+// ========== Wallpaper Engine 壁纸读取 ==========
+const WE_APP_ID = '431960';
+let weWallpaperCache = [];
+let weWallpaperCacheTime = 0;
+const WE_CACHE_TTL = 60000; // 1分钟缓存
+
+async function getSteamInstallPath() {
+  if (process.platform !== 'win32') return null;
+  try {
+    const { exec } = require('child_process');
+    const result = await new Promise((resolve, reject) => {
+      exec('reg query "HKCU\\Software\\Valve\\Steam" /v SteamPath', (err, stdout) => {
+        if (err) return reject(err);
+        resolve(stdout);
+      });
+    });
+    const match = result.match(/SteamPath\s+REG_SZ\s+(.+)/i);
+    if (match && match[1]) return match[1].trim();
+  } catch (e) {
+    console.log('[WallpaperEngine] 读取Steam注册表失败:', e.message);
+  }
+  return null;
+}
+
+function parseLibraryFoldersVdf(content) {
+  const paths = [];
+  const regex = /"path"\s+"([^"]+)"/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    paths.push(match[1].replace(/\\\\/g, '\\'));
+  }
+  return paths;
+}
+
+async function getSteamLibraryPaths() {
+  const steamPath = await getSteamInstallPath();
+  if (!steamPath) {
+    // 常见路径兜底
+    return [
+      'C:\\Program Files (x86)\\Steam',
+      'C:\\Program Files\\Steam',
+      'D:\\Steam',
+      'E:\\Steam',
+    ].filter(p => fs.existsSync(path.join(p, 'steamapps')));
+  }
+  const libraryFoldersFile = path.join(steamPath, 'steamapps', 'libraryfolders.vdf');
+  const paths = [steamPath];
+  if (fs.existsSync(libraryFoldersFile)) {
+    try {
+      const content = fs.readFileSync(libraryFoldersFile, 'utf8');
+      const libraryPaths = parseLibraryFoldersVdf(content);
+      for (const p of libraryPaths) {
+        if (!paths.includes(p) && fs.existsSync(path.join(p, 'steamapps'))) {
+          paths.push(p);
+        }
+      }
+    } catch (e) {
+      console.log('[WallpaperEngine] 解析libraryfolders.vdf失败:', e.message);
+    }
+  }
+  return paths;
+}
+
+function getWeWallpaperDir(libraryPath) {
+  return path.join(libraryPath, 'steamapps', 'workshop', 'content', WE_APP_ID);
+}
+
+function readProjectJson(wallpaperDir) {
+  const projPath = path.join(wallpaperDir, 'project.json');
+  if (!fs.existsSync(projPath)) return null;
+  try {
+    const raw = fs.readFileSync(projPath, 'utf8');
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+function findPreviewImage(wallpaperDir, projectData) {
+  // 优先用 project.json 里的 preview 字段
+  if (projectData && projectData.preview) {
+    const previewPath = path.join(wallpaperDir, projectData.preview);
+    if (fs.existsSync(previewPath)) return previewPath;
+  }
+  // 兜底：找目录里的图片文件
+  try {
+    const files = fs.readdirSync(wallpaperDir);
+    const exts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const imgFile = files.find(f => exts.includes(path.extname(f).toLowerCase()));
+    if (imgFile) return path.join(wallpaperDir, imgFile);
+  } catch (e) {}
+  return null;
+}
+
+function findVideoFile(wallpaperDir, projectData) {
+  // 视频类型壁纸，找视频文件
+  if (projectData && projectData.file) {
+    const videoExts = ['.mp4', '.webm', '.mov', '.mkv', '.avi'];
+    const file = String(projectData.file);
+    if (videoExts.includes(path.extname(file).toLowerCase())) {
+      const videoPath = path.join(wallpaperDir, file);
+      if (fs.existsSync(videoPath)) return videoPath;
+    }
+  }
+  // 兜底：找目录里的视频文件
+  try {
+    const files = fs.readdirSync(wallpaperDir);
+    const exts = ['.mp4', '.webm', '.mov', '.mkv'];
+    const videoFile = files.find(f => exts.includes(path.extname(f).toLowerCase()));
+    if (videoFile) return path.join(wallpaperDir, videoFile);
+  } catch (e) {}
+  return null;
+}
+
+async function scanWallpaperEngineWallpapers() {
+  const now = Date.now();
+  if (weWallpaperCache.length > 0 && now - weWallpaperCacheTime < WE_CACHE_TTL) {
+    return weWallpaperCache;
+  }
+  const libraryPaths = await getSteamLibraryPaths();
+  const wallpapers = [];
+  const seenIds = new Set();
+  for (const libPath of libraryPaths) {
+    const weDir = getWeWallpaperDir(libPath);
+    if (!fs.existsSync(weDir)) continue;
+    try {
+      const dirs = fs.readdirSync(weDir);
+      for (const dir of dirs) {
+        if (seenIds.has(dir)) continue;
+        const fullDir = path.join(weDir, dir);
+        const stat = fs.statSync(fullDir);
+        if (!stat.isDirectory()) continue;
+        const projectData = readProjectJson(fullDir);
+        if (!projectData) continue;
+        const preview = findPreviewImage(fullDir, projectData);
+        const video = findVideoFile(fullDir, projectData);
+        const type = projectData.type || (video ? 'video' : 'image');
+        seenIds.add(dir);
+        wallpapers.push({
+          id: dir,
+          title: projectData.title || dir,
+          type: type,
+          preview: preview,
+          video: video,
+          dir: fullDir,
+          workshopId: dir,
+        });
+      }
+    } catch (e) {
+      console.log('[WallpaperEngine] 扫描目录失败:', weDir, e.message);
+    }
+  }
+  weWallpaperCache = wallpapers;
+  weWallpaperCacheTime = now;
+  console.log(`[WallpaperEngine] 扫描到 ${wallpapers.length} 个壁纸`);
+  return wallpapers;
+}
+
 async function handleQQSongUrl(mid, mediaMid, qualityPreference) {
   const songmid = String(mid || '').trim();
   if (!songmid) return { provider: 'qq', url: '', error: 'MISSING_MID', message: 'Missing QQ song mid' };
@@ -4697,6 +4944,127 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ---------- 应用配置管理（替代 localStorage 的服务端配置）----------
+  // 获取配置元数据列表
+  if (pn === '/api/app-config/meta') {
+    sendJSON(res, { ok: true, meta: APP_CONFIG_META });
+    return;
+  }
+
+  // 获取所有配置
+  if (pn === '/api/app-config/all') {
+    sendJSON(res, { ok: true, configs: readAllAppConfigs() });
+    return;
+  }
+
+  // 写入单个配置项（前端拦截 localStorage.setItem 后调用）
+  if (pn === '/api/app-config/item' && req.method === 'PUT') {
+    try {
+      const body = await readRequestBody(req);
+      if (!body.key) { sendJSON(res, { ok: false, error: 'MISSING_KEY' }); return; }
+      var ok = setAppConfigItem(body.key, body.value);
+      sendJSON(res, { ok: ok });
+    } catch (err) {
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
+    return;
+  }
+
+  // 删除单个配置项（前端拦截 localStorage.removeItem 后调用）
+  if (pn === '/api/app-config/item' && req.method === 'DELETE') {
+    try {
+      const body = await readRequestBody(req);
+      if (!body.key) { sendJSON(res, { ok: false, error: 'MISSING_KEY' }); return; }
+      var configKey = LS_KEY_TO_CONFIG[body.key];
+      if (!configKey) { sendJSON(res, { ok: false, error: 'UNKNOWN_KEY' }); return; }
+      var data = readAppConfigFile(configKey) || {};
+      delete data[body.key];
+      writeAppConfigFile(configKey, data);
+      sendJSON(res, { ok: true });
+    } catch (err) {
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
+    return;
+  }
+
+  // 导出配置为 zip（?keys=visual,playback 指定要导出的分类）
+  if (pn === '/api/app-config/export') {
+    try {
+      var keysParam = url.searchParams.get('keys') || '';
+      var exportKeys = keysParam ? keysParam.split(',').filter(Boolean) : APP_CONFIG_META.map(function(m) { return m.key; });
+      var zip = new AdmZip();
+      var manifest = { _app: 'Mineradio', _version: 1, _exportTime: new Date().toISOString(), configs: [] };
+      exportKeys.forEach(function(configKey) {
+        var meta = APP_CONFIG_META.find(function(m) { return m.key === configKey; });
+        if (!meta) return;
+        var data = readAppConfigFile(configKey) || {};
+        // 写入 JSON 文件到 zip
+        zip.addFile(meta.file, Buffer.from(JSON.stringify(data, null, 2), 'utf8'));
+        manifest.configs.push({ key: meta.key, file: meta.file, label: meta.label, desc: meta.desc, lsKeys: meta.lsKeys });
+      });
+      zip.addFile('manifest.json', Buffer.from(JSON.stringify(manifest, null, 2), 'utf8'));
+      var zipBuffer = zip.toBuffer();
+      res.writeHead(200, {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': 'attachment; filename="mineradio-config-' + new Date().toISOString().slice(0,10) + '.zip"'
+      });
+      res.end(zipBuffer);
+    } catch (err) {
+      console.error('[AppConfigExport]', err);
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
+    return;
+  }
+
+  // 导入预览（上传 zip，返回包含的配置列表）
+  if (pn === '/api/app-config/import-preview' && req.method === 'POST') {
+    try {
+      // 注意：readRequestBody 返回的是解析后的对象，无法处理二进制 zip 数据，
+      // 因此直接读取原始请求体为 Buffer
+      var zipBuf = await readRequestBodyAsBuffer(req);
+      var zip = new AdmZip(zipBuf);
+      var manifestFile = zip.getEntry('manifest.json');
+      if (!manifestFile) { sendJSON(res, { ok: false, error: 'INVALID_ZIP' }); return; }
+      var manifest = JSON.parse(manifestFile.getData().toString('utf8'));
+      if (!manifest._app || manifest._app !== 'Mineradio') { sendJSON(res, { ok: false, error: 'INVALID_FORMAT' }); return; }
+      // 返回包含的配置列表，供前端选择
+      var configs = (manifest.configs || []).map(function(c) {
+        return { key: c.key, label: c.label, desc: c.desc, lsKeys: c.lsKeys };
+      });
+      sendJSON(res, { ok: true, configs: configs });
+    } catch (err) {
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
+    return;
+  }
+
+  // 导入执行（上传 zip + 选中的 keys）
+  if (pn === '/api/app-config/import' && req.method === 'POST') {
+    try {
+      var importData = await readRequestBody(req);
+      var zipBuffer = Buffer.from(importData.zipData, 'base64');
+      var selectedKeys = importData.keys || [];
+      var zip = new AdmZip(zipBuffer);
+      var manifestFile = zip.getEntry('manifest.json');
+      if (!manifestFile) { sendJSON(res, { ok: false, error: 'INVALID_ZIP' }); return; }
+      var manifest = JSON.parse(manifestFile.getData().toString('utf8'));
+      var imported = [];
+      selectedKeys.forEach(function(configKey) {
+        var meta = manifest.configs.find(function(c) { return c.key === configKey; });
+        if (!meta) return;
+        var entry = zip.getEntry(meta.file);
+        if (!entry) return;
+        var data = JSON.parse(entry.getData().toString('utf8'));
+        writeAppConfigFile(configKey, data);
+        imported.push(configKey);
+      });
+      sendJSON(res, { ok: true, imported: imported });
+    } catch (err) {
+      sendJSON(res, { ok: false, error: err.message }, 500);
+    }
+    return;
+  }
+
   // ---------- 搜索建议 ----------
   if (pn === '/api/search/suggest') {
     try {
@@ -5028,6 +5396,77 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     sendJSON(res, { downloadDir: getDownloadDir() });
+    return;
+  }
+
+  // Wallpaper Engine 壁纸列表
+  if (pn === '/api/we-wallpapers/list') {
+    try {
+      const list = await scanWallpaperEngineWallpapers();
+      sendJSON(res, { ok: true, count: list.length, wallpapers: list.map(w => ({
+        id: w.id,
+        title: w.title,
+        type: w.type,
+        hasVideo: !!w.video,
+        hasPreview: !!w.preview,
+        workshopId: w.workshopId,
+      })) });
+    } catch (e) {
+      sendJSON(res, { ok: false, error: e.message }, 500);
+    }
+    return;
+  }
+
+  // Wallpaper Engine 预览图
+  if (pn.startsWith('/api/we-wallpapers/preview/')) {
+    const id = decodeURIComponent(pn.slice('/api/we-wallpapers/preview/'.length));
+    const list = await scanWallpaperEngineWallpapers();
+    const wp = list.find(w => w.id === id);
+    if (!wp || !wp.preview) { res.statusCode = 404; res.end('Not Found'); return; }
+    try {
+      const stat = fs.statSync(wp.preview);
+      const ext = path.extname(wp.preview).toLowerCase();
+      const mimeMap = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };
+      const contentType = mimeMap[ext] || 'application/octet-stream';
+      res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': stat.size, 'Cache-Control': 'public, max-age=86400' });
+      fs.createReadStream(wp.preview).pipe(res);
+    } catch (e) {
+      res.statusCode = 500; res.end(e.message);
+    }
+    return;
+  }
+
+  // Wallpaper Engine 视频
+  if (pn.startsWith('/api/we-wallpapers/video/')) {
+    const id = decodeURIComponent(pn.slice('/api/we-wallpapers/video/'.length));
+    const list = await scanWallpaperEngineWallpapers();
+    const wp = list.find(w => w.id === id);
+    if (!wp || !wp.video) { res.statusCode = 404; res.end('Not Found'); return; }
+    try {
+      const stat = fs.statSync(wp.video);
+      const ext = path.extname(wp.video).toLowerCase();
+      const mimeMap = { '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime' };
+      const contentType = mimeMap[ext] || 'video/mp4';
+      const range = req.headers.range;
+      if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10) || 0;
+        const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+        const chunkSize = (end - start) + 1;
+        res.writeHead(206, {
+          'Content-Range': `bytes ${start}-${end}/${stat.size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunkSize,
+          'Content-Type': contentType,
+        });
+        fs.createReadStream(wp.video, { start, end }).pipe(res);
+      } else {
+        res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': stat.size, 'Accept-Ranges': 'bytes' });
+        fs.createReadStream(wp.video).pipe(res);
+      }
+    } catch (e) {
+      res.statusCode = 500; res.end(e.message);
+    }
     return;
   }
 

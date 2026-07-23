@@ -1782,9 +1782,27 @@ if (!gotSingleInstanceLock) {
     if (process.platform !== 'darwin') app.quit();
   });
 
-  app.on('before-quit', () => {
-    unregisterMineradioGlobalHotkeys();
-    closeOverlayWindows();
-    if (localServer && localServer.close) localServer.close();
+  app.on('before-quit', (event) => {
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      unregisterMineradioGlobalHotkeys();
+      closeOverlayWindows();
+      if (localServer && localServer.close) localServer.close();
+      return;
+    }
+    event.preventDefault();
+    const sendTimeout = setTimeout(() => {
+      unregisterMineradioGlobalHotkeys();
+      closeOverlayWindows();
+      if (localServer && localServer.close) localServer.close();
+      app.exit(0);
+    }, 1500);
+    mainWindow.webContents.send('mineradio-before-quit');
+    ipcMain.once('mineradio-before-quit-done', () => {
+      clearTimeout(sendTimeout);
+      unregisterMineradioGlobalHotkeys();
+      closeOverlayWindows();
+      if (localServer && localServer.close) localServer.close();
+      app.exit(0);
+    });
   });
 }

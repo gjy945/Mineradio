@@ -60,6 +60,13 @@ contextBridge.exposeInMainWorld('desktopWindow', {
     ipcRenderer.on('desktop-window-state', listener);
     return () => ipcRenderer.removeListener('desktop-window-state', listener);
   },
+  onBeforeQuit: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const listener = () => callback();
+    ipcRenderer.on('mineradio-before-quit', listener);
+    return () => ipcRenderer.removeListener('mineradio-before-quit', listener);
+  },
+  notifyBeforeQuitDone: () => ipcRenderer.send('mineradio-before-quit-done'),
 });
 
 window.addEventListener('DOMContentLoaded', () => {

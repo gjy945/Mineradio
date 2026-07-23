@@ -26,6 +26,7 @@
       "desktop/**/*",
       "public/**/*",
       "build/**/*",
+      "config/**/*",
       "server.js",
       "dj-analyzer.js",
       "package.json",
@@ -85,6 +86,7 @@
   },
   "dependencies": {
     "@unblockneteasemusic/server": "^0.28.0",
+    "adm-zip": "^0.6.0",
     "gsap": "^3.15.0",
     "koffi": "^3.1.1",
     "mpg123-decoder": "^1.0.3",

@@ -399,6 +399,41 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-kicker{grid-column:1;font-size:10px;font-weight:780;letter-spacing:.18em;color:color-mix(in srgb,var(--home-accent) 62%,rgba(255,255,255,.36));text-transform:uppercase;margin-bottom:14px}
 .home-title{grid-column:1;font-size:clamp(34px,4.6vw,58px);line-height:.98;font-weight:760;letter-spacing:0;color:rgba(255,255,255,.98);max-width:380px;text-shadow:0 10px 36px rgba(0,0,0,.26)}
 .home-title.home-construction-title{max-width:620px;font-size:clamp(32px,4.5vw,64px);line-height:1.08}
+/* hero 区域整体作为壁纸展示 */
+#home-hero-wallpaper{position:relative;overflow:hidden;padding:0}
+.home-hero-wallpaper-media{position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)}
+.home-hero-wallpaper-media img,.home-hero-wallpaper-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.home-hero-wallpaper-media.has-image img,.home-hero-wallpaper-media.has-video video{display:block}
+.home-hero-wallpaper-empty{color:rgba(255,255,255,.4);font-size:clamp(18px,2.5vw,28px);font-weight:700;letter-spacing:.04em;z-index:1;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.home-hero-wallpaper-media.has-image .home-hero-wallpaper-empty,.home-hero-wallpaper-media.has-video .home-hero-wallpaper-empty{display:none}
+/* 右上角三点菜单 */
+.home-hero-wallpaper-menu{position:absolute;top:14px;right:14px;z-index:5}
+.home-hero-menu-trigger{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease,background .2s ease,transform .2s ease}
+#home-hero-wallpaper:hover .home-hero-menu-trigger,.home-hero-wallpaper-menu.open .home-hero-menu-trigger{opacity:1}
+.home-hero-menu-trigger:hover{background:rgba(0,0,0,.6);transform:scale(1.05)}
+.home-hero-menu-dropdown{position:absolute;top:42px;right:0;min-width:210px;background:rgba(18,20,30,.92);backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04) inset;opacity:0;pointer-events:none;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s ease,transform .18s ease;z-index:10}
+.home-hero-wallpaper-menu.open .home-hero-menu-dropdown{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+.home-hero-menu-item{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border:none;background:transparent;color:rgba(255,255,255,.82);font-size:12.5px;font-weight:500;cursor:pointer;border-radius:8px;transition:background .15s ease,color .15s ease;text-align:left}
+.home-hero-menu-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.home-hero-menu-item svg{flex-shrink:0;opacity:.85}
+.home-hero-menu-check{cursor:pointer;user-select:none;padding:2px 0}
+.home-hero-menu-check .fx-toggle{min-height:34px;padding:7px 10px;font-size:12px}
+.we-picker-modal{width:860px;max-width:92vw;max-height:85vh;background:rgba(20,20,28,.55);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.we-picker-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.we-picker-title{font-size:18px;font-weight:700;color:#fff}
+.we-picker-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.we-count{font-size:12px;color:rgba(255,255,255,.5);white-space:nowrap}
+.we-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;overflow-y:auto;padding-right:4px;max-height:calc(85vh - 120px)}
+.we-grid::-webkit-scrollbar{width:6px}
+.we-grid::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+.we-grid::-webkit-scrollbar-track{background:transparent}
+.we-item{position:relative;aspect-ratio:16/10;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .2s;background:rgba(0,0,0,.3)}
+.we-item:hover{border-color:rgba(0,245,212,.5);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.we-item.selected{border-color:#00f5d4;box-shadow:0 0 0 2px rgba(0,245,212,.3)}
+.we-item img{width:100%;height:100%;object-fit:cover;display:block}
+.we-item-label{position:absolute;left:0;right:0;bottom:0;padding:6px 8px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.we-item-type{position:absolute;top:6px;right:6px;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.55);color:rgba(255,255,255,.8);font-size:10px;font-weight:650;letter-spacing:.03em}
+.we-loading{grid-column:1/-1;text-align:center;padding:40px 0;color:rgba(255,255,255,.4);font-size:13px}
 .home-sub{grid-column:1;margin-top:14px;font-size:13px;line-height:1.62;color:rgba(255,255,255,.62);max-width:348px}
 .home-weather-meta{grid-column:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .home-weather-pill{height:28px;padding:0 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.050);display:inline-flex;align-items:center;color:rgba(255,255,255,.70);font-size:11px;font-weight:680}
@@ -922,6 +957,41 @@ body.immersive-mode #time-display{display:flex;height:40px;align-items:center;ju
 @media (max-width: 620px){body.immersive-mode #bottom-bar{width:calc(100vw - 20px);padding:10px 12px 12px}body.immersive-mode #controls{gap:10px}body.immersive-mode .control-cluster{gap:10px;height:60px}body.immersive-mode .ctrl-btn{width:36px;height:36px}body.immersive-mode .ctrl-btn svg{width:20px;height:20px}body.immersive-mode #play-btn{width:58px;height:58px}body.immersive-mode #time-display{min-width:72px;font-size:10.5px}}
 @media (max-width: 420px){body.immersive-mode #time-display{display:none}}
 body.immersive-mode::after{content:'';position:fixed;left:0;right:0;bottom:0;height:118px;z-index:5;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.16))}
+
+/* ---------- 睡眠定时器 ---------- */
+.sleep-timer-control{position:relative;display:flex;align-items:center}
+#sleep-timer-btn.active{color:var(--accent-cyan);text-shadow:0 0 12px rgba(0,245,212,.5)}
+.sleep-timer-badge{position:absolute;top:-6px;right:-8px;font-size:9px;font-weight:600;color:var(--accent-cyan);background:rgba(0,245,212,.1);padding:1px 5px;border-radius:8px;border:1px solid rgba(0,245,212,.3);white-space:nowrap;line-height:1.4;pointer-events:none}
+.sleep-timer-popover{position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%) translateY(6px);width:300px;background:rgba(18,20,30,.88);backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px 16px 16px;box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04) inset;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;z-index:200}
+.sleep-timer-popover.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.sleep-timer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sleep-timer-title{font-size:13px;font-weight:600;color:#fff;letter-spacing:.3px}
+.sleep-timer-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.sleep-preset{height:34px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);border-radius:9px;font-size:12px;cursor:pointer;transition:all .18s ease}
+.sleep-preset:hover{background:rgba(255,255,255,.09);color:#fff;border-color:rgba(255,255,255,.2)}
+.sleep-preset.active{background:rgba(0,245,212,.14);border-color:rgba(0,245,212,.45);color:var(--accent-cyan)}
+.sleep-timer-end-of-song{margin-bottom:12px}
+.sleep-timer-advanced{border-top:1px solid rgba(255,255,255,.07);padding-top:10px}
+.sleep-setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.sleep-setting-row:last-child{margin-bottom:0}
+.sleep-setting-label{font-size:11.5px;color:rgba(255,255,255,.55);flex-shrink:0}
+.sleep-setting-control{display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end}
+.sleep-setting-control input[type="range"]{width:110px;height:3px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.12);border-radius:2px;outline:none;cursor:pointer}
+.sleep-setting-control input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--accent-cyan);cursor:pointer;box-shadow:0 0 8px rgba(0,245,212,.5)}
+.sleep-setting-control input[type="range"]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent-cyan);cursor:pointer;border:none;box-shadow:0 0 8px rgba(0,245,212,.5)}
+#sleep-fade-value{font-size:11px;color:rgba(255,255,255,.6);min-width:30px;text-align:right}
+.sleep-setting-control .fx-seg{margin-bottom:0;min-width:140px}
+.sleep-setting-control .fx-seg button{padding:7px 2px;font-size:11px;letter-spacing:.2px}
+.sleep-help-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;margin-left:4px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);font-size:9px;font-weight:700;cursor:help;vertical-align:middle;flex-shrink:0}
+.sleep-timer-running{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07);text-align:center}
+.sleep-running-time{font-size:30px;font-weight:300;color:#fff;letter-spacing:1.5px;font-variant-numeric:tabular-nums;margin-bottom:10px}
+.sleep-progress-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.sleep-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-cyan),#4fc3f7);border-radius:2px;transition:width .5s linear;width:100%}
+.sleep-running-actions{display:flex;gap:8px;justify-content:center}
+.sleep-action-btn{height:32px;padding:0 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.8);font-size:11.5px;cursor:pointer;transition:all .18s}
+.sleep-action-btn:hover{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
+.sleep-action-btn.danger{color:#ff8a8a;border-color:rgba(255,138,138,.25);background:rgba(255,138,138,.06)}
+.sleep-action-btn.danger:hover{background:rgba(255,138,138,.12);color:#ffb3b3;border-color:rgba(255,138,138,.4)}
 
 /* ---------- 试听提醒 ---------- */
 #trial-banner{position:fixed;z-index:8;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);background:rgba(244,210,138,0.11);border:1px solid rgba(244,210,138,0.40);color:var(--champagne);padding:10px 18px 10px 14px;border-radius:12px;font-size:12px;letter-spacing:.3px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .5s,transform .5s;max-width:90vw}
@@ -2096,11 +2166,42 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 <!-- 空场 Home -->
 <section id="empty-home" aria-label="Mineradio home">
   <div class="empty-home-shell">
-    <div class="home-hero">
-      <div class="home-hero-inner home-construction-inner">
-        <div class="home-title home-construction-title">🚧此处施工，敬请期待🚧</div>
-        <button class="home-chip home-console-chip" type="button" id="console-toggle-btn" onclick="toggleHomePlayerConsole()">展开播放器控制台</button>
+    <div class="home-hero" id="home-hero-wallpaper">
+      <div class="home-hero-wallpaper-media" id="home-hero-wallpaper-media">
+        <img id="wallpaper-preview-img" alt="" />
+        <video id="wallpaper-preview-video" muted loop playsinline></video>
+        <div class="home-hero-wallpaper-empty" id="wallpaper-preview-empty">选择壁纸</div>
       </div>
+      <div class="home-hero-wallpaper-menu" id="wallpaper-menu">
+        <button class="home-hero-menu-trigger" id="wallpaper-menu-trigger" onclick="toggleWallpaperMenu(event)" title="壁纸设置" aria-label="壁纸设置">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+        </button>
+        <div class="home-hero-menu-dropdown" id="wallpaper-menu-dropdown" onclick="event.stopPropagation()">
+          <button class="home-hero-menu-item" type="button" onclick="document.getElementById('wallpaper-file-input').click()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>选择壁纸</span>
+          </button>
+          <button class="home-hero-menu-item" type="button" onclick="openWeWallpaperPicker()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>Wallpaper Engine</span>
+          </button>
+          <button class="home-hero-menu-item" type="button" id="wallpaper-clear-btn" onclick="clearWallpaperPicker()" style="display:none">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+            <span>清除壁纸</span>
+          </button>
+          <div class="home-hero-menu-check" id="applyFullscreenCheck" title="勾选后壁纸同时作为整个应用的背景">
+            <button class="fx-toggle" id="t-applyFullscreen" type="button" onclick="onWallpaperFullscreenToggle(event)" style="width:100%;min-height:34px;padding:7px 10px;font-size:12px">
+              <span>应用于全屏背景</span>
+              <span class="dot"></span>
+            </button>
+          </div>
+          <button class="home-hero-menu-item" type="button" id="console-toggle-btn" onclick="toggleHomePlayerConsole()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span id="console-toggle-text">展开播放器控制台</span>
+          </button>
+        </div>
+      </div>
+      <input type="file" id="wallpaper-file-input" accept="image/*,video/*" style="display:none" onchange="onWallpaperFilePicked(event)" />
     </div>
 
     <div class="home-grid">
@@ -2116,10 +2217,10 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
             <div class="home-card-sub" id="home-daily-sub">你的今日推荐歌曲</div>
             <div class="home-card-art" id="home-daily-art"></div>
           </button>
-          <button class="home-card" data-home-tone="local" type="button" onclick="nextTrack();setTimeout(function(){openPlaylistPanelTab('queue',false)},500)">
-            <div class="home-card-label">Next</div>
-            <div class="home-card-title" id="home-private-title">下一首</div>
-            <div class="home-card-sub" id="home-private-sub">切换到下一首歌</div>
+          <button class="home-card" data-home-tone="local" type="button" onclick="startWeatherRadio()" oncontextmenu="event.preventDefault();changeWeatherCity()" title="点击启动天气电台，右键设置城市">
+            <div class="home-card-label">Weather</div>
+            <div class="home-card-title" id="home-private-title">天气电台</div>
+            <div class="home-card-sub" id="home-private-sub">根据天气推荐歌曲</div>
             <div class="home-card-art" id="home-private-art"></div>
           </button>
           <button class="home-card" data-home-tone="local" type="button" onclick="(async function(){var r=await fetch('/api/personal/fm');var d=await r.json();if(d.songs&&d.songs.length){playQueue=d.songs.map(function(s){return JSON.parse(JSON.stringify(s))});currentIdx=0;safeRenderQueuePanel('fm');safeSwitchPlaylistTab('queue','fm');safeShelfRebuild('fm',true);forcePlaybackControlsInteractive();try{await playQueueAt(0)}catch(e){console.warn('[FM]',e)}showToast('私人FM已启动')}else showToast('FM暂无推荐')})()">
@@ -2474,6 +2575,20 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
     </div>
   </div>
 
+  <div class="fx-fold" id="fx-config-fold">
+    <div class="fx-fold-head" onclick="document.getElementById('fx-config-fold').classList.toggle('open')">
+      <span class="fx-fold-title"><strong>配置管理</strong><small>导出 / 导入设置（配置存储在服务端，不含音源）</small></span><span class="arrow">▶</span>
+    </div>
+    <div class="fx-fold-body">
+      <div class="fx-section-label">配置备份</div>
+      <div class="source-action-row">
+        <button class="fx-mini-btn" type="button" onclick="showExportConfigDialog()">导出配置</button>
+        <button class="fx-mini-btn ghost" type="button" onclick="showImportConfigDialog()">导入配置</button>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:6px;line-height:1.5">配置已存储在服务端 config 目录下，按功能分为独立 JSON 文件。<br>导出：选择需要的配置项打包为 ZIP；导入：选择 ZIP 后预览并选择导入项。</div>
+    </div>
+  </div>
+
   <div class="fx-actions">
     <button class="fx-mini-btn" onclick="resetFx()">恢复默认</button>
   </div>
@@ -2667,6 +2782,58 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
     </div>
     <button id="controls-hide-btn" class="ctrl-btn active" onclick="toggleControlsAutoHide()" title="控制条自动隐藏"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 8h14"/><path d="M8 12h8"/><path d="M10 16h4"/></svg></button>
     <button id="immersive-btn" class="ctrl-btn" onclick="toggleImmersiveMode()" title="全沉浸式" aria-label="全沉浸式" aria-pressed="false"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4"/><path d="M15 4h4a1 1 0 0 1 1 1v4"/><path d="M20 15v4a1 1 0 0 1-1 1h-4"/><path d="M9 20H5a1 1 0 0 1-1-1v-4"/><circle cx="12" cy="12" r="2.2"/></svg></button>
+    <div id="sleep-timer-control" class="sleep-timer-control">
+      <button id="sleep-timer-btn" class="ctrl-btn" onclick="toggleSleepTimerPanel(event)" title="睡眠定时">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <span id="sleep-timer-badge" class="sleep-timer-badge" style="display:none">00:00</span>
+      <div class="sleep-timer-popover" onclick="event.stopPropagation()">
+        <div class="sleep-timer-header">
+          <span class="sleep-timer-title">睡眠定时</span>
+          <button class="fx-mini-btn ghost" onclick="closeSleepTimerPanel()" title="关闭" style="height:26px;padding:0 9px;font-size:13px">×</button>
+        </div>
+        <div class="sleep-timer-presets">
+          <button class="sleep-preset" data-minutes="15" onclick="startSleepTimer(15)">15 分</button>
+          <button class="sleep-preset" data-minutes="30" onclick="startSleepTimer(30)">30 分</button>
+          <button class="sleep-preset" data-minutes="45" onclick="startSleepTimer(45)">45 分</button>
+          <button class="sleep-preset" data-minutes="60" onclick="startSleepTimer(60)">60 分</button>
+          <button class="sleep-preset" data-minutes="90" onclick="startSleepTimer(90)">90 分</button>
+          <button class="sleep-preset" data-minutes="custom" onclick="startSleepTimer('custom')">自定义</button>
+        </div>
+        <div class="sleep-timer-end-of-song">
+          <div class="fx-toggle" id="t-sleepEndOfSong" onclick="toggleSleepEndOfSong()">
+            <span>播完当前歌曲后暂停</span>
+            <span class="dot"></span>
+          </div>
+        </div>
+        <div class="sleep-timer-advanced">
+          <div class="sleep-setting-row">
+            <span class="sleep-setting-label">渐弱时长<span class="sleep-help-icon" title="在定时结束前的一段时间内，音乐音量和粒子特效会逐渐减弱至静音，避免突然停止。设为 0 则到点立即停止。">?</span></span>
+            <div class="sleep-setting-control">
+              <input id="sleep-fade-slider" type="range" min="0" max="30" step="1" value="8" oninput="onSleepFadeSliderInput()">
+              <span id="sleep-fade-value">8 秒</span>
+            </div>
+          </div>
+          <div class="sleep-setting-row">
+            <span class="sleep-setting-label">到点后</span>
+            <div class="sleep-setting-control">
+              <div class="fx-seg" id="sleep-end-seg">
+                <button class="active" data-value="pause" onclick="onSleepEndSegClick('pause')">暂停播放</button>
+                <button data-value="stop" onclick="onSleepEndSegClick('stop')">停止并清空</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="sleep-timer-running" class="sleep-timer-running" style="display:none">
+          <div class="sleep-running-time" id="sleep-running-time">00:00</div>
+          <div class="sleep-progress-bar"><div class="sleep-progress-fill" id="sleep-progress-fill"></div></div>
+          <div class="sleep-running-actions">
+            <button class="sleep-action-btn" onclick="addSleepTime(10)">+10 分钟</button>
+            <button class="sleep-action-btn danger" onclick="cancelSleepTimer()">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <button class="ctrl-btn fullscreen-toggle-btn" onclick="toggleFullscreen()" title="全屏 (F)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7V3h4"/><path d="M21 7V3h-4"/><path d="M3 17v4h4"/><path d="M21 17v4h-4"/></svg></button>
     <button id="download-list-btn" class="ctrl-btn" onclick="toggleDownloadPanel()" title="下载任务" style="position:relative"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span id="download-badge" style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:rgba(0,245,212,.85);color:#0a0a10;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;line-height:1"></span></button>
     <div id="time-display">0:00 / 0:00</div>
@@ -2940,6 +3107,9 @@ var PLAYBACK_QUALITY_STORE_KEY = 'mineradio-playback-quality-v1';
 var UPLOAD_TIP_STORE_KEY = 'mineradio-upload-tip-seen';
 var DIY_MODE_STORE_KEY = 'mineradio-diy-player-mode-v1';
 var PLAYLIST_PANEL_PIN_STORE_KEY = 'mineradio-playlist-panel-pinned-v1';
+var PLAYBACK_SESSION_STORE_KEY = 'mineradio-playback-session-v1';
+var pendingSessionResumeAt = 0;
+var playbackSessionSaveTimer = null;
 var USER_CAPSULE_AUTO_HIDE_STORE_KEY = 'mineradio-user-capsule-auto-hide-v1';
 var FX_FAB_AUTO_HIDE_STORE_KEY = 'mineradio-fx-fab-auto-hide-v1';
 var CONTROLS_AUTO_HIDE_STORE_KEY = 'mineradio-controls-auto-hide-v1';
@@ -3979,7 +4149,7 @@ document.addEventListener('mousemove', function(e) {
   // 默认只有明确 UI 控件捕获点击；3D 锁定模式下 canvas 也捕获
   var selectors = 'button, a, input, textarea, select, [role="button"], ' +
     '#bottom-bar, #search-area, #playlist-panel, #fx-panel, ' +
-    '#download-quality-picker, #batch-download-picker, #download-panel, ' +
+    '#download-quality-picker, #batch-download-picker, #download-panel, #we-wallpaper-picker, .we-picker-modal, #home-hero-wallpaper, #sleep-timer-control, #wallpaper-menu, .home-hero-menu-dropdown, ' +
     '.home-card, .home-tile, .home-rail, .home-hero, [data-interactive]';
   if (desktopWallpaper3dLocked) selectors += ', canvas';
   var interactive = e.target.closest(selectors);
@@ -4473,9 +4643,22 @@ function updateFreeCamera(dt) {
 function flushPersistentVisualState() {
   try { saveLyricLayout(); } catch (e) {}
   try { saveFreeCameraState(); } catch (e) {}
+  try { savePlaybackSession(true); } catch (e) {}
 }
 window.addEventListener('beforeunload', flushPersistentVisualState);
 window.addEventListener('pagehide', flushPersistentVisualState);
+
+function handleDesktopBeforeQuit() {
+  flushPersistentVisualState();
+  if (window.desktopWindow && window.desktopWindow.notifyBeforeQuitDone) {
+    setTimeout(function() {
+      try { window.desktopWindow.notifyBeforeQuitDone(); } catch(e) {}
+    }, 50);
+  }
+}
+if (window.desktopWindow && window.desktopWindow.onBeforeQuit) {
+  window.desktopWindow.onBeforeQuit(handleDesktopBeforeQuit);
+}
 
 function resetBeatCameraSync(t) {
   beatCam.nextIdx = 0;
@@ -5667,7 +5850,9 @@ function setControlsHidden(hidden) {
   var bar = document.getElementById('bottom-bar');
   if (!bar) return;
   if (hidden && (controlsHovering || miniQueueOpen)) hidden = false;
-  bar.classList.toggle('soft-hidden', !!hidden && controlsAutoHide && bar.classList.contains('visible'));
+  var willHide = !!hidden && controlsAutoHide && bar.classList.contains('visible');
+  if (willHide) closeAllControlBarPopovers();
+  bar.classList.toggle('soft-hidden', willHide);
   bar.style.pointerEvents = '';
   updateControlsChromeState();
 }
@@ -16090,26 +16275,28 @@ function renderHomeDiscover() {
   if (loggedOutHome) {
     if (dailyTitle) dailyTitle.textContent = '每日推荐';
     if (dailySub) dailySub.textContent = '登录后同步你的今日歌曲';
-    if (privateTitle) privateTitle.textContent = '推荐歌曲';
-    if (privateSub) privateSub.textContent = '登录后同步更多歌曲';
+    if (privateTitle) privateTitle.textContent = (homeWeatherRadioState.weather && homeWeatherRadioState.weather.label) ? homeWeatherRadioState.weather.label : '天气电台';
+    if (privateSub) privateSub.textContent = homeWeatherRadioState.weather ? (homeWeatherRadioState.city + ' · ' + Math.round(homeWeatherRadioState.weather.temperature || 0) + '°') : '根据天气推荐歌曲';
     if (libTitle) libTitle.textContent = '更多歌曲';
     if (libSub) libSub.textContent = '播放后会继续补全推荐';
     setHomeArt('home-weather-art', '', 280);
     setHomeArt('home-daily-art', '', 280);
-    setHomeArt('home-private-art', '', 280);
+    var weatherSongs = homeWeatherRadioState.radio && homeWeatherRadioState.radio.songs || [];
+    setHomeArt('home-private-art', weatherSongs[0] && weatherSongs[0].cover || '', 280);
     setHomeArt('home-continue-art', summary.recent && summary.recent.cover, 280);
     setHomeArt('home-profile-art', summary.topSong && summary.topSong.cover || summary.recent && summary.recent.cover, 280);
     setHomeArt('home-library-art', '', 280);
   } else {
     if (dailyTitle) dailyTitle.textContent = daily ? daily.name : '每日推荐';
     if (dailySub) dailySub.textContent = daily ? ((daily.artist || songSourceLabel(daily) || '今日歌曲') + ' · 点击播放今日队列') : '同步你的今日歌曲';
-    if (privateTitle) privateTitle.textContent = cardSongB ? cardSongB.name : '私人雷达';
-    if (privateSub) privateSub.textContent = cardSongB ? (cardSongB.artist || songSourceLabel(cardSongB) || '推荐歌曲') : (homeDiscoverState.songs.length + ' 首 · 根据今日推荐与常听偏好');
+    if (privateTitle) privateTitle.textContent = (homeWeatherRadioState.weather && homeWeatherRadioState.weather.label) ? homeWeatherRadioState.weather.label : '天气电台';
+    if (privateSub) privateSub.textContent = homeWeatherRadioState.weather ? (homeWeatherRadioState.city + ' · ' + Math.round(homeWeatherRadioState.weather.temperature || 0) + '°') : '根据天气推荐歌曲';
     if (libTitle) libTitle.textContent = cardSongC ? cardSongC.name : (summary.topArtist ? summary.topArtist.name : '更多歌曲');
     if (libSub) libSub.textContent = cardSongC ? (cardSongC.artist || songSourceLabel(cardSongC) || '推荐歌曲') : (summary.topArtist ? ('歌手偏好 · ' + summary.topArtist.plays + ' 次') : '播放几首后生成你的偏好');
     setHomeArt('home-weather-art', (userPlaylists[0] && userPlaylists[0].cover) || (playlistItem && playlistItem.cover) || daily && daily.cover, 280);
     setHomeArt('home-daily-art', daily && daily.cover, 280);
-    setHomeArt('home-private-art', cardSongB && cardSongB.cover || daily && daily.cover || summary.recent && summary.recent.cover || playlistItem && playlistItem.cover, 280);
+    var weatherSongs = homeWeatherRadioState.radio && homeWeatherRadioState.radio.songs || [];
+    setHomeArt('home-private-art', weatherSongs[0] && weatherSongs[0].cover || daily && daily.cover || summary.recent && summary.recent.cover, 280);
     setHomeArt('home-continue-art', summary.recent && summary.recent.cover || playlistItem && playlistItem.cover, 280);
     setHomeArt('home-profile-art', summary.topSong && summary.topSong.cover || podcastItem && podcastItem.cover, 280);
     setHomeArt('home-library-art', cardSongC && cardSongC.cover || summary.topSong && summary.topSong.cover || summary.recent && summary.recent.cover || podcastItem && podcastItem.cover, 280);
@@ -16317,13 +16504,95 @@ function locateWeatherRadio() {
   useIpFallback();
 }
 function changeWeatherCity() {
-  var city = window.prompt('输入城市名', homeWeatherRadioState.city || '上海');
-  city = String(city || '').trim();
-  if (!city) return;
-  homeWeatherRadioState.city = city;
-  localStorage.setItem(HOME_WEATHER_CITY_KEY, city);
-  homeWeatherRadioState.loaded = false;
-  loadHomeWeatherRadio(true, { city: city });
+  var existing = document.getElementById('weather-city-dialog');
+  if (existing) existing.remove();
+  var mask = document.createElement('div');
+  mask.id = 'weather-city-dialog';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);pointer-events:none';
+  var box = document.createElement('div');
+  box.style.cssText = 'width:300px;background:rgba(18,20,30,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.5);pointer-events:auto';
+  var title = document.createElement('div');
+  title.textContent = '设置天气城市';
+  title.style.cssText = 'font-size:14px;font-weight:600;color:#fff;margin-bottom:14px;text-align:center';
+  box.appendChild(title);
+  // 搜索输入
+  var inputWrap = document.createElement('div');
+  inputWrap.style.cssText = 'position:relative;margin-bottom:14px';
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = homeWeatherRadioState.city || '上海';
+  input.placeholder = '搜索城市名...';
+  input.style.cssText = 'width:100%;box-sizing:border-box;height:36px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.04);color:#fff;font-size:13px;outline:none';
+  inputWrap.appendChild(input);
+  // 搜索结果下拉
+  var dropdown = document.createElement('div');
+  dropdown.style.cssText = 'position:absolute;top:38px;left:0;right:0;max-height:200px;overflow-y:auto;background:rgba(18,20,30,.98);border:1px solid rgba(255,255,255,.12);border-radius:8px;display:none;z-index:10';
+  inputWrap.appendChild(dropdown);
+  box.appendChild(inputWrap);
+
+  var searchTimer = null;
+  input.oninput = function() {
+    var q = String(input.value || '').trim();
+    if (searchTimer) clearTimeout(searchTimer);
+    if (q.length < 1) { dropdown.style.display = 'none'; return; }
+    searchTimer = setTimeout(function() {
+      // 调用 Open-Meteo 地理编码搜索
+      fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q) + '&count=8&language=zh&format=json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var results = data && data.results || [];
+          if (!results.length) { dropdown.style.display = 'none'; return; }
+          dropdown.innerHTML = '';
+          dropdown.style.display = 'block';
+          results.forEach(function(r) {
+            var item = document.createElement('div');
+            var label = r.name;
+            if (r.admin1 && r.admin1 !== r.name) label += ' · ' + r.admin1;
+            if (r.country) label += ' · ' + r.country;
+            item.textContent = label;
+            item.style.cssText = 'padding:8px 12px;font-size:12px;color:rgba(255,255,255,.7);cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04)';
+            item.onmouseenter = function() { item.style.background = 'rgba(0,245,212,.08)'; item.style.color = '#fff'; };
+            item.onmouseleave = function() { item.style.background = ''; item.style.color = 'rgba(255,255,255,.7)'; };
+            item.onclick = function(e) {
+              e.stopPropagation();
+              input.value = r.name;
+              dropdown.style.display = 'none';
+              input._selectedCity = r.name;
+            };
+            dropdown.appendChild(item);
+          });
+        }).catch(function() { dropdown.style.display = 'none'; });
+    }, 300);
+  };
+  input.onfocus = function() { input.style.borderColor = 'rgba(0,245,212,.4)'; };
+  input.onblur = function() { input.style.borderColor = 'rgba(255,255,255,.12)'; };
+
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px';
+  var okBtn = document.createElement('button');
+  okBtn.textContent = '确定';
+  okBtn.style.cssText = 'flex:1;height:34px;border:none;border-radius:8px;background:#00f5d4;color:#000;font-size:12px;font-weight:600;cursor:pointer';
+  okBtn.onclick = function() {
+    var city = String(input._selectedCity || input.value || '').trim();
+    if (!city) return;
+    homeWeatherRadioState.city = city;
+    localStorage.setItem(HOME_WEATHER_CITY_KEY, city);
+    homeWeatherRadioState.loaded = false;
+    loadHomeWeatherRadio(true, { city: city });
+    mask.remove();
+  };
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '取消';
+  cancelBtn.style.cssText = 'width:70px;height:34px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:transparent;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer';
+  cancelBtn.onclick = function() { mask.remove(); };
+  btnRow.appendChild(okBtn);
+  btnRow.appendChild(cancelBtn);
+  box.appendChild(btnRow);
+  mask.appendChild(box);
+  mask.onclick = function(e) { if (e.target === mask) mask.remove(); };
+  document.body.appendChild(mask);
+  input.focus();
+  input.select();
 }
 function shouldShowEmptyHomeCore(ignoreSplash) {
   if (!ignoreSplash && document.body.classList.contains('splash-active')) return false;
@@ -16372,12 +16641,14 @@ function toggleHomePlayerConsole() {
   var btn = document.getElementById('console-toggle-btn');
   if (!bar) return;
   if (bar.classList.contains('visible') && !bar.classList.contains('soft-hidden')) {
-    // 控制条当前显示 → 隐藏
+    // 控制条当前显示 → 隐藏，同时关闭所有从控制条打开的弹窗
     bar.classList.remove('visible');
     bar.classList.add('soft-hidden');
     bar.style.pointerEvents = '';
     if (controlsHideTimer) { clearTimeout(controlsHideTimer); controlsHideTimer = null; }
-    if (btn) btn.textContent = '展开播放器控制台';
+    closeAllControlBarPopovers();
+    var txt = document.getElementById('console-toggle-text'); if (txt) txt.textContent = '展开播放器控制台';
+    else if (btn) btn.textContent = '展开播放器控制台';
     updateControlsChromeState();
   } else {
     // 控制条当前隐藏 → 显示
@@ -16389,8 +16660,19 @@ function toggleHomePlayerConsole() {
     forcePlaybackControlsInteractive();
     updateControlsChromeState();
     if (controlsAutoHide) scheduleControlsHide(1800);
-    if (btn) btn.textContent = '收起播放器控制台';
+    var txt2 = document.getElementById('console-toggle-text'); if (txt2) txt2.textContent = '收起播放器控制台';
+    else if (btn) btn.textContent = '收起播放器控制台';
   }
+}
+function closeAllControlBarPopovers() {
+  try { closeSleepTimerPanel(); } catch(e) {}
+  try { closeMiniQueue(); } catch(e) {}
+  try { hideDownloadPanel(); } catch(e) {}
+  try { toggleFxPanel(false); } catch(e) {}
+  var volWrap = document.getElementById('volume-control');
+  if (volWrap) volWrap.classList.remove('open');
+  var qualityWrap = document.getElementById('quality-control');
+  if (qualityWrap) qualityWrap.classList.remove('open');
 }
 function ensureHomeWallpaperParticles(opts) {
   opts = opts || {};
@@ -16711,7 +16993,11 @@ function isHomeBlankDismissClick(e) {
     '.modal',
     '.track-detail-modal',
     '.cover-color-pop',
-    '.color-lab-pop'
+    '.color-lab-pop',
+    '#weather-city-dialog',
+    '#wallpaper-scope-dialog',
+    '#we-wallpaper-picker',
+    '.we-picker-modal'
   ].join(',');
   if (target.closest(blockedSelector)) return false;
   var x = e.clientX;
@@ -17663,6 +17949,105 @@ async function addCollectTargetToPlaylist(pid) {
   }
 }
 function cloneSong(song){ return hydrateCustomCover(Object.assign({}, song)); }
+
+// ============================================================
+//  播放会话持久化（断点续播：保存歌单/当前歌/进度，重启后恢复）
+// ============================================================
+var PLAYBACK_SESSION_KEEP_FIELDS = ['id','mid','songmid','mediaMid','media_mid','name','title','artist','ar','authors','artists','cover','pic','picUrl','duration','durationMs','dt','fee','source','provider','type','rid','hash','localKey','programId','autoFallbackFrom','radioContext'];
+var PLAYBACK_SESSION_MAX_LEN = 80;
+function getSerializableQueue() {
+  // 精简 playQueue，去掉运行时字段；过长队列只保留 currentIdx 周围的歌曲
+  var source = playQueue;
+  var idx = currentIdx;
+  if (source.length > PLAYBACK_SESSION_MAX_LEN) {
+    var start = Math.max(0, Math.min(idx - 10, source.length - PLAYBACK_SESSION_MAX_LEN));
+    source = source.slice(start, start + PLAYBACK_SESSION_MAX_LEN);
+    idx = idx - start;
+  }
+  var queue = source.map(function(song) {
+    if (!song) return null;
+    var s = {};
+    PLAYBACK_SESSION_KEEP_FIELDS.forEach(function(k){ if (song[k] !== undefined && song[k] !== null) s[k] = song[k]; });
+    return s;
+  }).filter(Boolean);
+  return { queue: queue, currentIdx: Math.max(0, Math.min(idx, queue.length - 1)) };
+}
+function savePlaybackSession(immediate) {
+  if (playbackSessionSaveTimer) { clearTimeout(playbackSessionSaveTimer); playbackSessionSaveTimer = null; }
+  if (immediate) { doSavePlaybackSession(); return; }
+  playbackSessionSaveTimer = setTimeout(doSavePlaybackSession, 800);
+}
+function doSavePlaybackSession() {
+  playbackSessionSaveTimer = null;
+  if (!playQueue.length || currentIdx < 0) {
+    try { localStorage.removeItem(PLAYBACK_SESSION_STORE_KEY); } catch(e) {}
+    return;
+  }
+  var song = playQueue[currentIdx];
+  if (!song) return;
+  var currentTime = audio && isFinite(audio.currentTime) ? Number(audio.currentTime) : 0;
+  var trimmed = getSerializableQueue();
+  var session = {
+    queue: trimmed.queue,
+    currentIdx: trimmed.currentIdx,
+    currentTime: currentTime,
+    playMode: playMode,
+    savedAt: Date.now()
+  };
+  try {
+    localStorage.setItem(PLAYBACK_SESSION_STORE_KEY, JSON.stringify(session));
+  } catch(e) {}
+}
+function clearPlaybackSession() {
+  if (playbackSessionSaveTimer) { clearTimeout(playbackSessionSaveTimer); playbackSessionSaveTimer = null; }
+  try { localStorage.removeItem(PLAYBACK_SESSION_STORE_KEY); } catch(e) {}
+}
+function loadPlaybackSession() {
+  var raw;
+  try { raw = localStorage.getItem(PLAYBACK_SESSION_STORE_KEY); } catch(e) { return null; }
+  if (!raw) return null;
+  var session;
+  try { session = JSON.parse(raw); } catch(e) { return null; }
+  if (!session || !Array.isArray(session.queue) || !session.queue.length) return null;
+  if (typeof session.currentIdx !== 'number' || session.currentIdx < 0 || session.currentIdx >= session.queue.length) return null;
+  // 恢复播放队列
+  playQueue = session.queue.map(function(s){ return hydrateCustomCover(Object.assign({}, s)); });
+  currentIdx = session.currentIdx;
+  // 恢复播放模式
+  if (session.playMode && ['loop','shuffle','single'].indexOf(session.playMode) >= 0) {
+    playMode = session.playMode;
+    try { updatePlayModeButton(false); } catch(e) {}
+  }
+  // 记录待恢复的播放位置（用户点播放按钮时使用）
+  pendingSessionResumeAt = Math.max(0, Number(session.currentTime) || 0);
+  // 恢复 UI（不自动播放，受浏览器自动播放策略限制）
+  restoreSessionUI(playQueue[currentIdx]);
+  return session;
+}
+function restoreSessionUI(song) {
+  if (!song) return;
+  try {
+    var hint = document.getElementById('hint');
+    if (hint) hint.classList.add('hidden');
+    var titleEl = document.getElementById('thumb-title');
+    var artistEl = document.getElementById('thumb-artist');
+    if (titleEl) titleEl.textContent = song.name || '';
+    if (artistEl) artistEl.textContent = song.artist || '';
+    if (typeof updateControlTrackInfo === 'function') updateControlTrackInfo(song);
+    var thumbWrap = document.getElementById('thumb-wrap');
+    if (thumbWrap) thumbWrap.classList.add('visible');
+    // 加载封面到舞台
+    var customCover = getCustomCoverForSong(song);
+    if (customCover) applyCoverDataUrl(customCover, { deferHeavy: true });
+    else loadCoverFromUrl(song.cover ? coverUrlWithSize(song.cover, 400) : '', { deferHeavy: true });
+    // 刷新队列面板与歌单架
+    if (typeof safeRenderQueuePanel === 'function') safeRenderQueuePanel('session-restore');
+    if (typeof safeShelfRebuild === 'function') safeShelfRebuild('session-restore', true);
+    // 提示用户点击播放按钮继续
+    var timeLabel = pendingSessionResumeAt > 1 ? formatProgramTime(pendingSessionResumeAt) : '';
+    showToast('已恢复上次播放' + (song.name ? '：' + song.name : '') + (timeLabel ? ' · ' + timeLabel : '') + '（点击播放继续）');
+  } catch(e) { console.warn('restoreSessionUI failed', e); }
+}
 function avatarSrc(url) {
   if (!url) return '';
   return coverProxySrc(url, true);
@@ -19598,6 +19983,385 @@ function fadeOutAndPauseAudio() {
   });
 }
 
+/* ========== 睡眠定时器 ========== */
+var SLEEP_STORAGE_KEY = 'mineradio-sleep-timer-v1';
+var sleepTimer = {
+  running: false,
+  mode: 'countdown',
+  endTime: 0,
+  totalSeconds: 0,
+  fadeStarted: false,
+  intervalId: null,
+  fadeDuration: 8,
+  endAction: 'pause',
+  lastPreset: 30,
+  remember: true,
+  endOfSong: false,
+  isCustom: false
+};
+
+function loadSleepTimerSettings() {
+  try {
+    var raw = localStorage.getItem(SLEEP_STORAGE_KEY);
+    if (!raw) return;
+    var s = JSON.parse(raw);
+    if (typeof s.fadeDuration === 'number') sleepTimer.fadeDuration = s.fadeDuration;
+    if (typeof s.endAction === 'string') sleepTimer.endAction = s.endAction;
+    if (typeof s.lastPreset === 'number') sleepTimer.lastPreset = s.lastPreset;
+    if (typeof s.remember === 'boolean') sleepTimer.remember = s.remember;
+  } catch (e) { console.warn('[SleepTimer] load failed', e); }
+}
+
+function saveSleepTimerSettings() {
+  if (!sleepTimer.remember) return;
+  try {
+    localStorage.setItem(SLEEP_STORAGE_KEY, JSON.stringify({
+      fadeDuration: sleepTimer.fadeDuration,
+      endAction: sleepTimer.endAction,
+      lastPreset: sleepTimer.lastPreset,
+      remember: sleepTimer.remember
+    }));
+  } catch (e) {}
+}
+
+function applySleepSettingsToUi() {
+  var fadeSlider = document.getElementById('sleep-fade-slider');
+  var fadeValue = document.getElementById('sleep-fade-value');
+  if (fadeSlider) fadeSlider.value = sleepTimer.fadeDuration;
+  if (fadeValue) fadeValue.textContent = sleepTimer.fadeDuration + ' 秒';
+  var seg = document.getElementById('sleep-end-seg');
+  if (seg) {
+    var btns = seg.querySelectorAll('button');
+    btns.forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-value') === sleepTimer.endAction);
+    });
+  }
+  updateSleepEndOfSongToggle();
+}
+
+function toggleSleepTimerPanel(e) {
+  if (e) e.stopPropagation();
+  var pop = document.querySelector('.sleep-timer-popover');
+  if (!pop) return;
+  if (pop.classList.contains('show')) {
+    closeSleepTimerPanel();
+  } else {
+    pop.classList.add('show');
+    applySleepSettingsToUi();
+    updateSleepPresetActiveState();
+  }
+}
+
+function closeSleepTimerPanel() {
+  var pop = document.querySelector('.sleep-timer-popover');
+  if (pop) pop.classList.remove('show');
+}
+
+function updateSleepPresetActiveState() {
+  var presets = document.querySelectorAll('.sleep-preset');
+  presets.forEach(function(btn) {
+    var mins = btn.getAttribute('data-minutes');
+    if (sleepTimer.running && sleepTimer.mode === 'endOfSong') {
+      btn.classList.remove('active');
+      return;
+    }
+    if (mins === 'custom') {
+      btn.classList.toggle('active', sleepTimer.running && sleepTimer.mode === 'countdown' && sleepTimer.isCustom);
+      return;
+    }
+    if (sleepTimer.running && sleepTimer.mode === 'countdown') {
+      var presetSec = parseInt(mins, 10) * 60;
+      var diff = Math.abs(sleepTimer.totalSeconds - presetSec);
+      btn.classList.toggle('active', diff < 30 && !sleepTimer.isCustom);
+    } else {
+      btn.classList.toggle('active', !sleepTimer.isCustom && parseInt(mins, 10) === sleepTimer.lastPreset);
+    }
+  });
+}
+
+function formatSleepTime(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  var m = Math.floor(sec / 60);
+  var s = sec % 60;
+  return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function startSleepTimer(minutes) {
+  if (minutes === 'custom') {
+    showSleepCustomDialog();
+    return;
+  }
+  sleepTimer.lastPreset = minutes;
+  sleepTimer.mode = 'countdown';
+  sleepTimer.endOfSong = false;
+  sleepTimer.isCustom = false;
+  sleepTimer.totalSeconds = minutes * 60;
+  sleepTimer.endTime = Date.now() + sleepTimer.totalSeconds * 1000;
+  sleepTimer.fadeStarted = false;
+  sleepTimer.running = true;
+  saveSleepTimerSettings();
+  runSleepTimerLoop();
+  updateSleepButtonState();
+  updateSleepPresetActiveState();
+  updateSleepRunningUi();
+  updateSleepEndOfSongToggle();
+}
+
+function showSleepCustomDialog() {
+  var existing = document.getElementById('sleep-custom-dialog');
+  if (existing) existing.remove();
+  var mask = document.createElement('div');
+  mask.id = 'sleep-custom-dialog';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(4px)';
+  var box = document.createElement('div');
+  box.style.cssText = 'width:280px;background:rgba(18,20,30,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+  var label = document.createElement('div');
+  label.textContent = '请输入分钟数（1-600）';
+  label.style.cssText = 'font-size:13px;color:rgba(255,255,255,.8);margin-bottom:12px';
+  var input = document.createElement('input');
+  input.type = 'number';
+  input.min = '1';
+  input.max = '600';
+  input.value = String(sleepTimer.lastPreset || 30);
+  input.style.cssText = 'width:100%;box-sizing:border-box;height:36px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.06);color:#fff;font-size:14px;outline:none;margin-bottom:14px';
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '取消';
+  cancelBtn.style.cssText = 'height:32px;padding:0 14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.7);border-radius:8px;font-size:12px;cursor:pointer';
+  var okBtn = document.createElement('button');
+  okBtn.textContent = '确定';
+  okBtn.style.cssText = 'height:32px;padding:0 14px;border:1px solid rgba(0,245,212,.35);background:rgba(0,245,212,.12);color:var(--accent-cyan);border-radius:8px;font-size:12px;cursor:pointer';
+  btnRow.appendChild(cancelBtn);
+  btnRow.appendChild(okBtn);
+  box.appendChild(label);
+  box.appendChild(input);
+  box.appendChild(btnRow);
+  mask.appendChild(box);
+  document.body.appendChild(mask);
+  input.focus();
+  input.select();
+  function close() { mask.remove(); }
+  function confirm() {
+    var val = parseInt(input.value, 10);
+    if (isNaN(val) || val <= 0 || val > 600) {
+      input.style.borderColor = 'rgba(255,138,138,.5)';
+      return;
+    }
+    close();
+    // 直接设置定时，标记为自定义模式
+    sleepTimer.lastPreset = val;
+    sleepTimer.mode = 'countdown';
+    sleepTimer.endOfSong = false;
+    sleepTimer.isCustom = true;
+    sleepTimer.totalSeconds = val * 60;
+    sleepTimer.endTime = Date.now() + sleepTimer.totalSeconds * 1000;
+    sleepTimer.fadeStarted = false;
+    sleepTimer.running = true;
+    saveSleepTimerSettings();
+    runSleepTimerLoop();
+    updateSleepButtonState();
+    updateSleepPresetActiveState();
+    updateSleepRunningUi();
+    updateSleepEndOfSongToggle();
+  }
+  okBtn.onclick = confirm;
+  cancelBtn.onclick = close;
+  mask.onclick = function(e) { if (e.target === mask) close(); };
+  input.onkeydown = function(e) {
+    if (e.key === 'Enter') confirm();
+    if (e.key === 'Escape') close();
+  };
+}
+
+function toggleSleepEndOfSong() {
+  sleepTimer.endOfSong = !sleepTimer.endOfSong;
+  if (sleepTimer.endOfSong) {
+    // 先停止倒计时（cancelSleepTimer 会重置 endOfSong，所以之后要重新设回 true）
+    cancelSleepTimer(false);
+    sleepTimer.endOfSong = true;
+    sleepTimer.mode = 'endOfSong';
+    sleepTimer.running = true;
+    updateSleepButtonState();
+    updateSleepRunningUi();
+    updateSleepPresetActiveState();
+  } else {
+    if (sleepTimer.mode === 'endOfSong') {
+      cancelSleepTimer();
+    }
+  }
+  updateSleepEndOfSongToggle();
+}
+
+function updateSleepEndOfSongToggle() {
+  var el = document.getElementById('t-sleepEndOfSong');
+  if (el) el.classList.toggle('on', sleepTimer.endOfSong);
+}
+
+function onSleepFadeSliderInput() {
+  var slider = document.getElementById('sleep-fade-slider');
+  var val = parseInt(slider.value, 10);
+  sleepTimer.fadeDuration = val;
+  document.getElementById('sleep-fade-value').textContent = val + ' 秒';
+  saveSleepTimerSettings();
+}
+
+function onSleepEndActionChange(action) {
+  sleepTimer.endAction = action;
+  saveSleepTimerSettings();
+}
+
+function onSleepEndSegClick(action) {
+  onSleepEndActionChange(action);
+  var seg = document.getElementById('sleep-end-seg');
+  if (seg) {
+    var btns = seg.querySelectorAll('button');
+    btns.forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-value') === action);
+    });
+  }
+}
+
+function runSleepTimerLoop() {
+  if (sleepTimer.intervalId) clearInterval(sleepTimer.intervalId);
+  sleepTimer.intervalId = setInterval(function() {
+    if (!sleepTimer.running || sleepTimer.mode !== 'countdown') return;
+    var remaining = (sleepTimer.endTime - Date.now()) / 1000;
+    if (remaining <= 0) {
+      triggerSleepEndAction();
+      return;
+    }
+    if (!sleepTimer.fadeStarted && remaining <= sleepTimer.fadeDuration && sleepTimer.fadeDuration > 0) {
+      sleepTimer.fadeStarted = true;
+      startSleepFadeOut();
+    }
+    updateSleepRunningUi();
+  }, 250);
+}
+
+function updateSleepRunningUi() {
+  var runningEl = document.getElementById('sleep-timer-running');
+  var timeEl = document.getElementById('sleep-running-time');
+  var badgeEl = document.getElementById('sleep-timer-badge');
+  var progressEl = document.getElementById('sleep-progress-fill');
+  if (!runningEl || !timeEl || !badgeEl || !progressEl) return;
+
+  if (!sleepTimer.running) {
+    runningEl.style.display = 'none';
+    badgeEl.style.display = 'none';
+    progressEl.style.width = '100%';
+    return;
+  }
+  runningEl.style.display = 'block';
+
+  if (sleepTimer.mode === 'countdown') {
+    var remaining = Math.max(0, (sleepTimer.endTime - Date.now()) / 1000);
+    timeEl.textContent = formatSleepTime(remaining);
+    badgeEl.style.display = 'inline-block';
+    badgeEl.textContent = formatSleepTime(remaining);
+    var pct = sleepTimer.totalSeconds > 0 ? (remaining / sleepTimer.totalSeconds * 100) : 0;
+    progressEl.style.width = pct + '%';
+    document.getElementById('sleep-timer-btn').title = '睡眠定时 · 剩余 ' + formatSleepTime(remaining);
+  } else if (sleepTimer.mode === 'endOfSong') {
+    timeEl.textContent = '播完本曲';
+    badgeEl.style.display = 'inline-block';
+    badgeEl.textContent = '♪';
+    progressEl.style.width = '100%';
+    document.getElementById('sleep-timer-btn').title = '睡眠定时 · 播完当前歌曲';
+  }
+}
+
+function updateSleepButtonState() {
+  var btn = document.getElementById('sleep-timer-btn');
+  if (!btn) return;
+  btn.classList.toggle('active', sleepTimer.running);
+}
+
+function startSleepFadeOut() {
+  if (!audioCtx || !gainNode) return;
+  audioFadeSerial++;
+  rampAudioOutputGain(0, sleepTimer.fadeDuration * 1000);
+  if (typeof tweenParticleAlpha === 'function' && typeof uniforms !== 'undefined' && uniforms && uniforms.uAlpha) {
+    tweenParticleAlpha(uniforms.uAlpha.value || 0.96, 0, sleepTimer.fadeDuration * 1000);
+  }
+}
+
+function triggerSleepEndAction() {
+  if (!sleepTimer.running) return;
+  var action = sleepTimer.endAction;
+  cancelSleepTimer(false);
+  if (action === 'stop') {
+    if (typeof clearQueue === 'function') clearQueue();
+    if (audio) { try { audio.pause(); audio.currentTime = 0; } catch(e){} }
+    setAudioOutputGainImmediate(0);
+  } else {
+    if (audio && !audio.paused) {
+      try { audio.pause(); } catch(e){}
+    }
+    if (audioFadeSerial) {
+      setAudioOutputGainImmediate(0);
+    }
+    if (typeof savePlaybackSession === 'function') savePlaybackSession();
+  }
+}
+
+function addSleepTime(minutes) {
+  if (!sleepTimer.running || sleepTimer.mode !== 'countdown') {
+    startSleepTimer(minutes);
+    return;
+  }
+  sleepTimer.endTime += minutes * 60 * 1000;
+  sleepTimer.totalSeconds += minutes * 60;
+  sleepTimer.fadeStarted = false;
+  audioFadeSerial++;
+  restorePlaybackGain();
+  updateSleepRunningUi();
+  updateSleepPresetActiveState();
+}
+
+function cancelSleepTimer(showUi) {
+  if (typeof showUi === 'undefined') showUi = true;
+  sleepTimer.running = false;
+  sleepTimer.fadeStarted = false;
+  sleepTimer.endOfSong = false;
+  sleepTimer.isCustom = false;
+  if (sleepTimer.intervalId) {
+    clearInterval(sleepTimer.intervalId);
+    sleepTimer.intervalId = null;
+  }
+  if (audioFadeSerial) {
+    audioFadeSerial++;
+  }
+  restorePlaybackGain();
+  if (typeof tweenParticleAlpha === 'function' && typeof uniforms !== 'undefined' && uniforms && uniforms.uAlpha) {
+    var cur = uniforms.uAlpha.value || 0;
+    if (cur < 0.9) tweenParticleAlpha(cur, 0.96, 600);
+  }
+  updateSleepButtonState();
+  updateSleepRunningUi();
+  updateSleepPresetActiveState();
+  updateSleepEndOfSongToggle();
+  document.getElementById('sleep-timer-btn').title = '睡眠定时';
+}
+
+function checkSleepEndOfSong() {
+  if (sleepTimer.running && sleepTimer.mode === 'endOfSong') {
+    triggerSleepEndAction();
+    return true;
+  }
+  return false;
+}
+
+loadSleepTimerSettings();
+
+document.addEventListener('click', function(e) {
+  var ctrl = document.getElementById('sleep-timer-control');
+  if (!ctrl) return;
+  var pop = ctrl.querySelector('.sleep-timer-popover');
+  if (!pop || !pop.classList.contains('show')) return;
+  if (!ctrl.contains(e.target)) closeSleepTimerPanel();
+});
+
 function applyVolumeToAudio() {
   if (audio) {
     audio.muted = false;
@@ -20060,6 +20824,8 @@ function scheduleAudioResumePosition(media, seconds, token) {
 
 async function playQueueAt(idx, opts) {
   opts = opts || {};
+  // 清除待恢复位置：仅当本次显式传入 resumeAt 时才保留续播语义
+  if (!opts.resumeAt) pendingSessionResumeAt = 0;
   if (idx < 0 || idx >= playQueue.length) return;
   markRenderInteraction('track-switch', 1500);
   var playPhase = 'start';
@@ -20198,6 +20964,7 @@ async function playQueueAt(idx, opts) {
     audio.onended = function(){
       if (token !== trackSwitchToken) return;
       finalizeListenSession(true);
+      if (typeof checkSleepEndOfSong === 'function' && checkSleepEndOfSong()) return;
       if (playMode === 'single') setTimeout(function(){ playQueueAt(currentIdx, { autoRepeat: true }); }, 0);
       else setTimeout(nextTrack, 0);
     };
@@ -20292,6 +21059,7 @@ async function playQueueAt(idx, opts) {
     safeRenderQueuePanel('play-queue-at');
     scheduleShelfRebuild('play-queue-at', true);
     safePlaybackStep('shelf-preview-suppress-end', suppressShelfPreviewForPlaybackSwitch);
+    safePlaybackStep('session-save', function(){ savePlaybackSession(); });
   } catch (err) {
     console.error('Play failed:', { phase: playPhase, error: err }, err);
     hideLoading();
@@ -20355,7 +21123,9 @@ async function togglePlay() {
   try {
     forcePlaybackControlsInteractive();
     if ((!audio || !audio.src) && playQueue.length && currentIdx >= 0) {
-      await playQueueAt(currentIdx, { manual: true });
+      var resumeAt = pendingSessionResumeAt;
+      pendingSessionResumeAt = 0;
+      await playQueueAt(currentIdx, { manual: true, resumeAt: resumeAt });
       return;
     }
     if (!audio) return;
@@ -20370,6 +21140,7 @@ async function togglePlay() {
       forcePlaybackControlsInteractive();
       safePlaybackStep('sync-pause-state', function(){ syncPlaybackStateFromAudioEvent('manual-pause'); });
       safePlaybackStep('pause-controls-hide', function(){ scheduleControlsHide(520); });
+      safePlaybackStep('session-save', function(){ savePlaybackSession(true); });
     }
   } catch (err) {
     console.warn('[TogglePlay]', err);
@@ -20418,6 +21189,7 @@ function clearQueue() {
   updateCustomCoverButton();
   updateCustomLyricControls();
   updateEmptyHomeVisibility({ forceLoad: false });
+  clearPlaybackSession();
 }
 function removeFromQueue(idx) {
   if (idx < 0 || idx >= playQueue.length) return;
@@ -20428,6 +21200,8 @@ function removeFromQueue(idx) {
   updateCustomCoverButton();
   updateCustomLyricControls();
   updateEmptyHomeVisibility({ forceLoad: false });
+  if (playQueue.length && currentIdx >= 0) savePlaybackSession();
+  else clearPlaybackSession();
 }
 function playModeLabel(mode) {
   return { loop: '顺序循环', shuffle: '随机播放', single: '单曲循环' }[mode] || '顺序循环';
@@ -21600,6 +22374,8 @@ function updatePlaybackProgressUi() {
   setProgressVisual(durationSec > 0 ? (currentSec / durationSec * 100) : 0);
   var timeDisplay = document.getElementById('time-display');
   if (timeDisplay) timeDisplay.textContent = formatProgramTime(currentSec) + ' / ' + (durationSec > 0 ? formatProgramTime(durationSec) : '0:00');
+  // 防抖保存播放会话（断点续播）
+  if (playQueue.length && currentIdx >= 0 && audio && audio.src) savePlaybackSession();
 }
 function bindPlaybackProgressEvents(audioEl) {
   if (!audioEl || audioEl._mineradioProgressBound) return;
@@ -22614,6 +23390,448 @@ function readBackgroundMediaFile(file) {
   else if (/^video\//i.test(file.type || '')) readBackgroundVideoFile(file);
   else showToast('请选择图片或视频文件');
 }
+// hero 壁纸选择器：选择文件 → hero 区域展示 → 根据勾选决定是否同步到全屏背景
+var wallpaperPickerObjectUrl = '';
+// hero 壁纸独立状态（与全屏背景分离）
+var heroWallpaperMedia = null; // {type:'image'|'video', src:'', name:'', ...}
+var heroApplyFullscreen = false; // 用户是否勾选"应用于全屏背景"
+var HERO_WALLPAPER_STORE_KEY = 'mineradio-hero-wallpaper-v1';
+
+// 持久化 hero 壁纸状态到 localStorage
+function saveHeroWallpaperState() {
+  try {
+    var state = { applyFullscreen: heroApplyFullscreen };
+    if (heroWallpaperMedia && heroWallpaperMedia.dataUrl) {
+      state.media = { type: heroWallpaperMedia.type, src: heroWallpaperMedia.dataUrl, name: heroWallpaperMedia.name || '' };
+    }
+    localStorage.setItem(HERO_WALLPAPER_STORE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+// 从 localStorage 恢复 hero 壁纸状态
+function loadHeroWallpaperState() {
+  try {
+    var raw = localStorage.getItem(HERO_WALLPAPER_STORE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) || null;
+  } catch(e) { return null; }
+}
+
+// 右上角三点菜单开关
+function toggleWallpaperMenu(e) {
+  if (e) e.stopPropagation();
+  var menu = document.getElementById('wallpaper-menu');
+  if (!menu) return;
+  menu.classList.toggle('open');
+}
+function closeWallpaperMenu() {
+  var menu = document.getElementById('wallpaper-menu');
+  if (menu) menu.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('wallpaper-menu');
+  if (!menu || !menu.classList.contains('open')) return;
+  if (!menu.contains(e.target)) closeWallpaperMenu();
+});
+
+// 壁纸应用范围选择对话框
+function showWallpaperScopeDialog(callback) {
+  var existing = document.getElementById('wallpaper-scope-dialog');
+  if (existing) existing.remove();
+  var mask = document.createElement('div');
+  mask.id = 'wallpaper-scope-dialog';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(4px)';
+  var box = document.createElement('div');
+  box.style.cssText = 'width:300px;background:rgba(18,20,30,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+  var title = document.createElement('div');
+  title.textContent = '壁纸应用范围';
+  title.style.cssText = 'font-size:14px;font-weight:600;color:#fff;margin-bottom:16px;text-align:center';
+  box.appendChild(title);
+  var scopes = [
+    { value: 'hero', label: '仅小窗', desc: '只在 hero 区域显示' },
+    { value: 'fullscreen', label: '仅全屏背景', desc: '只作为应用背景' },
+    { value: 'both', label: '全部应用', desc: '小窗 + 全屏背景' }
+  ];
+  scopes.forEach(function(s) {
+    var btn = document.createElement('button');
+    btn.textContent = s.label;
+    btn.style.cssText = 'display:block;width:100%;box-sizing:border-box;height:44px;margin-bottom:8px;padding:0 14px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.04);color:rgba(255,255,255,.82);font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s';
+    btn.title = s.desc;
+    btn.onmouseenter = function() { btn.style.borderColor = 'rgba(0,245,212,.34)'; btn.style.background = 'rgba(0,245,212,.06)'; };
+    btn.onmouseleave = function() { btn.style.borderColor = 'rgba(255,255,255,.12)'; btn.style.background = 'rgba(255,255,255,.04)'; };
+    btn.onclick = function() {
+      mask.remove();
+      callback(s.value);
+    };
+    box.appendChild(btn);
+  });
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '取消';
+  cancelBtn.style.cssText = 'display:block;width:100%;box-sizing:border-box;height:36px;margin-top:4px;padding:0 14px;border:none;border-radius:10px;background:transparent;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer';
+  cancelBtn.onclick = function() { mask.remove(); };
+  box.appendChild(cancelBtn);
+  mask.appendChild(box);
+  mask.onclick = function(e) { if (e.target === mask) mask.remove(); };
+  document.body.appendChild(mask);
+}
+
+function onWallpaperFilePicked(event) {
+  var file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  var isImg = /^image\//i.test(file.type || '');
+  var isVid = /^video\//i.test(file.type || '');
+  if (!isImg && !isVid) { showToast('请选择图片或视频文件'); return; }
+  // 弹出应用范围选择
+  showWallpaperScopeDialog(function(scope) {
+    applyWallpaperFile(file, scope);
+  });
+}
+
+function applyWallpaperFile(file, scope) {
+  scope = scope || 'hero';
+  var media = document.getElementById('home-hero-wallpaper-media');
+  var img = document.getElementById('wallpaper-preview-img');
+  var vid = document.getElementById('wallpaper-preview-video');
+  var clearBtn = document.getElementById('wallpaper-clear-btn');
+  var isImg = /^image\//i.test(file.type || '');
+  var isVid = /^video\//i.test(file.type || '');
+  if (!isImg && !isVid) { showToast('请选择图片或视频文件'); return; }
+
+  if (wallpaperPickerObjectUrl) { URL.revokeObjectURL(wallpaperPickerObjectUrl); wallpaperPickerObjectUrl = ''; }
+  wallpaperPickerObjectUrl = URL.createObjectURL(file);
+
+  // 小窗应用
+  if (scope === 'hero' || scope === 'both') {
+    media.classList.remove('has-image', 'has-video');
+    img.src = ''; vid.src = ''; vid.pause();
+    if (isImg) {
+      img.src = wallpaperPickerObjectUrl;
+      media.classList.add('has-image');
+    } else {
+      vid.src = wallpaperPickerObjectUrl;
+      vid.play().catch(function(){});
+      media.classList.add('has-video');
+    }
+    clearBtn.style.display = '';
+  }
+
+  // 构造 heroWallpaperMedia
+  if (isImg) {
+    heroWallpaperMedia = { type: 'image', src: wallpaperPickerObjectUrl, name: file.name, file: file };
+  } else {
+    heroWallpaperMedia = { type: 'video', src: wallpaperPickerObjectUrl, name: file.name, file: file };
+  }
+
+  // 图片读取 dataURL 持久化
+  if (isImg) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      heroWallpaperMedia.dataUrl = e.target.result;
+      saveHeroWallpaperState();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    saveHeroWallpaperState();
+  }
+
+  // 全屏背景应用
+  if (scope === 'fullscreen' || scope === 'both') {
+    if (isImg) {
+      readBackgroundImageFile(file);
+    } else {
+      readBackgroundMediaFile(file);
+    }
+    if (scope === 'both') {
+      heroApplyFullscreen = true;
+    } else {
+      heroApplyFullscreen = false;
+    }
+    updateApplyFullscreenToggle();
+    saveHeroWallpaperState();
+  } else if (scope === 'hero') {
+    // 仅小窗
+  }
+}
+function clearWallpaperPicker() {
+  var media = document.getElementById('home-hero-wallpaper-media');
+  var img = document.getElementById('wallpaper-preview-img');
+  var vid = document.getElementById('wallpaper-preview-video');
+  var clearBtn = document.getElementById('wallpaper-clear-btn');
+  if (wallpaperPickerObjectUrl) { URL.revokeObjectURL(wallpaperPickerObjectUrl); wallpaperPickerObjectUrl = ''; }
+  media.classList.remove('has-image', 'has-video');
+  img.src = ''; vid.src = ''; vid.pause();
+  clearBtn.style.display = 'none';
+  heroWallpaperMedia = null;
+  heroApplyFullscreen = false;
+  updateApplyFullscreenToggle();
+  // 同时清除全屏背景
+  setCustomBackgroundImage('', true);
+  setCustomBackgroundMedia(null, true);
+  // 清除持久化
+  try { localStorage.removeItem(HERO_WALLPAPER_STORE_KEY); } catch(e) {}
+  showToast('壁纸已清除');
+}
+// 开关：是否将 hero 壁纸同步到全屏背景
+function onWallpaperFullscreenToggle(event) {
+  if (event) event.stopPropagation();
+  heroApplyFullscreen = !heroApplyFullscreen;
+  updateApplyFullscreenToggle();
+  saveHeroWallpaperState();
+  syncHeroWallpaperToFullscreen();
+}
+// 同步 t-applyFullscreen 的 on 状态
+function updateApplyFullscreenToggle() {
+  var el = document.getElementById('t-applyFullscreen');
+  if (el) el.classList.toggle('on', !!heroApplyFullscreen);
+}
+// 根据 hero 壁纸状态和开关，决定是否同步到全屏背景
+function syncHeroWallpaperToFullscreen() {
+  if (!heroApplyFullscreen || !heroWallpaperMedia) {
+    // 取消勾选或没有壁纸时，清除全屏背景
+    setCustomBackgroundImage('', true);
+    setCustomBackgroundMedia(null, true);
+    return;
+  }
+  // 勾选且有壁纸：同步到全屏背景
+  if (heroWallpaperMedia.type === 'video') {
+    if (heroWallpaperMedia.file) {
+      readBackgroundMediaFile(heroWallpaperMedia.file);
+    } else if (heroWallpaperMedia.src) {
+      setCustomBackgroundMedia({ type: 'video', src: heroWallpaperMedia.src, name: heroWallpaperMedia.name || '', mime: 'video/mp4', size: 0 });
+    }
+  } else if (heroWallpaperMedia.type === 'image') {
+    if (heroWallpaperMedia.file) {
+      readBackgroundImageFile(heroWallpaperMedia.file);
+    } else if (heroWallpaperMedia.src) {
+      setCustomBackgroundImage(heroWallpaperMedia.src);
+    }
+  }
+}
+
+// 关闭所有从控制条按钮打开的弹窗（控制台收起时调用）
+function closeAllControlBarPopovers() {
+  try { closeSleepTimerPanel(); } catch(e) {}
+  try { closeMiniQueue(); } catch(e) {}
+  try { hideDownloadPanel(); } catch(e) {}
+  try { toggleFxPanel(false); } catch(e) {}
+  var volWrap = document.getElementById('volume-control');
+  if (volWrap) volWrap.classList.remove('open');
+  var qualityWrap = document.getElementById('quality-control');
+  if (qualityWrap) qualityWrap.classList.remove('open');
+}
+// 页面加载时同步已有背景到 hero 展示区
+function syncWallpaperPickerFromFx() {
+  var heroMedia = document.getElementById('home-hero-wallpaper-media');
+  var img = document.getElementById('wallpaper-preview-img');
+  var vid = document.getElementById('wallpaper-preview-video');
+  var clearBtn = document.getElementById('wallpaper-clear-btn');
+  if (!heroMedia) return;
+
+  // 优先从 localStorage 恢复 hero 壁纸独立状态
+  var saved = loadHeroWallpaperState();
+  if (saved && saved.media && saved.media.src) {
+    heroApplyFullscreen = !!saved.applyFullscreen;
+    updateApplyFullscreenToggle();
+    if (saved.media.type === 'video') {
+      vid.src = saved.media.src;
+      vid.play().catch(function(){});
+      heroMedia.classList.add('has-video');
+      clearBtn.style.display = '';
+      heroWallpaperMedia = { type: 'video', src: saved.media.src, name: saved.media.name || '', dataUrl: saved.media.src };
+    } else {
+      img.src = saved.media.src;
+      heroMedia.classList.add('has-image');
+      clearBtn.style.display = '';
+      heroWallpaperMedia = { type: 'image', src: saved.media.src, name: saved.media.name || '', dataUrl: saved.media.src };
+    }
+    // 如果勾选了全屏背景，同步过去
+    if (heroApplyFullscreen) syncHeroWallpaperToFullscreen();
+    return;
+  }
+
+  // 回退：从 fx 全屏背景恢复
+  var media = fx && fx.backgroundMedia ? normalizeCustomBackgroundMedia(fx.backgroundMedia) : null;
+  var imgSrc = fx && fx.backgroundImage ? fx.backgroundImage : '';
+  if (media || imgSrc) {
+    heroApplyFullscreen = true;
+    updateApplyFullscreenToggle();
+    heroMedia.classList.remove('has-image', 'has-video');
+    img.src = ''; vid.src = ''; vid.pause();
+    if (media && media.type === 'video') {
+      if (media.id) {
+        getCustomBackgroundBlob(media.id).then(function(blob){
+          if (!blob) return;
+          if (wallpaperPickerObjectUrl) URL.revokeObjectURL(wallpaperPickerObjectUrl);
+          wallpaperPickerObjectUrl = URL.createObjectURL(blob);
+          vid.src = wallpaperPickerObjectUrl;
+          vid.play().catch(function(){});
+          heroMedia.classList.add('has-video');
+          clearBtn.style.display = '';
+          heroWallpaperMedia = { type: 'video', src: wallpaperPickerObjectUrl, name: media.name || '' };
+        }).catch(function(){});
+      } else if (media.src) {
+        vid.src = media.src;
+        vid.play().catch(function(){});
+        heroMedia.classList.add('has-video');
+        clearBtn.style.display = '';
+        heroWallpaperMedia = { type: 'video', src: media.src, name: media.name || '' };
+      }
+    } else if (imgSrc || (media && media.type === 'image' && media.src)) {
+      img.src = imgSrc || media.src;
+      heroMedia.classList.add('has-image');
+      clearBtn.style.display = '';
+      heroWallpaperMedia = { type: 'image', src: imgSrc || media.src, name: media ? media.name : '', dataUrl: imgSrc || media.src };
+    }
+  }
+}
+
+// Wallpaper Engine 壁纸选择器
+var weWallpaperList = [];
+var weWallpaperFiltered = [];
+var weSelectedWallpaper = null;
+
+function openWeWallpaperPicker() {
+  var overlay = document.getElementById('we-wallpaper-picker');
+  if (!overlay) return;
+  overlay.classList.add('show');
+  // 壁纸模式下主动捕获鼠标，防止点击穿透到桌面
+  if (typeof desktopWallpaperActive !== 'undefined' && desktopWallpaperActive) {
+    desktopWallpaperCaptureCurrent = true;
+    var api = window.desktopWindow;
+    if (api && typeof api.setDesktopWallpaperCapture === 'function') {
+      api.setDesktopWallpaperCapture(true);
+    }
+  }
+  var grid = document.getElementById('we-wallpaper-grid');
+  if (grid) grid.innerHTML = '<div class="we-loading">扫描中...</div>';
+  loadWeWallpapers();
+}
+function hideWeWallpaperPicker() {
+  var overlay = document.getElementById('we-wallpaper-picker');
+  if (overlay) overlay.classList.remove('show');
+  // 壁纸模式下不主动关闭捕获，让 mousemove 自动重新检测
+  if (typeof desktopWallpaperActive !== 'undefined' && desktopWallpaperActive) {
+    desktopWallpaperCaptureCurrent = null;
+  }
+}
+async function loadWeWallpapers() {
+  try {
+    var res = await fetch('/api/we-wallpapers/list');
+    var data = await res.json();
+    if (!data.ok) throw new Error(data.error || '加载失败');
+    weWallpaperList = data.wallpapers || [];
+    weWallpaperFiltered = weWallpaperList.slice();
+    document.getElementById('we-wallpaper-count').textContent = weWallpaperList.length + ' 个';
+    renderWeWallpaperGrid();
+  } catch (e) {
+    var grid = document.getElementById('we-wallpaper-grid');
+    if (grid) grid.innerHTML = '<div class="we-loading">加载失败: ' + e.message + '</div>';
+  }
+}
+function filterWeWallpapers(keyword) {
+  keyword = (keyword || '').trim().toLowerCase();
+  if (!keyword) {
+    weWallpaperFiltered = weWallpaperList.slice();
+  } else {
+    weWallpaperFiltered = weWallpaperList.filter(function(w) {
+      return (w.title || '').toLowerCase().includes(keyword);
+    });
+  }
+  document.getElementById('we-wallpaper-count').textContent = weWallpaperFiltered.length + ' / ' + weWallpaperList.length + ' 个';
+  renderWeWallpaperGrid();
+}
+function renderWeWallpaperGrid() {
+  var grid = document.getElementById('we-wallpaper-grid');
+  if (!grid) return;
+  if (weWallpaperFiltered.length === 0) {
+    grid.innerHTML = '<div class="we-loading">没有找到壁纸</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < weWallpaperFiltered.length; i++) {
+    var w = weWallpaperFiltered[i];
+    var typeLabel = w.type === 'video' ? '视频' : (w.type === 'web' ? '网页' : (w.type === 'scene' ? '场景' : '图片'));
+    var selected = weSelectedWallpaper && weSelectedWallpaper.id === w.id ? ' selected' : '';
+    var previewUrl = w.hasPreview ? ('/api/we-wallpapers/preview/' + encodeURIComponent(w.id)) : '';
+    html += '<div class="we-item' + selected + '" onclick="selectWeWallpaper(\'' + w.id.replace(/'/g, "\\'") + '\')" title="' + (w.title || '') + '">';
+    if (previewUrl) {
+      html += '<img src="' + previewUrl + '" alt="' + (w.title || '') + '" loading="lazy" onerror="onImageError(this)" />';
+    } else {
+      html += '<div class="we-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px">无预览</div>';
+    }
+    html += '<div class="we-item-type">' + typeLabel + '</div>';
+    html += '<div class="we-item-label">' + (w.title || w.id) + '</div>';
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+}
+function selectWeWallpaper(id) {
+  var wp = weWallpaperList.find(function(w) { return w.id === id; });
+  if (!wp) return;
+  weSelectedWallpaper = wp;
+  renderWeWallpaperGrid();
+  hideWeWallpaperPicker();
+  // 弹出应用范围选择
+  showWallpaperScopeDialog(function(scope) {
+    applyWeWallpaper(wp, scope);
+    showToast('已应用壁纸: ' + (wp.title || wp.id));
+  });
+}
+function applyWeWallpaper(wp, scope) {
+  if (!wp) return;
+  scope = scope || 'hero';
+  var origin = window.location.origin;
+  var previewUrl = wp.hasPreview ? (origin + '/api/we-wallpapers/preview/' + encodeURIComponent(wp.id)) : '';
+  var videoUrl = wp.hasVideo ? (origin + '/api/we-wallpapers/video/' + encodeURIComponent(wp.id)) : '';
+  var mediaObj = null;
+  if (wp.hasVideo) {
+    mediaObj = { type: 'video', src: videoUrl, name: wp.title || wp.id };
+  } else if (previewUrl) {
+    mediaObj = { type: 'image', src: previewUrl, name: wp.title || wp.id };
+  }
+  if (!mediaObj) return;
+  // 小窗（hero）应用
+  if (scope === 'hero' || scope === 'both') {
+    var media = document.getElementById('home-hero-wallpaper-media');
+    var img = document.getElementById('wallpaper-preview-img');
+    var vid = document.getElementById('wallpaper-preview-video');
+    var clearBtn = document.getElementById('wallpaper-clear-btn');
+    if (media) {
+      media.classList.remove('has-image', 'has-video');
+      if (mediaObj.type === 'video' && vid) {
+        vid.src = mediaObj.src;
+        vid.play().catch(function(){});
+        media.classList.add('has-video');
+      } else if (img) {
+        img.src = mediaObj.src;
+        media.classList.add('has-image');
+      }
+      if (clearBtn) clearBtn.style.display = '';
+    }
+    heroWallpaperMedia = mediaObj;
+    saveHeroWallpaperState();
+  }
+  // 全屏背景应用
+  if (scope === 'fullscreen' || scope === 'both') {
+    if (mediaObj.type === 'video') {
+      setCustomBackgroundMedia({ type: 'video', src: mediaObj.src, name: mediaObj.name, mime: 'video/mp4', size: 0 });
+    } else {
+      setCustomBackgroundImage(mediaObj.src);
+    }
+    if (scope === 'fullscreen') {
+      heroApplyFullscreen = false;
+      updateApplyFullscreenToggle();
+    } else if (scope === 'both') {
+      heroApplyFullscreen = true;
+      updateApplyFullscreenToggle();
+    }
+    saveHeroWallpaperState();
+  } else if (scope === 'hero') {
+    // 仅小窗，不同步全屏
+  }
+}
+
 function applyUiAccentColor() {
   var color = normalizeHexColor(fx.uiAccentColor || '#00f5d4', '#00f5d4');
   var rgb = hexToRgb(color);
@@ -26126,6 +27344,326 @@ function showToast(msg) {
   toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
 }
 
+// ============================================================
+//  应用配置管理（服务端配置文件 + localStorage 缓存 + 自动同步）
+// ============================================================
+
+// 配置元数据（与后端 APP_CONFIG_META 一致）
+var APP_CONFIG_META = [
+  { key: 'visual', label: '视觉布局', desc: '粒子效果、歌词样式、背景颜色、3D相机、壁纸、FX预设', lsKeys: ['mineradio-lyric-layout-v1', 'mineradio-free-camera-v1', 'mineradio-hero-wallpaper-v1', 'mineradio-user-fx-archives-v1'] },
+  { key: 'playback', label: '播放设置', desc: '音质、音量、续播会话、睡眠定时器、听歌统计', lsKeys: ['mineradio-playback-quality-v1', 'apex-player-volume', 'mineradio-playback-session-v1', 'mineradio-sleep-timer-v1', 'mineradio-listen-stats-v1'] },
+  { key: 'lyrics', label: '歌词与封面', desc: '自定义歌词、歌词偏好、自定义封面映射', lsKeys: ['mineradio-custom-lyrics-v1', 'mineradio-custom-lyric-prefs-v1', 'mineradio-custom-covers'] },
+  { key: 'search', label: '搜索', desc: '搜索历史记录', lsKeys: ['mineradio-search-history'] },
+  { key: 'hotkeys', label: '快捷键', desc: '键盘快捷键设置', lsKeys: ['mineradio-hotkey-settings-v1'] },
+  { key: 'beatmaps', label: '节拍', desc: '本地节拍数据与偏好', lsKeys: ['mineradio-local-beatmaps-v1', 'mineradio-local-beatmap-prefs-v1'] },
+  { key: 'ui', label: '界面偏好', desc: 'DIY模式、面板钉住、自动隐藏、天气城市、引导提示等', lsKeys: ['mineradio-diy-player-mode-v1', 'mineradio-playlist-panel-pinned-v1', 'mineradio-user-capsule-auto-hide-v1', 'mineradio-fx-fab-auto-hide-v1', 'mineradio-controls-auto-hide-v1', 'mineradio-visual-guide-seen-v2', 'mineradio-upload-tip-seen', 'mineradio-weather-city'] }
+];
+
+// 构建 lsKey → configKey 映射
+var _LS_KEY_MAP = {};
+APP_CONFIG_META.forEach(function(meta) {
+  meta.lsKeys.forEach(function(k) { _LS_KEY_MAP[k] = meta.key; });
+});
+
+// 拦截 localStorage.setItem / removeItem，自动同步到服务端
+var _originalSetItem = localStorage.setItem.bind(localStorage);
+var _originalRemoveItem = localStorage.removeItem.bind(localStorage);
+var _configSyncEnabled = false; // 服务端加载完成前不同步
+var _syncTimers = {};
+
+// 同步到服务端：value 是 localStorage 中的原始字符串
+// 尝试 parse 为对象后发送，服务端存储为可读 JSON
+function _syncToServer(lsKey, value) {
+  if (_syncTimers[lsKey]) clearTimeout(_syncTimers[lsKey]);
+  _syncTimers[lsKey] = setTimeout(function() {
+    try {
+      // 尝试 parse，如果成功则发送对象，否则发送原始字符串
+      var parsed;
+      try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
+      fetch('/api/app-config/item', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: lsKey, value: parsed })
+      }).catch(function(e) { console.warn('[ConfigSync] failed:', lsKey, e.message); });
+    } catch(e) {}
+  }, 600);
+}
+
+function _removeFromServer(lsKey) {
+  try {
+    fetch('/api/app-config/item', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: lsKey })
+    }).catch(function(e) { console.warn('[ConfigSync] remove failed:', lsKey, e.message); });
+  } catch(e) {}
+}
+
+localStorage.setItem = function(key, value) {
+  _originalSetItem(key, value);
+  if (_configSyncEnabled && _LS_KEY_MAP[key]) _syncToServer(key, value);
+};
+localStorage.removeItem = function(key) {
+  _originalRemoveItem(key);
+  if (_configSyncEnabled && _LS_KEY_MAP[key]) _removeFromServer(key);
+};
+
+// 启动时从服务端加载所有配置到 localStorage
+// 只在服务端有值时才覆盖 localStorage（不覆盖已有数据）
+function loadConfigsFromServer() {
+  return fetch('/api/app-config/all').then(function(r) { return r.json(); }).then(function(data) {
+    if (!data || !data.ok) return;
+    Object.keys(data.configs).forEach(function(configKey) {
+      var configData = data.configs[configKey];
+      if (!configData) return;
+      Object.keys(configData).forEach(function(lsKey) {
+        var val = configData[lsKey];
+        if (val === null || val === undefined) return;
+        // 服务端存储的是已 parse 的对象/值，需要 stringify 回 localStorage 格式
+        var lsVal = typeof val === 'string' ? val : JSON.stringify(val);
+        _originalSetItem(lsKey, lsVal);
+      });
+    });
+  }).catch(function(e) {
+    console.warn('[ConfigSync] load failed:', e.message);
+  });
+}
+
+// 启动加载：先从服务端加载，加载完成后再启用同步
+loadConfigsFromServer().then(function() {
+  _configSyncEnabled = true;
+  // 加载完成后，把当前 localStorage 中已有的配置同步到服务端（首次使用时服务端为空）
+  if (_configSyncEnabled) {
+    Object.keys(_LS_KEY_MAP).forEach(function(lsKey) {
+      var val = localStorage.getItem(lsKey);
+      if (val !== null) _syncToServer(lsKey, val);
+    });
+  }
+});
+
+// ============================================================
+//  导出 / 导入 UI（选择性导出 zip，导入预览+选择）
+// ============================================================
+
+// 导出配置对话框
+function showExportConfigDialog() {
+  var existing = document.getElementById('config-export-dialog');
+  if (existing) existing.remove();
+  var mask = document.createElement('div');
+  mask.id = 'config-export-dialog';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(4px)';
+  var box = document.createElement('div');
+  box.style.cssText = 'width:360px;max-height:80vh;overflow-y:auto;background:rgba(18,20,30,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+  var title = document.createElement('div');
+  title.textContent = '导出配置';
+  title.style.cssText = 'font-size:14px;font-weight:600;color:#fff;margin-bottom:12px;text-align:center';
+  box.appendChild(title);
+  var subtitle = document.createElement('div');
+  subtitle.textContent = '选择要导出的配置项';
+  subtitle.style.cssText = 'font-size:11px;color:rgba(255,255,255,.4);margin-bottom:14px;text-align:center';
+  box.appendChild(subtitle);
+  // 全选/取消全选
+  var selectAllRow = document.createElement('div');
+  selectAllRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)';
+  var selectAllLabel = document.createElement('span');
+  selectAllLabel.textContent = '全选 / 取消全选';
+  selectAllLabel.style.cssText = 'font-size:11px;color:rgba(255,255,255,.6);cursor:pointer';
+  var selectAllCb = document.createElement('input');
+  selectAllCb.type = 'checkbox';
+  selectAllCb.checked = true;
+  selectAllCb.style.cssText = 'cursor:pointer;accent-color:#00f5d4';
+  selectAllLabel.onclick = function() { selectAllCb.checked = !selectAllCb.checked; updateAllChecks(); };
+  selectAllCb.onchange = updateAllChecks;
+  selectAllRow.appendChild(selectAllLabel);
+  selectAllRow.appendChild(selectAllCb);
+  box.appendChild(selectAllRow);
+  // 配置项列表
+  var items = [];
+  APP_CONFIG_META.forEach(function(meta) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.04)';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = true;
+    cb.dataset.key = meta.key;
+    cb.style.cssText = 'margin-top:2px;cursor:pointer;accent-color:#00f5d4';
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1';
+    var name = document.createElement('div');
+    name.textContent = meta.label;
+    name.style.cssText = 'font-size:12px;color:rgba(255,255,255,.8);font-weight:500';
+    var desc = document.createElement('div');
+    desc.textContent = meta.desc;
+    desc.style.cssText = 'font-size:10px;color:rgba(255,255,255,.35);margin-top:2px';
+    info.appendChild(name);
+    info.appendChild(desc);
+    row.appendChild(cb);
+    row.appendChild(info);
+    box.appendChild(row);
+    items.push(cb);
+  });
+  function updateAllChecks() {
+    items.forEach(function(cb) { cb.checked = selectAllCb.checked; });
+  }
+  // 导出按钮
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:14px';
+  var exportBtn = document.createElement('button');
+  exportBtn.textContent = '导出 ZIP';
+  exportBtn.style.cssText = 'flex:1;height:36px;border:none;border-radius:10px;background:#00f5d4;color:#000;font-size:12px;font-weight:600;cursor:pointer';
+  exportBtn.onclick = function() {
+    var selectedKeys = items.filter(function(cb) { return cb.checked; }).map(function(cb) { return cb.dataset.key; });
+    if (selectedKeys.length === 0) { showToast('请至少选择一项配置'); return; }
+    var a = document.createElement('a');
+    a.href = '/api/app-config/export?keys=' + selectedKeys.join(',');
+    a.download = 'mineradio-config-' + new Date().toISOString().slice(0,10) + '.zip';
+    a.click();
+    mask.remove();
+    showToast('正在导出配置...');
+  };
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '取消';
+  cancelBtn.style.cssText = 'width:80px;height:36px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:transparent;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer';
+  cancelBtn.onclick = function() { mask.remove(); };
+  btnRow.appendChild(exportBtn);
+  btnRow.appendChild(cancelBtn);
+  box.appendChild(btnRow);
+  mask.appendChild(box);
+  mask.onclick = function(e) { if (e.target === mask) mask.remove(); };
+  document.body.appendChild(mask);
+}
+
+// 导入配置对话框
+var _importZipBuffer = null;
+function showImportConfigDialog() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.zip';
+  input.onchange = function(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      _importZipBuffer = ev.target.result;
+      // 上传预览
+      fetch('/api/app-config/import-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: new Uint8Array(_importZipBuffer)
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (!data.ok) { showToast('导入预览失败: ' + (data.error || '')); return; }
+        if (!data.configs || data.configs.length === 0) { showToast('ZIP 中没有有效的配置'); return; }
+        _showImportPreviewDialog(data.configs);
+      }).catch(function(err) {
+        showToast('导入预览失败: ' + err.message);
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  input.click();
+}
+
+function _showImportPreviewDialog(configs) {
+  var existing = document.getElementById('config-import-dialog');
+  if (existing) existing.remove();
+  var mask = document.createElement('div');
+  mask.id = 'config-import-dialog';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(4px)';
+  var box = document.createElement('div');
+  box.style.cssText = 'width:360px;max-height:80vh;overflow-y:auto;background:rgba(18,20,30,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+  var title = document.createElement('div');
+  title.textContent = '导入配置';
+  title.style.cssText = 'font-size:14px;font-weight:600;color:#fff;margin-bottom:6px;text-align:center';
+  box.appendChild(title);
+  var subtitle = document.createElement('div');
+  subtitle.textContent = 'ZIP 包含以下配置，选择要导入的项';
+  subtitle.style.cssText = 'font-size:11px;color:rgba(255,255,255,.4);margin-bottom:14px;text-align:center';
+  box.appendChild(subtitle);
+  // 全选
+  var selectAllRow = document.createElement('div');
+  selectAllRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)';
+  var selectAllLabel = document.createElement('span');
+  selectAllLabel.textContent = '全选 / 取消全选';
+  selectAllLabel.style.cssText = 'font-size:11px;color:rgba(255,255,255,.6);cursor:pointer';
+  var selectAllCb = document.createElement('input');
+  selectAllCb.type = 'checkbox';
+  selectAllCb.checked = true;
+  selectAllCb.style.cssText = 'cursor:pointer;accent-color:#00f5d4';
+  selectAllLabel.onclick = function() { selectAllCb.checked = !selectAllCb.checked; updateAllChecks(); };
+  selectAllCb.onchange = updateAllChecks;
+  selectAllRow.appendChild(selectAllLabel);
+  selectAllRow.appendChild(selectAllCb);
+  box.appendChild(selectAllRow);
+  // 配置项列表
+  var items = [];
+  configs.forEach(function(cfg) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.04)';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = true;
+    cb.dataset.key = cfg.key;
+    cb.style.cssText = 'margin-top:2px;cursor:pointer;accent-color:#00f5d4';
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1';
+    var name = document.createElement('div');
+    name.textContent = cfg.label;
+    name.style.cssText = 'font-size:12px;color:rgba(255,255,255,.8);font-weight:500';
+    var desc = document.createElement('div');
+    desc.textContent = cfg.desc;
+    desc.style.cssText = 'font-size:10px;color:rgba(255,255,255,.35);margin-top:2px';
+    info.appendChild(name);
+    info.appendChild(desc);
+    row.appendChild(cb);
+    row.appendChild(info);
+    box.appendChild(row);
+    items.push(cb);
+  });
+  function updateAllChecks() {
+    items.forEach(function(cb) { cb.checked = selectAllCb.checked; });
+  }
+  // 导入按钮
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:14px';
+  var importBtn = document.createElement('button');
+  importBtn.textContent = '导入选中项';
+  importBtn.style.cssText = 'flex:1;height:36px;border:none;border-radius:10px;background:#00f5d4;color:#000;font-size:12px;font-weight:600;cursor:pointer';
+  importBtn.onclick = function() {
+    var selectedKeys = items.filter(function(cb) { return cb.checked; }).map(function(cb) { return cb.dataset.key; });
+    if (selectedKeys.length === 0) { showToast('请至少选择一项配置'); return; }
+    // 转为 base64 发送
+    var bytes = new Uint8Array(_importZipBuffer);
+    var binary = '';
+    for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    var base64 = btoa(binary);
+    fetch('/api/app-config/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ zipData: base64, keys: selectedKeys })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data.ok) {
+        showToast('配置已导入，即将刷新...');
+        mask.remove();
+        setTimeout(function() { location.reload(); }, 800);
+      } else {
+        showToast('导入失败: ' + (data.error || ''));
+      }
+    }).catch(function(err) {
+      showToast('导入失败: ' + err.message);
+    });
+  };
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '取消';
+  cancelBtn.style.cssText = 'width:80px;height:36px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:transparent;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer';
+  cancelBtn.onclick = function() { mask.remove(); };
+  btnRow.appendChild(importBtn);
+  btnRow.appendChild(cancelBtn);
+  box.appendChild(btnRow);
+  mask.appendChild(box);
+  mask.onclick = function(e) { if (e.target === mask) mask.remove(); };
+  document.body.appendChild(mask);
+}
+
 var visualGuideSteps = [
   {
     target: 'stage',
@@ -27770,6 +29308,10 @@ function dismissSplash() {
     markAppPerf('home-revealed');
     if (s && s.parentNode) s.style.display = 'none';
     requestAnimationFrame(function(){
+      // 恢复上次播放会话（断点续播：恢复歌单与当前歌，不自动播放）
+      try { loadPlaybackSession(); } catch(e) { console.warn('session restore failed', e); }
+      // 从 fx 恢复 hero 小屏壁纸状态（初始化时调用一次）
+      try { if (typeof syncWallpaperPickerFromFx === 'function') syncWallpaperPickerFromFx(); } catch(e) { console.warn('wallpaper sync failed', e); }
       var homeShown = updateEmptyHomeVisibility({ forceLoad: true });
       if (!homeShown && shouldForceEmptyHomeAfterSplash()) {
         homeSuppressed = false;
@@ -28747,7 +30289,9 @@ animate();
     var btn = document.getElementById('console-toggle-btn');
     if (bar && btn) {
       var isVisible = bar.classList.contains('visible') && !bar.classList.contains('soft-hidden');
-      btn.textContent = isVisible ? '收起播放器控制台' : '展开播放器控制台';
+      var txt = document.getElementById('console-toggle-text');
+      if (txt) txt.textContent = isVisible ? '收起播放器控制台' : '展开播放器控制台';
+      else btn.textContent = isVisible ? '收起播放器控制台' : '展开播放器控制台';
     }
   }
   var barObs = document.getElementById('bottom-bar');
@@ -28814,6 +30358,23 @@ animate();
     <div class="bd-footer">
       <button class="dq-cancel-btn" style="width:auto;flex:1;margin-top:0" onclick="hideBatchDownloadPicker()">取消</button>
       <button class="bd-confirm-btn" id="bd-confirm" onclick="confirmBatchDownload()" disabled>下载选中</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wallpaper Engine 壁纸选择弹窗 -->
+<div id="we-wallpaper-picker" class="dq-overlay">
+  <div class="we-picker-modal">
+    <div class="we-picker-header">
+      <div class="we-picker-title">选择 Wallpaper Engine 壁纸</div>
+      <button class="dq-cancel-btn" style="width:auto;padding:0 14px;height:32px;font-size:12px" onclick="hideWeWallpaperPicker()">关闭</button>
+    </div>
+    <div class="we-picker-toolbar">
+      <input type="text" id="we-wallpaper-search" class="fx-input" placeholder="搜索壁纸..." oninput="filterWeWallpapers(this.value)" />
+      <span id="we-wallpaper-count" class="we-count">0 个</span>
+    </div>
+    <div id="we-wallpaper-grid" class="we-grid">
+      <div class="we-loading">加载中...</div>
     </div>
   </div>
 </div>
